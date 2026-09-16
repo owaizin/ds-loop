@@ -6,6 +6,8 @@ export { hashConfig } from './config/schema.ts';
 export { DEFAULT_CONFIG } from './config/defaults.ts';
 export type { Adapter, SourceRef } from './adapters/types.ts';
 export { cssCustomPropsAdapter, extractWith } from './adapters/css-custom-props.ts';
+export { ADAPTERS, adapterLabel, adaptersFor } from './adapters/registry.ts';
+export { tailwindJsxAdapter } from './adapters/tailwind-jsx.ts';
 export { toLab, parseColor, looksLikeColor } from './color/convert.ts';
 export { ciede2000 } from './color/delta-e.ts';
 export { clusterByDeltaE } from './color/cluster.ts';

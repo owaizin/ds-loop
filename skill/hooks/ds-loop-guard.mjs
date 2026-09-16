@@ -16,7 +16,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CLI = resolve(dirname(fileURLToPath(import.meta.url)), '../../src/cli.ts');
-const STYLE = /\.(css|scss|sass)$/i;
+const STYLE = /\.(css|scss|sass|jsx|tsx)$/i;
 
 function readStdin() {
   try {

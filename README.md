@@ -59,7 +59,7 @@ node --experimental-strip-types src/cli.ts audit ../some-app/src         # a liv
 ### `guard` — nag on edit, like impeccable's hook
 
 `ds-loop guard on` writes a `PostToolUse` hook into `./.claude/settings.json`.
-After any `Edit`/`Write` to a `.css` file, ds-loop audits that one file and, if
+After any `Edit`/`Write` to a `.css` / `.jsx` / `.tsx` file, ds-loop audits that one file and, if
 there are `high`+ findings, prints them to stderr (exit 2) so the coding agent
 sees them. Silent on a clean save, silent on non-style files. **Never blocks** —
 a PostToolUse hook fires after the write. `guard off` removes only the ds-loop
@@ -72,6 +72,7 @@ entry; every other hook, permission, and setting is left alone.
 | `token/tier-leakage` | high | a token referencing the wrong tier — component → primitive skips, upward references. Breaks theme propagation. |
 | `token/semantic-name-describes-appearance` | medium / low | a semantic token named for a colour or size (`color.action.blue`) — a primitive with extra steps. Low when only category/chart tokens. |
 | `color/semantic-holds-literal` | high | a semantic token holding a literal colour instead of `var(--primitive)` |
+| `token/raw-value-in-markup` | high | a component hardcoding a colour or length at the use site — `bg-[#1da1f2]`, `p-[13px]` — instead of referencing the system. Names the token that already carries the value when one does. |
 | `token/raw-dimension-in-semantic` | high | a semantic or component token holds a raw `16px` / `1rem` instead of a spacing / type primitive (Fluent rule 1) |
 | `color/literal-duplicate-tokens` | medium | N tokens declaring byte-identical values (semantic layer re-typing the palette) |
 | `color/near-duplicate-primitives` | low | two primitives within one just-noticeable ΔE |
@@ -145,12 +146,25 @@ never moves.
 | Adapter | Recognises | Status |
 | --- | --- | --- |
 | `css-custom-props` | `--token: value;` in `.css` — full colors *and* bare HSL channel triples | v0 |
+| `tailwind-jsx` | Tailwind **arbitrary values** in JS/TS string literals — `bg-[#1da1f2]`, `hover:p-[13px]`, `text-[color:var(--x)]`. Reads string literals, so `className`, `cn()`, `clsx`, `cva` and tagged templates all work | v0 |
 | `scss-maps` | `$name: (...)` Sass maps | planned |
 | `js-scale-objects` | exported `{ 1: '#...', 2: '#...' }` (Radix-style) | planned |
 | `tokens-studio-json` | W3C design-tokens JSON | planned |
 
 Adapters extract and classify one value at a time. They never cluster, dedupe, or
 judge intent — everything downstream is format-agnostic.
+
+**Every matching adapter runs**, not the first. A React app declares tokens in
+`.css` and then uses — or bypasses — them in `.tsx`, and half that picture is not
+an audit. It is also what makes `token/raw-value-in-markup` actionable: the
+hardcoded `#1da1f2` in a component is matched against the palette the CSS
+adapter read, so the finding names the token that already holds it.
+
+A value read at a **use site** carries `tokenName: null`. That one field is the
+seam between "the system declares a literal" (`color/semantic-holds-literal`)
+and "a component hardcoded one" (`token/raw-value-in-markup`), and it is why
+palette analysis — `sweep`, `color/no-intent-plateau`,
+`color/mixed-storage-forms` — counts declarations only.
 
 ---
 

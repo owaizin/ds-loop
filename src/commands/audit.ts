@@ -1,15 +1,12 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cssCustomPropsAdapter } from '../adapters/css-custom-props.ts';
-import type { Adapter } from '../adapters/types.ts';
+import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
-
-const ADAPTERS: Adapter[] = [cssCustomPropsAdapter];
 
 export type AuditReport = {
   manifest: {
@@ -57,13 +54,13 @@ export function audit(
 
   const only = [...(opts.files ?? []), ...(opts.since ? changedFiles(opts.since) : [])];
   const { meta, source, live } = resolveSource(targetPath, { only: only.length ? only : undefined });
-  const adapter = ADAPTERS.find((a) => a.detect(source));
-  if (!adapter) {
+  const adapters = adaptersFor(source);
+  if (adapters.length === 0) {
     // no recognisable token files in scope — a clean no-op, not an error (hook mode)
     return emptyReport(ruleTarget, meta);
   }
 
-  const values = adapter.extract(source, config);
+  const values = adapters.flatMap((a) => a.extract(source, config));
   const colors = values.filter((v) => v.provenance.classification === 'color');
   const ctx = { meta, source, config, values, colors };
 
@@ -91,7 +88,7 @@ export function audit(
       target: ruleTarget,
       fixtureLabel: meta.label,
       fixtureSha: meta.fixtureSha,
-      adapter: `${adapter.id}@${adapter.version}`,
+      adapter: adapterLabel(adapters),
       configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
     },

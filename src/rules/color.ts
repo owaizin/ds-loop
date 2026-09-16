@@ -23,7 +23,9 @@ export const semanticLiteralRule: Rule = {
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const pattern = ctx.config.taxonomy.primitivePattern;
-    const offenders = ctx.colors.filter((v) => !isPrimitive(v.provenance.tokenName, pattern));
+    const offenders = ctx.colors.filter(
+      (v) => v.provenance.tokenName !== null && !isPrimitive(v.provenance.tokenName, pattern),
+    );
     if (offenders.length === 0) return [];
     return [
       {
@@ -135,7 +137,9 @@ export const mixedColorFormRule: Rule = {
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const forms = new Map<string, number>();
-    for (const v of ctx.colors) {
+    // declarations only: this rule is about the STORAGE convention of the token
+    // files. A hex in a component is a different defect (token/raw-value-in-markup).
+    for (const v of ctx.colors.filter((c) => c.provenance.tokenName !== null)) {
       const f = classifyForm(v.raw);
       forms.set(f, (forms.get(f) ?? 0) + 1);
     }
@@ -165,7 +169,13 @@ export const colorKneeRule: Rule = {
   run(ctx: RuleContext): Finding[] {
     const shipped = ctx.meta.shippedPrimitiveCount;
     if (shipped == null) return [];
-    const points = dedupe(ctx.colors.map((v) => ({ id: v.provenance.tokenName ?? v.raw, raw: v.raw })));
+    // the plateau is a property of the declared palette; use-site literals are
+    // not palette entries and would smear the curve.
+    const points = dedupe(
+      ctx.colors
+        .filter((v) => v.provenance.tokenName !== null)
+        .map((v) => ({ id: v.provenance.tokenName ?? v.raw, raw: v.raw })),
+    );
     const { min, max, step } = ctx.config.sweep;
     let plateauFrom: number | null = null;
     let plateauTo: number | null = null;

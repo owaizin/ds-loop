@@ -1,7 +1,9 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { relative } from 'node:path';
 import { alphaOf, looksLikeColor } from '../color/convert.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
+import { filesInScope, listFiles } from '../core/files.ts';
+import { isLengthLiteral } from '../core/literals.ts';
 import type { RawValue, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
@@ -23,7 +25,7 @@ export const cssCustomPropsAdapter: Adapter = {
   version: VERSION,
 
   detect(source: SourceRef): boolean {
-    return listCssFiles(source.root).some((f) => /--[\w-]+\s*:/.test(readFileSync(f, 'utf8')));
+    return listFiles(source.root, EXTS).some((f) => /--[\w-]+\s*:/.test(readFileSync(f, 'utf8')));
   },
 
   extract(source: SourceRef, config: DsOpsConfig): RawValue[] {
@@ -33,13 +35,12 @@ export const cssCustomPropsAdapter: Adapter = {
 
 type Taxonomy = DsOpsConfig['taxonomy'];
 
+const EXTS = ['.css'];
 const DECL = /(--[\w-]+)\s*:\s*([^;]+);/g;
 
 export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
   const out: RawValue[] = [];
-  const files = source.only
-    ? source.only.filter((f) => f.endsWith('.css') && existsSync(f))
-    : listCssFiles(source.root);
+  const files = filesInScope(source.root, EXTS, source.only);
   for (const file of files) {
     const text = readFileSync(file, 'utf8');
     const rel = relative(source.root, file);
@@ -114,7 +115,7 @@ function classify(
     // `12px 16px` shorthand. Must carry a length unit — a bare number is too
     // ambiguous (z-index, bezier point, font-weight, opacity, flex-grow) to
     // treat as a design dimension.
-    if (/^-?\d*\.?\d+(px|rem|em|vh|vw)(\s+-?\d*\.?\d+(px|rem|em|vh|vw)){0,3}$/.test(value)) {
+    if (isLengthLiteral(value)) {
       // a shadow / elevation recipe part (offset, blur, spread) is an internal,
       // not a token that should reference a spacing primitive.
       if (shadowByName) return { classification: 'shadow-internal', reason: 'shadow recipe part' };
@@ -148,24 +149,4 @@ function findSelector(lines: string[], lineIdx: number): string | null {
   const head = before.slice(0, lastOpen);
   const m = head.match(/([.#:\[\]\w-]+(?:\s*,\s*[.#:\[\]\w-]+)*)\s*$/);
   return m ? m[1].trim() : null;
-}
-
-function listCssFiles(root: string): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      if (entry === 'node_modules' || entry.startsWith('.')) continue;
-      const full = join(dir, entry);
-      const s = statSync(full);
-      if (s.isDirectory()) walk(full);
-      else if (entry.endsWith('.css')) out.push(full);
-    }
-  };
-  try {
-    if (statSync(root).isDirectory()) walk(root);
-    else if (root.endsWith('.css')) out.push(root);
-  } catch {
-    /* missing path — return empty */
-  }
-  return out.sort();
 }

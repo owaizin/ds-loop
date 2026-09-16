@@ -1,14 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cssCustomPropsAdapter } from '../adapters/css-custom-props.ts';
-import type { Adapter } from '../adapters/types.ts';
+import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { resolveSource } from '../core/source.ts';
-
-const ADAPTERS: Adapter[] = [cssCustomPropsAdapter];
 
 export type SweepPoint = { deltaE: number; clusters: number };
 export type Plateau = { from: number; to: number; clusters: number; width: number };
@@ -45,10 +42,14 @@ export type SweepResult = {
 export function sweep(fixtureDir: string, opts: { outDir?: string; config?: DsOpsConfig } = {}): SweepResult {
   const config = opts.config ?? DEFAULT_CONFIG;
   const { meta, source } = resolveSource(fixtureDir);
-  const adapter = ADAPTERS.find((a) => a.detect(source));
-  if (!adapter) throw new Error(`no adapter recognises ${source.root}`);
+  const adapters = adaptersFor(source);
+  if (adapters.length === 0) throw new Error(`no adapter recognises ${source.root}`);
 
-  const values = adapter.extract(source, config).filter((v) => v.provenance.classification === 'color');
+  // declared palette entries only — a hardcoded colour in a component is not a
+  // palette entry, and the cutoff curve is a statement about the palette.
+  const values = adapters
+    .flatMap((a) => a.extract(source, config))
+    .filter((v) => v.provenance.classification === 'color' && v.provenance.tokenName !== null);
   const points: ColorPoint[] = dedupeByRaw(values);
 
   const { min, max, step } = config.sweep;
@@ -76,7 +77,7 @@ export function sweep(fixtureDir: string, opts: { outDir?: string; config?: DsOp
       command: 'sweep',
       fixtureLabel: meta.label,
       fixtureSha: meta.fixtureSha,
-      adapter: `${adapter.id}@${adapter.version}`,
+      adapter: adapterLabel(adapters),
       configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
     },

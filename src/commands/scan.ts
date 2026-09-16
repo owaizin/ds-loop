@@ -1,13 +1,10 @@
-import { cssCustomPropsAdapter } from '../adapters/css-custom-props.ts';
-import type { Adapter } from '../adapters/types.ts';
+import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import type { RawValue } from '../core/provenance.ts';
 import { resolveSource } from '../core/source.ts';
-
-const ADAPTERS: Adapter[] = [cssCustomPropsAdapter];
 
 /**
  * One-shot audit at t=0. Reports the *shape* of the data, not the answer —
@@ -16,10 +13,10 @@ const ADAPTERS: Adapter[] = [cssCustomPropsAdapter];
  */
 export function scan(fixtureDir: string, config: DsOpsConfig = DEFAULT_CONFIG): void {
   const { meta, source } = resolveSource(fixtureDir);
-  const adapter = ADAPTERS.find((a) => a.detect(source));
-  if (!adapter) throw new Error(`no adapter recognises ${source.root}`);
+  const adapters = adaptersFor(source);
+  if (adapters.length === 0) throw new Error(`no adapter recognises ${source.root}`);
 
-  const values = adapter.extract(source, config);
+  const values = adapters.flatMap((a) => a.extract(source, config));
 
   const byClass = groupBy(values, (v) => v.provenance.classification);
   const colors = byClass.color ?? [];
@@ -35,7 +32,7 @@ export function scan(fixtureDir: string, config: DsOpsConfig = DEFAULT_CONFIG): 
 
   console.log(`\n  ds-loop scan — ${meta.label}`);
   console.log(
-    `  fixture ${meta.fixtureSha}   adapter ${adapter.id}@${adapter.version}   config ${hashConfig(config)}\n`,
+    `  fixture ${meta.fixtureSha}   adapter ${adapterLabel(adapters)}   config ${hashConfig(config)}\n`,
   );
 
   console.log('  Taxonomy');

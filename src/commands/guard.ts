@@ -62,8 +62,10 @@ export function guard(action: 'on' | 'off' | 'status'): void {
     const cleaned = postToolUse
       .map((m) => ({ ...m, hooks: m.hooks.filter((h) => !isOurs(h)) }))
       .filter((m) => m.hooks.length > 0);
-    settings.hooks = { ...settings.hooks, PostToolUse: cleaned };
-    if (cleaned.length === 0) delete settings.hooks.PostToolUse;
+    // rebuild without PostToolUse, then put it back only if anything survived —
+    // an empty `"PostToolUse": []` left behind is noise in someone's settings
+    const { PostToolUse: _removed, ...otherEvents } = settings.hooks ?? {};
+    settings.hooks = cleaned.length > 0 ? { ...otherEvents, PostToolUse: cleaned } : otherEvents;
     write(settings);
     console.log('  ds-loop guard: removed. Other hooks left in place.');
     return;
@@ -78,7 +80,7 @@ export function guard(action: 'on' | 'off' | 'status'): void {
   settings.hooks = { ...settings.hooks, PostToolUse: [...postToolUse, entry] };
   write(settings);
   console.log(`\n  ds-loop guard: installed in ${p}`);
-  console.log(`  After any Edit/Write to a .css file, ds-loop audits that file and`);
+  console.log(`  After any Edit/Write to a .css / .jsx / .tsx file, ds-loop audits it and`);
   console.log(`  reports high-severity findings. It never blocks the edit.`);
   console.log(`  Restart the agent session for the hook to take effect.\n`);
 }

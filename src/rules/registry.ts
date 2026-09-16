@@ -6,6 +6,7 @@ import {
   semanticLiteralRule,
 } from './color.ts';
 import { rawDimensionRule } from './dimension.ts';
+import { rawValueInMarkupRule } from './markup.ts';
 import { semanticAppearanceNameRule, tierLeakageRule, varMissingFallbackRule } from './tier.ts';
 import type { Rule, RuleTarget } from './types.ts';
 
@@ -23,6 +24,7 @@ export const RULES: Rule[] = [
   semanticAppearanceNameRule,
   varMissingFallbackRule,
   rawDimensionRule,
+  rawValueInMarkupRule,
   nearDuplicatePaletteRule,
   mixedColorFormRule,
   colorKneeRule,
