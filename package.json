@@ -9,13 +9,7 @@
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": [
-    "bin",
-    "dist",
-    "skill",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["bin", "dist", "skill", "README.md", "LICENSE"],
   "engines": {
     "node": ">=22.6"
   },
@@ -29,14 +23,7 @@
     "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "design-system",
-    "design-tokens",
-    "storybook",
-    "audit",
-    "governance",
-    "ciede2000"
-  ],
+  "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",
   "author": "owaizin",
   "repository": {

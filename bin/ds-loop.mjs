@@ -50,8 +50,8 @@ if (existsSync(BUILT)) {
     process.exit(res.status ?? 1);
   } else {
     console.error(
-      `ds-loop needs Node 22.6 or newer — found ${process.version}.\n` +
-        'Install a current Node (https://nodejs.org) and run the same command again.',
+      `ds-loop needs Node 22.6 or newer — found ${process.version}.
+Install a current Node (https://nodejs.org) and run the same command again.`,
     );
     process.exit(1);
   }

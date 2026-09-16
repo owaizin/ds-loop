@@ -38,11 +38,7 @@ export const semanticLiteralRule: Rule = {
       {
         ruleId: this.id,
         severity: 'high',
-        summary:
-          `${offenders.length} semantic token declaration(s) hold a literal colour instead of referencing a primitive` +
-          (distinctNames < offenders.length
-            ? ` (${distinctNames} distinct token names across ${files} file(s))`
-            : ''),
+        summary: `${offenders.length} semantic token declaration(s) hold a literal colour instead of referencing a primitive${distinctNames < offenders.length ? ` (${distinctNames} distinct token names across ${files} file(s))` : ''}`,
         where: offenders
           .slice(0, 8)
           .map((v) => `${v.provenance.tokenName} = ${v.raw} (${v.provenance.file}:${v.provenance.line})`)
