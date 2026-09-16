@@ -15,7 +15,9 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const CLI = resolve(dirname(fileURLToPath(import.meta.url)), '../../src/cli.ts');
+// go through the launcher, not the TypeScript directly: in a published install
+// the CLI is dist/cli.js, and Node cannot type-strip under node_modules.
+const CLI = resolve(dirname(fileURLToPath(import.meta.url)), '../../bin/ds-loop.mjs');
 const STYLE = /\.(css|scss|sass|jsx|tsx)$/i;
 
 function readStdin() {
@@ -35,19 +37,7 @@ if (!filePath || !STYLE.test(filePath)) process.exit(0);
 
 const res = spawnSync(
   process.execPath,
-  [
-    '--experimental-strip-types',
-    '--no-warnings',
-    CLI,
-    'audit',
-    cwd,
-    '--files',
-    filePath,
-    '--min-severity',
-    'high',
-    '--quiet',
-    '--json',
-  ],
+  [CLI, 'audit', cwd, '--files', filePath, '--min-severity', 'high', '--quiet', '--json'],
   { encoding: 'utf8', cwd, timeout: 15_000 },
 );
 

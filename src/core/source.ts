@@ -56,6 +56,7 @@ export function changedFiles(ref: string, cwd = process.cwd()): string[] {
     const out = execFileSync('git', ['diff', '--name-only', `${ref}...HEAD`], {
       cwd: root,
       encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
     });
     return out
       .split('\n')
@@ -68,7 +69,11 @@ export function changedFiles(ref: string, cwd = process.cwd()): string[] {
 
 function gitRoot(from: string): string | null {
   try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: from, encoding: 'utf8' }).trim();
+    return execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: from,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
   } catch {
     return null;
   }
@@ -76,7 +81,13 @@ function gitRoot(from: string): string | null {
 
 function gitHead(root: string): string | null {
   try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim().slice(0, 12);
+    return execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .trim()
+      .slice(0, 12);
   } catch {
     return null;
   }

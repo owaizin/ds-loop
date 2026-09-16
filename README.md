@@ -50,11 +50,28 @@ Runs on Node ≥ 22.6 with no build step (`--experimental-strip-types`). The
 `/ds-loop` skill and its playbooks live in [`skill/`](skill/SKILL.md); the launcher
 at `skill/bin/ds-loop` wraps the CLI.
 
+**Run it on your repo, one command, nothing to install:**
+
+```bash
+npx ds-loop audit .          # this directory
+npx ds-loop audit src/       # or any subtree, or a single .css file
+```
+
+Read-only. No API key, no network, no config required — exits 1 when it finds
+something, so it drops straight into CI.
+
+Working on ds-loop itself (a git checkout runs the TypeScript directly, no build):
+
 ```bash
 npm install
-node --experimental-strip-types src/cli.ts audit fixtures/radix-colors   # a frozen fixture
-node --experimental-strip-types src/cli.ts audit ../some-app/src         # a live repo
+npm run ds-loop -- audit fixtures/radix-colors   # a frozen fixture
+npm run ds-loop -- audit ../some-app/src         # a live repo
+npm test
 ```
+
+The published package ships compiled JS in `dist/` (`npm run build`, wired to
+`prepack`): Node refuses to strip types for files under `node_modules`, so a
+published install never type-strips. Zero *runtime* dependencies either way.
 
 ### `guard` — nag on edit, like impeccable's hook
 

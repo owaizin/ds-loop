@@ -43,7 +43,9 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
   const files = filesInScope(source.root, EXTS, source.only);
   for (const file of files) {
     const text = readFileSync(file, 'utf8');
-    const rel = relative(source.root, file);
+    // auditing a single file makes root === file, and relative() is then '' —
+    // fall back to the path so a finding never reads `(:12)`
+    const rel = relative(source.root, file) || file;
     const lines = text.split('\n');
 
     for (let li = 0; li < lines.length; li++) {

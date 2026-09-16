@@ -65,7 +65,7 @@ function main(argv: string[]): void {
 
   switch (cmd) {
     case 'audit': {
-      if (!positional[0]) throw new Error('audit needs a path');
+      const auditPath = positional[0] ?? '.'; // no path means "this directory"
       const target = (flag(rest, 'target') ?? 'all') as RuleTarget | 'all';
       if (!KNOWN_TARGETS.includes(target)) {
         throw new Error(`unknown target '${target}'. one of: ${KNOWN_TARGETS.join(', ')}`);
@@ -73,7 +73,7 @@ function main(argv: string[]): void {
       if (loaded.source !== 'defaults' && !has(rest, 'quiet')) {
         console.log(`  config: ${loaded.source}`);
       }
-      const report = audit(positional[0], {
+      const report = audit(auditPath, {
         target,
         json: has(rest, 'json'),
         outDir: flag(rest, 'out'),
@@ -93,8 +93,7 @@ function main(argv: string[]): void {
       break;
     }
     case 'scan': {
-      if (!positional[0]) throw new Error('scan needs a path');
-      scan(positional[0], config);
+      scan(positional[0] ?? '.', config);
       break;
     }
     case 'guard': {

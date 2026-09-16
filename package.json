@@ -1,24 +1,26 @@
 {
   "name": "ds-loop",
   "version": "0.1.0",
-  "description": "design-system-ops — audit, scaffold, and guardrail a design system from its code",
+  "description": "Deterministic design-system linter \u2014 finds every value in your code that bypasses your design tokens, with file:line. No LLM, no API key.",
   "type": "module",
   "bin": {
-    "ds-loop": "./src/cli.ts"
+    "ds-loop": "./bin/ds-loop.mjs"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./dist/index.js"
   },
-  "files": ["src", "skill", "README.md", "LICENSE"],
+  "files": ["bin", "dist", "skill", "README.md", "LICENSE"],
   "engines": {
     "node": ">=22.6"
   },
   "scripts": {
-    "ds-loop": "node --experimental-strip-types src/cli.ts",
+    "build": "tsc -p tsconfig.build.json",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "type-check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test 'test/**/*.test.ts'"
+    "ds-loop": "node --experimental-strip-types src/cli.ts",
+    "prepack": "npm run build",
+    "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
+    "type-check": "tsc --noEmit"
   },
   "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",

@@ -34,6 +34,13 @@ node --experimental-strip-types --test test/rules.test.ts
 node --experimental-strip-types --test --test-name-pattern "raw-value-in-markup" test/tailwind-jsx.test.ts
 ```
 
+Distribution: `bin/ds-loop.mjs` is the one entry point. It imports `dist/cli.js` when present
+(a published install) and otherwise runs `src/cli.ts` directly, re-execing with
+`--experimental-strip-types` on Node 22.6–22.17. **Node cannot strip types under
+`node_modules`**, so the published package must ship JS — `npm run build` emits `dist/`, and
+`prepack` runs it. `src/` is deliberately not in `files`. Zero *runtime* dependencies is the
+commitment; "no build step" applies to development only.
+
 Run the CLI during development (no build step — Node ≥ 22.6 strips types directly):
 
 ```bash
