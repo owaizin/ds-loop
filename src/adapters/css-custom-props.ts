@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
-import { alphaOf, looksLikeColor } from '../color/convert.ts';
+import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { filesInScope, listFiles } from '../core/files.ts';
 import { isLengthLiteral } from '../core/literals.ts';
@@ -111,6 +111,16 @@ function classify(
 
   const isColor = looksLikeColor(value);
   const shadowByName = taxonomy.shadowTokenHints.some((h) => name.includes(h));
+
+  // a colour we cannot convert yet must be surfaced, never dropped: a silent
+  // false negative is worse than a flagged unknown, and this is how 76 oklch
+  // tokens once vanished from every rule at once.
+  if (!isColor && isUnparsedColorFunction(value)) {
+    return {
+      classification: 'ambiguous',
+      reason: 'colour function this version cannot convert (lab/lch/hwb/color) — review by hand',
+    };
+  }
 
   if (!isColor) {
     // a spacing / sizing / typography literal: `16px`, `1rem`, `0.5em`, a

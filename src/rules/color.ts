@@ -27,19 +27,36 @@ export const semanticLiteralRule: Rule = {
       (v) => v.provenance.tokenName !== null && !isPrimitive(v.provenance.tokenName, pattern),
     );
     if (offenders.length === 0) return [];
+
+    // a count of declarations overstates the work when the same token is
+    // redeclared across theme blocks or variant files. Measured: one repo
+    // reported 649 declarations across 118 names and 35 files.
+    const distinctNames = new Set(offenders.map((v) => v.provenance.tokenName)).size;
+    const files = new Set(offenders.map((v) => v.provenance.file)).size;
+    const primitives = ctx.colors.filter((v) => isPrimitive(v.provenance.tokenName, pattern)).length;
     return [
       {
         ruleId: this.id,
         severity: 'high',
-        summary: `${offenders.length} semantic token(s) hold a literal colour instead of referencing a primitive`,
+        summary:
+          `${offenders.length} semantic token declaration(s) hold a literal colour instead of referencing a primitive` +
+          (distinctNames < offenders.length
+            ? ` (${distinctNames} distinct token names across ${files} file(s))`
+            : ''),
         where: offenders
           .slice(0, 8)
           .map((v) => `${v.provenance.tokenName} = ${v.raw} (${v.provenance.file}:${v.provenance.line})`)
           .join('; '),
-        fix: 'Point each at a primitive: --token: var(--<ns>-palette-<name>). If no primitive matches, add one first.',
+        fix:
+          primitives === 0
+            ? 'There is no primitive tier in this source — every colour is declared where it is used, so there is nothing to reference yet. Add a palette layer first, then point these at it.'
+            : 'Point each at a primitive: --token: var(--<ns>-palette-<name>). If no primitive matches, add one first.',
         data: {
           count: offenders.length,
-          tokens: offenders.map((v) => v.provenance.tokenName),
+          distinctNames,
+          files,
+          primitivesInSource: primitives,
+          tokens: [...new Set(offenders.map((v) => v.provenance.tokenName))],
         },
       },
     ];

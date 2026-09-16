@@ -38,6 +38,14 @@ export type DsOpsConfig = {
      */
     scaleUtilities: string[];
     /**
+     * Share of referencing tokens that must match SOME tier pattern before the
+     * tier rules are treated as having run. Below it, `token/tier-leakage`
+     * cannot judge anything, and reporting nothing would read as a pass — so
+     * `token/tier-model-undetectable` says so instead.
+     * UNCALIBRATED default.
+     */
+    tierCoverageFloor: number;
+    /**
      * RegExp source (case-insensitive) matching a PRIMITIVE token name — a raw
      * palette entry or numbered scale step. Anything not matching is treated as
      * a semantic token and is expected to be a var() reference, not a literal.

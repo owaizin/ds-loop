@@ -118,6 +118,9 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
       'stone',
       'neutral',
     ],
+    // measured: example-integrations-app classified 0 of 17 referencing tokens,
+    // example-readiness 2 of 71. Both looked like a clean tier pass.
+    tierCoverageFloor: 0.5,
   },
   sweep: {
     min: 0.5,

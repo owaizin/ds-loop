@@ -51,24 +51,29 @@ Silent on a clean save. Silent on files it doesn't read. **Never blocks** — a 
 Real output, from a real repository:
 
 ```
-  ds-loop audit — example-readiness  ·  target: all  ·  live scan
-  version git:b1fc73c7c8bf   adapter css-custom-props@0.1.0   config 5c40eb56
-  10 rules run
+  ds-loop audit — example-design-system  ·  target: all  ·  live scan
+  version git:47d0cc0220a6   adapter css-custom-props@0.1.0 + tailwind-jsx@0.1.0
+  11 rules run
 
   [HIGH] color/semantic-holds-literal
-    649 semantic token(s) hold a literal colour instead of referencing a primitive
-    where: --green = #24704b (assets/dashboard-v3-copy.css:3); --brand = #173d73 …
-    fix:   Point each at a primitive: --token: var(--<ns>-palette-<name>).
+    66 semantic token declaration(s) hold a literal colour instead of referencing
+    a primitive
+    where: --background = oklch(1 0 0) (src/styles/globals.css:67);
+           --primary = oklch(0.208 0.042 265.755) (src/styles/globals.css:73) …
+    fix:   There is no primitive tier in this source — every colour is declared
+           where it is used. Add a palette layer first, then point these at it.
 
   [HIGH] token/raw-value-in-markup
-    7 hardcoded value(s) at use sites bypass the token layer
-    (4 colour, 3 length; 7 distinct, 3 already declared as a token)
-    fix:   #1da1f2 is already --ds-palette-blue-500. Swap those first.
+    2 hardcoded value(s) at use sites bypass the token layer (0 colour, 2 length)
+    where: text-[10px] at src/components/animations/animated-tooltip.tsx:58;
+           rounded-t-[10px] at src/components/ui/drawer.tsx:46
 
-  5 findings — 0 blocking · 2 high · 2 medium · 1 low
+  [MEDIUM] color/literal-duplicate-tokens
+    14 colour value(s) are declared by 48 different tokens
+    where: oklch(0.208 0.042 265.755) <- --primary, --secondary-foreground,
+           --sidebar-primary …
 
-  scorecard ratios
-    literal-colors-per-distinct  [redacted]
+  4 findings — 0 blocking · 2 high · 1 medium · 1 low
 ```
 
 Two things to notice. Every finding carries a `file:line`, which makes it a work item instead of an opinion. And when one of your tokens already holds that value, the fix **names the token** — that's a swap, not a design decision.
@@ -86,7 +91,7 @@ Individual rules are sourced the same way, in a comment next to the rule: `token
 
 ## The rules
 
-Ten. Every one deterministic, and every one returns nothing when that slice of your system is clean.
+Eleven. Every one deterministic, and every one returns nothing when that slice of your system is clean.
 
 | rule | severity | catches |
 | --- | --- | --- |
@@ -99,6 +104,7 @@ Ten. Every one deterministic, and every one returns nothing when that slice of y
 | `color/mixed-storage-forms` | medium | hex + hsl-channels + rgb in one source |
 | `color/near-duplicate-primitives` | low | two primitives within one just-noticeable ΔE |
 | `color/no-intent-plateau` | low | a palette with no ΔE knee at the count the humans shipped |
+| `token/tier-model-undetectable` | low | your token names match no tier convention, so the tier check **could not run** — reported because silence would read as a pass |
 | `token/var-missing-fallback` | low | a `var(--token)` with no fallback — resolves to nothing the moment that token is undefined |
 
 Route them with `--target color|tokens|spacing|typography|elevation|motion`, narrow with `--files a,b` or `--since main`, raise the floor with `--min-severity high`.
@@ -107,7 +113,7 @@ Route them with `--target color|tokens|spacing|typography|elevation|motion`, nar
 
 | adapter | recognises |
 | --- | --- |
-| `css-custom-props` | `--token: value` in any `.css` — full colours *and* bare HSL channel triples |
+| `css-custom-props` | `--token: value` in any `.css` — hex, `rgb()`, `hsl()`, `oklch()`, and bare HSL channel triples |
 | `tailwind-jsx` | Tailwind arbitrary values in JS/TS — `bg-[#1da1f2]`, `hover:p-[13px]`, `text-[color:var(--x)]`. It reads string literals, so `className`, `cn()`, `clsx`, `cva` and tagged templates all work. |
 
 Every matching adapter runs, not the first. Your tokens live in `.css` and get bypassed in `.tsx`, and half that picture isn't an audit.
@@ -119,6 +125,8 @@ Sass maps, styled-components, and design-token JSON aren't read yet. Each is one
 **Every tuned number is config.** `clustering.deltaE`, `primitivePattern`, `componentPattern`, `reservedSemanticTerms`, `shadowAlphaCeiling` — each ships with an `UNCALIBRATED` default, because the right ΔE cutoff for your palette is *discovered* by `npx ds-loop sweep .`, never assumed. Nothing outside `src/config/` hardcodes a threshold.
 
 **Every value carries its provenance:** `file · line · selector · property · tokenName · classification · reason · fixtureSha · adapterId · adapterVersion`. So when a number moves between two runs, you can tell whether your code changed, the adapter changed, or a threshold changed. Reconstructing that after the fact is impossible. It's cheap now.
+
+**A colour it can't convert gets flagged, never dropped.** `lab()`, `lch()`, `hwb()` and `color(display-p3 …)` come back as `ambiguous` with a reason, because a silently discarded colour is a false negative and those are the expensive kind. Found the hard way: 76 `oklch()` tokens in one design system read as "not a colour" and vanished from every rule at once. oklch is parsed properly now.
 
 **The taxonomy is an opinion, and it's inspectable.** Whether `rgba(0,0,0,.06)` inside a shadow is a colour or part of an elevation recipe is a judgement call. ds-loop makes one, prints its reason beside the value, and surfaces the ambiguous set for a human. Disagree, and override the hint in config.
 

@@ -90,6 +90,12 @@ Reconstructing this after the fact is impossible, so never drop a field to simpl
 (`MURPHY_SEVERITY_TO_RULES`); `yaml-lite.ts` is a deliberately minimal parser so the zero-dependency rule
 holds.
 
+**A colour that cannot be converted must be surfaced, not dropped.** `convert.ts` parses hex, rgb, hsl,
+bare HSL triples and `oklch()`; `isUnparsedColorFunction` catches `lab`/`lch`/`hwb`/`color()` so adapters
+classify them `ambiguous` instead of `excluded`. This exists because 76 oklch tokens once vanished from
+every rule silently, and Radix's 72 display-p3 entries with them. Adding a colour form means adding it to
+`parseColor` **and** keeping the unparsed-function net intact.
+
 **`rules/` — deterministic checks.** A rule returns zero findings when that slice is clean. Ids are
 `domain/kebab-slug` and are **stable**: scorecards and calibration rows key on them, so renaming a rule id
 breaks historical comparison. `registry.ts` holds the list and the `RuleTarget` routing used by
@@ -119,6 +125,11 @@ heuristics.
    when the snapshot ages.
 4. Add a test in `test/`. Construct `RawValue`s directly (see `test/rules.test.ts`) or write a temp-dir
    fixture (see `test/tailwind-jsx.test.ts`).
+5. **Measure it on a repo nobody here wrote** before trusting it. Every precision defect found so far was
+   invisible in unit tests: geometry utilities counted as scale bypasses (241 hits, 239 wrong), build output
+   audited as source, oklch palettes read as "not a colour", and a tier rule that could not fire on any
+   real naming convention while reporting nothing. `npm run smoke` covers distribution, not precision —
+   that still needs a real repo and a human reading the hits.
 
 ## Adding an adapter
 

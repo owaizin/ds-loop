@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { clusterByDeltaE } from '../src/color/cluster.ts';
-import { parseColor, toLab } from '../src/color/convert.ts';
+import { isUnparsedColorFunction, looksLikeColor, parseColor, toLab } from '../src/color/convert.ts';
 import { ciede2000 } from '../src/color/delta-e.ts';
 
 test('CIEDE2000 matches Sharma et al. supplementary test data', () => {
@@ -39,4 +39,26 @@ test('clustering merges near-identical, splits distinct', () => {
   ];
   assert.equal(clusterByDeltaE(points, 2).length, 2);
   assert.equal(clusterByDeltaE(points, 0.1).length, 3);
+});
+
+test('oklch parses to sRGB, and unconvertible colour functions are surfaced not dropped', () => {
+  // Tailwind v4 / shadcn / current Radix all store oklch. Before this was
+  // supported, a whole palette classified as "not a colour" and disappeared
+  // from every rule — a silent false negative found on a real design system.
+  assert.deepEqual(parseColor('oklch(1 0 0)'), { r: 255, g: 255, b: 255, a: 1 });
+  assert.deepEqual(parseColor('oklch(0 0 0)'), { r: 0, g: 0, b: 0, a: 1 });
+  assert.deepEqual(parseColor('oklch(0.628 0.2577 29.23)'), { r: 255, g: 0, b: 0, a: 1 });
+  assert.equal(parseColor('oklch(62.8% 0.258 29.2 / 0.5)')?.a, 0.5);
+  assert.equal(looksLikeColor('oklch(0.208 0.042 265.755)'), true);
+
+  // two perceptually distinct oklch values must not cluster together
+  const a = toLab('oklch(0.6 0.2 30)');
+  const b = toLab('oklch(0.6 0.2 250)');
+  assert.ok(a && b && ciede2000(a, b) > 10, 'distinct hues should be far apart');
+
+  // not yet convertible, so flagged for a human rather than discarded
+  for (const v of ['lab(52% 40 60)', 'lch(52 40 60)', 'hwb(30 20% 10%)', 'color(display-p3 1 0 0)']) {
+    assert.equal(looksLikeColor(v), false, v);
+    assert.equal(isUnparsedColorFunction(v), true, v);
+  }
 });

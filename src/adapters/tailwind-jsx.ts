@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
-import { alphaOf, looksLikeColor } from '../color/convert.ts';
+import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { filesInScope } from '../core/files.ts';
 import { isLengthLiteral } from '../core/literals.ts';
@@ -162,6 +162,13 @@ function classify(
       };
     }
     return { classification: 'color', reason: `hardcoded colour on utility ${util}` };
+  }
+
+  if (isUnparsedColorFunction(value)) {
+    return {
+      classification: 'ambiguous',
+      reason: `colour function this version cannot convert on utility ${util} — review by hand`,
+    };
   }
 
   if (isLengthLiteral(value)) {

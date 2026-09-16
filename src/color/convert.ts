@@ -7,6 +7,16 @@
  *   - hsl()/hsla():   hsl(222 47% 11%) hsla(222 47% 11% / 0.5)
  *   - bare HSL channel triple (Tailwind convention): "222.2 47.4% 11.2%"
  *     consumed downstream as hsl(var(--token))
+ *   - oklch():        oklch(0.208 0.042 265.755) oklch(62.8% 0.258 29.2 / 0.5)
+ *
+ * oklch is here because it is what modern sources actually store — Tailwind v4,
+ * shadcn, current Radix — and without it a whole palette reads as "not a colour"
+ * and vanishes from every rule. Found by auditing a real design system whose 76
+ * oklch tokens were silently invisible.
+ *
+ * NOT parsed, and deliberately surfaced as `ambiguous` rather than dropped:
+ * lab(), lch(), hwb(), color(). Each needs its own white point or colour space,
+ * and guessing is worse than asking a human.
  */
 
 export type Rgba = { r: number; g: number; b: number; a: number };
@@ -15,6 +25,9 @@ export type Lab = { L: number; a: number; b: number };
 const HEX = /^#([0-9a-f]{3,8})$/i;
 const HSL_CHANNELS = /^-?\d*\.?\d+\s+-?\d*\.?\d+%\s+-?\d*\.?\d+%$/;
 const FN = /^(rgb|rgba|hsl|hsla)\(([^)]+)\)$/i;
+const OKLCH = /^oklch\(([^)]+)\)$/i;
+/** colour functions that are real colours but not yet convertible here */
+const UNPARSED_FN = /^(lab|lch|oklab|hwb|color)\(/i;
 
 export function parseColor(input: string): Rgba | null {
   const s = input.trim().toLowerCase();
@@ -26,6 +39,9 @@ export function parseColor(input: string): Rgba | null {
     const [h, sat, light] = s.split(/\s+/);
     return hslToRgb(num(h), pct(sat), pct(light), 1);
   }
+
+  const ok = s.match(OKLCH);
+  if (ok) return oklchToRgb(ok[1]!);
 
   const fn = s.match(FN);
   if (fn) {
@@ -112,7 +128,60 @@ const alpha = (v: string) => (v.endsWith('%') ? Number.parseFloat(v) / 100 : Num
 
 export function looksLikeColor(input: string): boolean {
   const s = input.trim().toLowerCase();
-  return HEX.test(s) || HSL_CHANNELS.test(s) || FN.test(s);
+  return HEX.test(s) || HSL_CHANNELS.test(s) || FN.test(s) || OKLCH.test(s);
+}
+
+/**
+ * A colour this module cannot convert yet. The caller must surface these for a
+ * human instead of discarding them — a dropped colour is a silent false
+ * negative, which is worse than a flagged unknown.
+ */
+export function isUnparsedColorFunction(input: string): boolean {
+  return UNPARSED_FN.test(input.trim().toLowerCase());
+}
+
+/**
+ * oklch(L C H) / oklch(L C H / A) -> sRGB, so the rest of the pipeline (and
+ * CIEDE2000) keeps a single Lab path. L accepts 0-1 or a percentage; `none`
+ * means zero per CSS Color 4. Matrices are Ottosson's.
+ */
+function oklchToRgb(body: string): Rgba | null {
+  const [coords, alphaPart] = body.split('/');
+  const parts = coords!
+    .trim()
+    .split(/[\s,]+/)
+    .filter(Boolean);
+  if (parts.length < 3) return null;
+
+  const axis = (v: string, scale = 1) =>
+    v === 'none' ? 0 : v.endsWith('%') ? (num(v) / 100) * scale : num(v);
+  const L = axis(parts[0]!, 1);
+  const C = axis(parts[1]!, 0.4); // 100% chroma is 0.4 in CSS Color 4
+  const hDeg = parts[2] === 'none' ? 0 : num(parts[2]!.replace(/deg$/, ''));
+  if (!Number.isFinite(L) || !Number.isFinite(C) || !Number.isFinite(hDeg)) return null;
+
+  const h = (hDeg * Math.PI) / 180;
+  const a = C * Math.cos(h);
+  const bb = C * Math.sin(h);
+
+  // OKLab -> LMS -> linear sRGB
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * bb;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * bb;
+  const s_ = L - 0.0894841775 * a - 1.291485548 * bb;
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const sl = s_ * s_ * s_;
+
+  const lin = [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * sl,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * sl,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * sl,
+  ];
+  const gamma = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
+  const [r, g, b] = lin.map((c) => clamp255(gamma(c) * 255));
+
+  const al = alphaPart ? alpha(alphaPart.trim()) : 1;
+  return { r: r!, g: g!, b: b!, a: Number.isFinite(al) ? al : 1 };
 }
 
 export function alphaOf(input: string): number {

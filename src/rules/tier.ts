@@ -82,6 +82,48 @@ export const tierLeakageRule: Rule = {
 };
 
 /**
+ * The tier rules judge by naming convention. When almost no token matches any
+ * convention, `token/tier-leakage` has nothing to compare and returns nothing —
+ * which a reader takes as a pass. This says so out loud instead.
+ *
+ * Measured on real repos: one classified 0 of 17 referencing tokens, another
+ * 2 of 71. Both looked like clean tier checks and neither had been checked.
+ */
+export const tierModelUndetectableRule: Rule = {
+  id: 'token/tier-model-undetectable',
+  title: 'Tier model cannot be detected from token names, so the tier check did not run',
+  targets: ['tokens'],
+  run(ctx: RuleContext): Finding[] {
+    const refs = ctx.values.filter((v) => v.provenance.classification === 'reference');
+    if (refs.length === 0) return [];
+
+    const classified = refs.filter((v) => classifyTier(v.provenance.tokenName, ctx.config) !== 'unknown');
+    const coverage = classified.length / refs.length;
+    const floor = ctx.config.taxonomy.tierCoverageFloor;
+    if (coverage >= floor) return [];
+
+    const examples = refs
+      .filter((v) => classifyTier(v.provenance.tokenName, ctx.config) === 'unknown')
+      .slice(0, 6)
+      .map((v) => v.provenance.tokenName)
+      .filter(Boolean);
+
+    return [
+      {
+        ruleId: this.id,
+        severity: 'low',
+        summary: `only ${classified.length} of ${refs.length} referencing token(s) match a tier pattern (${round(coverage)} < floor ${floor}) — tier checks could not judge this source`,
+        where: examples.join(', '),
+        fix: 'Set taxonomy.primitivePattern, semanticNamespaces and componentPattern to this source\'s naming convention, then re-run. Until then treat a clean token/tier-leakage result as "not checked", not "passed".',
+        data: { references: refs.length, classified: classified.length, coverage: round(coverage), floor },
+      },
+    ];
+  },
+};
+
+const round = (n: number) => Math.round(n * 100) / 100;
+
+/**
  * A semantic token whose name encodes appearance (a colour name, a size word,
  * a generic qualifier) rather than intent. `color.action.blue` is a primitive
  * with extra steps.
