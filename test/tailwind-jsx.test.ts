@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -140,6 +140,46 @@ test('raw-value-in-markup names the token that already carries the value', () =>
   // two use sites spell the same colour in different case — one swap, reported once
   assert.deepEqual(finding?.data?.alreadyDeclared, [{ value: '#1da1f2', token: '--ds-palette-blue-500' }]);
   assert.match(String(finding?.fix), /#1da1f2 is already --ds-palette-blue-500/);
+});
+
+test('geometry utilities are not drift; scale utilities are', () => {
+  // found by auditing a real design system: w-[300px] and top-[-4px] are one-off
+  // layout numbers, which is what an arbitrary value is for. p-[13px] bypasses
+  // the spacing scale. Counting the first kind buries the second.
+  const values = extract({
+    'Geo.tsx': `
+      <div className="w-[300px] max-h-[600px] top-[-4px] translate-y-[2px]" />
+      <div className="p-[13px] gap-[7px] text-[14px] rounded-[3px]" />
+      <div className="w-[#ff0000]" />
+    `,
+  });
+  const dims = values
+    .filter((v) => v.provenance.classification === 'dimension')
+    .map((v) => v.provenance.property);
+  assert.deepEqual(dims.sort(), ['gap', 'p', 'rounded', 'text']);
+  // a hardcoded colour is drift on any utility, geometry included
+  assert.equal(values.find((v) => v.raw === '#ff0000')?.provenance.classification, 'color');
+});
+
+test('build output is never audited', () => {
+  const values = extract({
+    'Card.tsx': 'export const C = () => <div className="p-[13px]" />;\n',
+  });
+  assert.equal(values.length, 1, 'the source file should be read');
+  // dist/ is derived: a finding there duplicates one in src and points at a line
+  // nobody edits
+  const withDist = inSource(
+    { 'Card.tsx': 'export const C = () => <div className="p-[13px]" />;\n' },
+    (source) => {
+      mkdirSync(join(source.root, 'dist'), { recursive: true });
+      writeFileSync(join(source.root, 'dist', 'bundle.js'), 'x("p-[99px] m-[99px]")\n');
+      return tailwindJsxAdapter.extract(source, DEFAULT_CONFIG);
+    },
+  );
+  assert.deepEqual(
+    withDist.map((v) => v.raw),
+    ['13px'],
+  );
 });
 
 test('detect is false without arbitrary values, and both adapters run on a mixed tree', () => {

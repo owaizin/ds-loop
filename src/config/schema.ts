@@ -28,6 +28,16 @@ export type DsOpsConfig = {
     /** token-name substrings that mark a value as a sanctioned non-color (excluded, not ambiguous) */
     nonColorTokenHints: string[];
     /**
+     * Utility prefixes whose arbitrary LENGTH value means the design scale was
+     * bypassed — spacing, type, radius. Everything else (`w`, `h`, `top`,
+     * `translate-y`) is geometry: a one-off layout number is what an arbitrary
+     * value is legitimately for, and counting it as drift buries the real
+     * findings. A hardcoded COLOUR is drift on any utility, so this does not
+     * apply to colours.
+     * UNCALIBRATED default — measured against one design system, not tuned.
+     */
+    scaleUtilities: string[];
+    /**
      * RegExp source (case-insensitive) matching a PRIMITIVE token name — a raw
      * palette entry or numbered scale step. Anything not matching is treated as
      * a semantic token and is expected to be a var() reference, not a literal.

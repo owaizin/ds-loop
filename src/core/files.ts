@@ -3,8 +3,29 @@ import { extname, join } from 'node:path';
 
 /**
  * File discovery for adapters. One walker, so every adapter agrees on what is
- * out of scope (node_modules, dotfiles) and on `only` (hook / --files mode).
+ * out of scope (dependencies, build output, dotfiles) and on `only` (hook /
+ * --files mode).
+ *
+ * Build output is skipped because it is derived: a finding in `dist/index.js`
+ * duplicates one in `src/`, doubles every count, and points at a line no one can
+ * edit. Found by auditing a real repo, where 7 of 40 sampled hits were bundled.
  */
+
+/** dependencies and derived output — never authored, so never audited */
+const SKIP = new Set([
+  'node_modules',
+  'bower_components',
+  'vendor',
+  'dist',
+  'build',
+  'out',
+  'output',
+  'public',
+  'storybook-static',
+  'coverage',
+  '__snapshots__',
+  'target',
+]);
 
 /** every file under `root` with one of `exts`, sorted; `root` may itself be a file */
 export function listFiles(root: string, exts: string[]): string[] {
@@ -12,7 +33,7 @@ export function listFiles(root: string, exts: string[]): string[] {
   const out: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir)) {
-      if (entry === 'node_modules' || entry.startsWith('.')) continue;
+      if (SKIP.has(entry) || entry.startsWith('.')) continue;
       const full = join(dir, entry);
       if (statSync(full).isDirectory()) walk(full);
       else if (match(entry)) out.push(full);

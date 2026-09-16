@@ -166,6 +166,14 @@ function classify(
 
   if (isLengthLiteral(value)) {
     if (shadowUtil) return { classification: 'shadow-internal', reason: 'shadow recipe part' };
+    // a length only bypasses the system on a utility that reads off a scale;
+    // `w-[300px]` or `top-[-4px]` is geometry, which is what an arbitrary value is for
+    if (!taxonomy.scaleUtilities.includes(util)) {
+      return {
+        classification: 'excluded',
+        reason: `utility ${util} is geometry, not a scale — a one-off length here is not drift`,
+      };
+    }
     return { classification: 'dimension', reason: `hardcoded length on utility ${util}` };
   }
 
