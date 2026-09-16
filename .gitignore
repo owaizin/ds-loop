@@ -4,3 +4,6 @@ dist/
 .DS_Store
 /tmp/
 /scratch/
+
+# unrelated skills pack — home not yet decided, keep it out of the engine repo
+product-system-skills-v0.2/
