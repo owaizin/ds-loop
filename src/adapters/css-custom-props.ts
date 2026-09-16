@@ -8,7 +8,10 @@ import type { RawValue, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 const ID = 'css-custom-props';
-const VERSION = '0.1.0';
+// 0.2.0: oklch() parses; lab/lch/hwb/color() surface as ambiguous instead of
+// being dropped. Extraction changed materially — any measurement taken at
+// 0.1.0 read an incomplete palette and is not comparable to one taken here.
+const VERSION = '0.2.0';
 
 /**
  * Extracts `--token: value;` declarations from `.css` files.

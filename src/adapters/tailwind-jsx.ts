@@ -8,7 +8,10 @@ import type { RawValue, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 const ID = 'tailwind-jsx';
-const VERSION = '0.1.0';
+// 0.2.0: geometry utilities no longer count as scale bypasses, derived output
+// (dist/, storybook-static/, …) is no longer read, unconvertible colour
+// functions surface as ambiguous. Counts from 0.1.0 are not comparable.
+const VERSION = '0.2.0';
 const EXTS = ['.jsx', '.tsx', '.js', '.ts', '.mjs'];
 
 /**
