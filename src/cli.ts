@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { audit } from './commands/audit.ts';
+import { context } from './commands/context.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
 import { scan } from './commands/scan.ts';
@@ -33,6 +34,10 @@ ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from i
       Install / remove a PostToolUse hook in ./.claude/settings.json that runs
       \`ds-loop audit\` on the file after any Edit/Write to a style file and
       surfaces high-severity findings. Preserves other hooks.
+
+  ds-loop context [<path>]
+      What this session is working with: which config loaded, whether the project
+      declares a design system, which adapters recognise the tree. No analysis.
 
   ds-loop fix <path> [--write]
       Apply the mechanical fixes only — where the correct edit is provable from
@@ -102,6 +107,10 @@ function main(argv: string[]): void {
         throw new Error(`guard needs one of: on, off, status`);
       }
       guard(action as 'on' | 'off' | 'status');
+      break;
+    }
+    case 'context': {
+      context(positional[0] ?? '.', loaded);
       break;
     }
     case 'fix': {

@@ -130,6 +130,25 @@ try {
     assert(!after.hooks?.PostToolUse, 'guard off left its hook behind');
   });
 
+  check('the skill launcher works from a published install', () => {
+    // regression: skill/bin/ds-loop used to resolve src/cli.ts, which stopped
+    // existing the moment the package shipped compiled JS instead
+    const shim = join(dir, 'node_modules', 'ds-loop', 'skill', 'bin', 'ds-loop');
+    assert(existsSync(shim), 'skill launcher missing from the package');
+    const r = spawnSync(shim, ['context', '.'], { cwd: dir, encoding: 'utf8' });
+    assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
+    assert(/ds-loop context/.test(r.stdout), `unexpected output: ${r.stdout.slice(0, 120)}`);
+  });
+
+  check('context reports config, declaration and adapters without analysing', () => {
+    const r = run(['context', '.']);
+    assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
+    for (const expected of ['config', 'declared', 'adapters']) {
+      assert(r.stdout.includes(expected), `context output missing "${expected}"`);
+    }
+    assert(!/\[HIGH\]|\[MEDIUM\]/.test(r.stdout), 'context should not emit findings');
+  });
+
   check('a non-git directory produces no git noise', () => {
     const r = run(['audit', '.']);
     assert(!/fatal:/.test(r.stderr), `git error leaked: ${r.stderr.trim()}`);
