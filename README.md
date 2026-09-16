@@ -1,250 +1,154 @@
 # ds-loop
 
-**Design-system linter for the AI era.** `ds` = design system; `loop` = the
-edit → check → fix → re-check cycle. Reads a design system's code and points at
-what drifted — deterministically, no LLM.
+**Your design system says one thing. Your code says another.** ds-loop finds every place they disagree — with the file and the line — then stops new ones getting in.
 
-An agency walks into a product with no design system, or a failing one. They do a
-token audit, take a component census, stand up a Storybook, migrate one surface to
-prove it, then install the guardrails that keep entropy from winning after they
-leave. `ds-loop` is that engagement as tooling: a small set of engines with a
-one-shot mode (the audit) and a watch mode (the guard), plus the skills that carry
-the judgment.
-
-This repo is the **open engine**. It is policy-free mechanism. Every tuned number
-lives in a config object with an uncalibrated default; the calibrated values and
-the corpus behind them live in a separate private repo and are passed in at run
-time. See [_The leaky seam_](#the-leaky-seam).
-
-Scope line: **impeccable operates on screens; ds-loop operates on the system behind
-them.** Hand a page that needs taste to impeccable; ds-loop is the token layer, the
-component contract, the governance.
-
-Status: **v0** — the deterministic colour-domain audit, the ΔE sweep, live-tree
-scanning, and the edit-time guard hook work end to end. The `/ds-loop` skill
-(14 commands, 5 categories) is specced; most engines are scaffolding.
-
----
-
-## What's here in v0
-
-```
-ds-loop audit <path> [--target color|tokens|…] [--json] [--files a,b] [--since <ref>] [--min-severity high] [--quiet]
-    Deterministic rule set, severity-ranked, exit 1 on any surviving finding.
-    <path> is a fixture dir (SOURCE.json) OR any dir / .css file — a live scan
-    of the working tree. --files / --since narrow to changed files.
-
-ds-loop sweep <path> [--out <dir>]     the ΔE cutoff sweep — full curve
-ds-loop scan  <path>                   quick look: taxonomy breakdown + clusters
-ds-loop guard <on|off|status>          install/remove the edit-time hook (below)
-ds-loop fix   <path> [--write]         apply the mechanical fixes only (Execute step)
-```
-
-`fix` is the loop's "Execute" step (MAPE-K): it applies **only** the edits that
-are provable from the code — no LLM, no judgement. v0 does one: `var(--x)` →
-`var(--x, <literal value of --x>)`. Identical behaviour when `--x` is defined,
-strictly safer when it isn't. Dry run unless `--write`. Everything else `audit`
-finds is for a human (or a coding agent) to fix.
-
-Runs on Node ≥ 22.6 with no build step (`--experimental-strip-types`). The
-`/ds-loop` skill and its playbooks live in [`skill/`](skill/SKILL.md); the launcher
-at `skill/bin/ds-loop` wraps the CLI.
-
-**Run it on your repo, one command, nothing to install:**
+No LLM. No API key. No network. No runtime dependencies. It's arithmetic, so it gives you the same answer twice.
 
 ```bash
-npx ds-loop audit .          # this directory
-npx ds-loop audit src/       # or any subtree, or a single .css file
+npx ds-loop audit .
 ```
 
-Read-only. No API key, no network, no config required — exits 1 when it finds
-something, so it drops straight into CI.
+## The problem
 
-Working on ds-loop itself (a git checkout runs the TypeScript directly, no build):
+Most of your CSS is written by an agent now. When one can't find the right token, it writes the value straight into the component — `bg-[#1da1f2]`, `p-[13px]`. It ships. It looks correct. Your token layer quietly stops being the source of truth.
+
+Nobody counts it, so "how much work is the rebrand?" gets answered with a guess, and the guess is always low.
+
+Then a team spends a sprint cleaning it up, and three months of agent-written PRs put it back.
+
+## The fix
+
+Three commands, in the order you'll use them.
+
+**1. Get the number.** Read-only, seconds, no config:
 
 ```bash
-npm install
-npm run ds-loop -- audit fixtures/radix-colors   # a frozen fixture
-npm run ds-loop -- audit ../some-app/src         # a live repo
-npm test
+npx ds-loop audit .            # this directory
+npx ds-loop audit src/         # or a subtree, or a single .css file
+npx ds-loop audit . --json     # for CI
 ```
 
-The published package ships compiled JS in `dist/` (`npm run build`, wired to
-`prepack`): Node refuses to strip types for files under `node_modules`, so a
-published install never type-strips. Zero *runtime* dependencies either way.
+It exits `1` when it finds something, so it drops straight into a pipeline.
 
-### `guard` — nag on edit, like impeccable's hook
+**2. Fix what's provable.** `fix` applies only the edits the code already proves — no judgement, no model:
 
-`ds-loop guard on` writes a `PostToolUse` hook into `./.claude/settings.json`.
-After any `Edit`/`Write` to a `.css` / `.jsx` / `.tsx` file, ds-loop audits that one file and, if
-there are `high`+ findings, prints them to stderr (exit 2) so the coding agent
-sees them. Silent on a clean save, silent on non-style files. **Never blocks** —
-a PostToolUse hook fires after the write. `guard off` removes only the ds-loop
-entry; every other hook, permission, and setting is left alone.
+```bash
+npx ds-loop fix . --write
+```
 
-### The v0 rule set
+**3. Hold the line.** `guard` writes a `PostToolUse` hook into `./.claude/settings.json`. After any edit to a `.css`, `.jsx`, or `.tsx` file, ds-loop audits that one file and prints `high`+ findings to stderr — so the agent that wrote the problem hears about it while it still has the context to fix it:
+
+```bash
+npx ds-loop guard on
+```
+
+Silent on a clean save. Silent on files it doesn't read. **Never blocks** — a `PostToolUse` hook fires after the write lands, so it nags, it doesn't gate. `guard off` removes the ds-loop entry and leaves every other hook, permission, and setting alone.
+
+> This is the one that matters. An audit tells you where you stand. The hook is what keeps you there after the cleanup sprint ends.
+
+## What it tells you
+
+Real output, from a real repository:
+
+```
+  ds-loop audit — example-readiness  ·  target: all  ·  live scan
+  version git:b1fc73c7c8bf   adapter css-custom-props@0.1.0   config 5c40eb56
+  10 rules run
+
+  [HIGH] color/semantic-holds-literal
+    649 semantic token(s) hold a literal colour instead of referencing a primitive
+    where: --green = #24704b (assets/dashboard-v3-copy.css:3); --brand = #173d73 …
+    fix:   Point each at a primitive: --token: var(--<ns>-palette-<name>).
+
+  [HIGH] token/raw-value-in-markup
+    7 hardcoded value(s) at use sites bypass the token layer
+    (4 colour, 3 length; 7 distinct, 3 already declared as a token)
+    fix:   #1da1f2 is already --ds-palette-blue-500. Swap those first.
+
+  5 findings — 0 blocking · 2 high · 2 medium · 1 low
+
+  scorecard ratios
+    literal-colors-per-distinct  [redacted]
+```
+
+Two things to notice. Every finding carries a `file:line`, which makes it a work item instead of an opinion. And when one of your tokens already holds that value, the fix **names the token** — that's a swap, not a design decision.
+
+The ratios are ratios on purpose. Counts grow with your codebase; `literal-colors-per-distinct` doesn't, so two runs a month apart are comparable.
+
+## Why it exists
+
+> Of 20 open-source design systems surveyed in July 2026, **7 tell contributors not to hardcode a value a token already covers. All 7 say it in prose. None of them check it.**
+> — [State of AI in Design Systems](https://github.com/kaelig/state-of-ai-in-design-systems), CC BY 4.0
+
+That's the wedge. The rule is already written down across the industry, in English, in a `CONTRIBUTING.md` nobody greps. Prose commitments decay silently; the ones that hold are the ones something verifies.
+
+Individual rules are sourced the same way, in a comment next to the rule: `token/raw-dimension-in-semantic` is [Fluent UI's rule #1](https://raw.githubusercontent.com/microsoft/fluentui/master/AGENTS.md), `token/var-missing-fallback` is a [Salesforce SLDS](https://github.com/salesforce-ux/design-system-2-starter-kit) requirement.
+
+## The rules
+
+Ten. Every one deterministic, and every one returns nothing when that slice of your system is clean.
 
 | rule | severity | catches |
 | --- | --- | --- |
 | `token/tier-leakage` | high | a token referencing the wrong tier — component → primitive skips, upward references. Breaks theme propagation. |
-| `token/semantic-name-describes-appearance` | medium / low | a semantic token named for a colour or size (`color.action.blue`) — a primitive with extra steps. Low when only category/chart tokens. |
 | `color/semantic-holds-literal` | high | a semantic token holding a literal colour instead of `var(--primitive)` |
-| `token/raw-value-in-markup` | high | a component hardcoding a colour or length at the use site — `bg-[#1da1f2]`, `p-[13px]` — instead of referencing the system. Names the token that already carries the value when one does. |
-| `token/raw-dimension-in-semantic` | high | a semantic or component token holds a raw `16px` / `1rem` instead of a spacing / type primitive (Fluent rule 1) |
-| `color/literal-duplicate-tokens` | medium | N tokens declaring byte-identical values (semantic layer re-typing the palette) |
-| `color/near-duplicate-primitives` | low | two primitives within one just-noticeable ΔE |
+| `token/raw-value-in-markup` | high | a component hardcoding a colour or length at the use site — `bg-[#1da1f2]`, `p-[13px]`. Names the token that already carries the value when one does. |
+| `token/raw-dimension-in-semantic` | high | a semantic or component token holding a raw `16px` / `1rem` instead of a spacing / type primitive |
+| `token/semantic-name-describes-appearance` | medium / low | a semantic token named for a colour or size (`color.action.blue`) — a primitive with extra steps. Low when only category / chart tokens. |
+| `color/literal-duplicate-tokens` | medium | N tokens declaring byte-identical values — the semantic layer re-typing the palette |
 | `color/mixed-storage-forms` | medium | hex + hsl-channels + rgb in one source |
-| `color/no-intent-plateau` | low | palette has no ΔE knee at the shipped count |
-| `token/var-missing-fallback` | low | a `var(--token)` reference with no fallback — resolves to nothing if the token is ever undefined (SLDS requires one) |
+| `color/near-duplicate-primitives` | low | two primitives within one just-noticeable ΔE |
+| `color/no-intent-plateau` | low | a palette with no ΔE knee at the count the humans shipped |
+| `token/var-missing-fallback` | low | a `var(--token)` with no fallback — resolves to nothing the moment that token is undefined |
 
-Every rule is deterministic — no LLM, no network, no API key. Config is the
-mechanism/policy seam: `primitivePattern`, `componentPattern`, `reservedSemanticTerms`,
-`shadowAlphaCeiling`, the ΔE cutoff all have uncalibrated defaults here.
+Route them with `--target color|tokens|spacing|typography|elevation|motion`, narrow with `--files a,b` or `--since main`, raise the floor with `--min-severity high`.
 
-### Interop with `design-system-ops`
+## What it reads
 
-[Murphy Trueman's `design-system-ops`](https://github.com/murphytrueman/design-system-ops)
-is a Claude Code skill pack — the practitioner brain: 40 LLM skills for governance,
-documentation, and communication around a live system. ds-loop is the deterministic
-instrument that pack lacks. They compose.
+| adapter | recognises |
+| --- | --- |
+| `css-custom-props` | `--token: value` in any `.css` — full colours *and* bare HSL channel triples |
+| `tailwind-jsx` | Tailwind arbitrary values in JS/TS — `bg-[#1da1f2]`, `hover:p-[13px]`, `text-[color:var(--x)]`. It reads string literals, so `className`, `cn()`, `clsx`, `cva` and tagged templates all work. |
 
-ds-loop reads his `.ds-ops-config.yml` verbatim (that filename is his, kept as-is
-for interop): the `system:` block seeds context, the `severity:` block maps onto
-ds-loop rule severities (`tier_leakage: critical` → `token/tier-leakage` at
-`blocking`). A team already running his skill pack points ds-loop at the same
-file. ds-loop's own config is `.ds-loop-config.yml` / `ds-loop.config.json`.
+Every matching adapter runs, not the first. Your tokens live in `.css` and get bypassed in `.tsx`, and half that picture isn't an audit.
 
-Example output (the healthy control fixture):
+Sass maps, styled-components, and design-token JSON aren't read yet. Each is one adapter, and [the interface](src/adapters/types.ts) doesn't move.
 
-```
-  72 distinct color literals
-  humans shipped 72 primitives
+## How it thinks
 
-  ΔE   0.50   72  ████████████████████████████████████████
-  ΔE   1.00   70  ███████████████████████████████████████
-  ...
-  ΔE   6.00   26  ██████████████
-  ...
-  monotone non-increasing: yes
-  verdict: no plateau sits at the 72 humans shipped. The count passes through 72
-  near ΔE 0.75 without holding — the palette has no natural knee there.
-```
+**Every tuned number is config.** `clustering.deltaE`, `primitivePattern`, `componentPattern`, `reservedSemanticTerms`, `shadowAlphaCeiling` — each ships with an `UNCALIBRATED` default, because the right ΔE cutoff for your palette is *discovered* by `npx ds-loop sweep .`, never assumed. Nothing outside `src/config/` hardcodes a threshold.
 
-That verdict is the point. Radix's light scales are built tighter than one
-just-noticeable-difference apart, so a single ΔE cutoff **cannot** recover the
-human's palette size. The sweep tells you when the metric works and when it
-doesn't, per source, rather than pretending one cutoff is universal.
+**Every value carries its provenance:** `file · line · selector · property · tokenName · classification · reason · fixtureSha · adapterId · adapterVersion`. So when a number moves between two runs, you can tell whether your code changed, the adapter changed, or a threshold changed. Reconstructing that after the fact is impossible. It's cheap now.
 
----
+**The taxonomy is an opinion, and it's inspectable.** Whether `rgba(0,0,0,.06)` inside a shadow is a colour or part of an elevation recipe is a judgement call. ds-loop makes one, prints its reason beside the value, and surfaces the ambiguous set for a human. Disagree, and override the hint in config.
 
-## The three engines (roadmap)
+**It reads the config you already have.** Running [Murphy Trueman's `design-system-ops`](https://github.com/murphytrueman/design-system-ops)? Point ds-loop at the same `.ds-ops-config.yml` — the `system:` block seeds context, the `severity:` block maps onto ds-loop rule severities. That pack is 40 LLM skills for governance and communication; ds-loop is the deterministic instrument it doesn't have. They compose.
 
-The eight phases of a design-system engagement collapse to three engines, each
-with a one-shot and a watch mode:
+## What it can't do
 
-| Engine | One-shot (t=0 audit) | Watch (continuous guard) |
-| --- | --- | --- |
-| **analyzer** | `scan` / `sweep` — extract every style value with provenance, classify, cluster | drift detection against a committed baseline |
-| **clusterer** | component census — group near-duplicate components across the repo | "does this component already exist?" on a single candidate |
-| **generator** | scaffold a Storybook, the token files, the 5-file component contract | codemods, CI wiring |
-
-Phases become invocation modes over three engines, not eight separately
-maintained tools. v0 ships the analyzer's `scan` and `sweep`.
-
----
-
-## Adapters
-
-An **adapter** turns one storage format into a flat list of `RawValue`s with full
-provenance. Adapters are the asset that accumulates across engagements — every new
-client storage shape is one new adapter, and [the interface](src/adapters/types.ts)
-never moves.
-
-| Adapter | Recognises | Status |
-| --- | --- | --- |
-| `css-custom-props` | `--token: value;` in `.css` — full colors *and* bare HSL channel triples | v0 |
-| `tailwind-jsx` | Tailwind **arbitrary values** in JS/TS string literals — `bg-[#1da1f2]`, `hover:p-[13px]`, `text-[color:var(--x)]`. Reads string literals, so `className`, `cn()`, `clsx`, `cva` and tagged templates all work | v0 |
-| `scss-maps` | `$name: (...)` Sass maps | planned |
-| `js-scale-objects` | exported `{ 1: '#...', 2: '#...' }` (Radix-style) | planned |
-| `tokens-studio-json` | W3C design-tokens JSON | planned |
-
-Adapters extract and classify one value at a time. They never cluster, dedupe, or
-judge intent — everything downstream is format-agnostic.
-
-**Every matching adapter runs**, not the first. A React app declares tokens in
-`.css` and then uses — or bypasses — them in `.tsx`, and half that picture is not
-an audit. It is also what makes `token/raw-value-in-markup` actionable: the
-hardcoded `#1da1f2` in a component is matched against the palette the CSS
-adapter read, so the finding names the token that already holds it.
-
-A value read at a **use site** carries `tokenName: null`. That one field is the
-seam between "the system declares a literal" (`color/semantic-holds-literal`)
-and "a component hardcoded one" (`token/raw-value-in-markup`), and it is why
-palette analysis — `sweep`, `color/no-intent-plateau`,
-`color/mixed-storage-forms` — counts declarations only.
-
----
-
-## Provenance
-
-Every value carries where it came from and why it was classified the way it was:
-`file · line · selector · property · tokenName · classification · reason ·
-fixtureSha · adapterId · adapterVersion`.
-
-A calibration row is only comparable across runs if a delta can be attributed to
-one of three causes: the **source** changed (`fixtureSha`), the **adapter** changed
-(`adapterVersion`), or the **threshold** changed (recorded in the run manifest).
-Reconstructing this after the fact is impossible; it is cheap now.
-
----
-
-## Fixtures
-
-A fixture is a **frozen snapshot** of one source's token files plus a `SOURCE.json`
-recording exactly what was copied and from where — never a live checkout. Snapshots
-are what make a calibration row comparable across runs and a writeup reproducible
-by a reader.
-
-```
-fixtures/radix-colors/
-  SOURCE.json          label, upstream, fixtureSha, shippedPrimitiveCount, notes
-  css/                  the vendored files
-```
-
-Public fixtures in this repo are open-source design systems (verifiable by anyone).
-Client and proprietary fixtures live in the private calibration repo.
-
----
-
-## The leaky seam
-
-The mechanism/policy split is real but not clean. Feature extraction is itself a
-judgment call: whether `rgba(0,0,0,.06)` inside a shadow is a color or part of a
-shadow recipe, whether a low-alpha value is an overlay tint or a palette entry.
-That taxonomy is an opinion, and it lives in the open engine on purpose — an
-opinionated engine is better distribution than a neutral one. Two mitigations:
-
-1. Every taxonomy decision is **logged in the output** with its reason, and the
-   ambiguous set is surfaced for a human. The opinion is inspectable.
-2. The taxonomy hints are still config (`taxonomy.shadowTokenHints`,
-   `taxonomy.shadowAlphaCeiling`, …) — a consumer can override them.
-
-What is *not* in this repo: the tuned ΔE cutoffs per source, the API-surface caps,
-the restraint doctrine's calibrated numbers, and the corpus of before/after
-engagement runs that tunes them.
-
----
+- It can't tell you your users are happier. That needs research, not a linter.
+- It can't price your rebrand — only measure the surface one has to touch.
+- It can't see a rendered screen. **impeccable operates on screens; ds-loop operates on the system behind them.**
+- The rules are regex, not a CSS parser. Where that leaves a known ceiling, a `ponytail:` comment in the source names it.
+- The thresholds here are neutral starting points, not recommendations. Sweep your own palette before trusting one.
 
 ## Development
 
+A git checkout runs the TypeScript directly — no build step:
+
 ```bash
-npm run check        # biome (lint + format)
-npm run type-check   # tsc --noEmit
-npm test             # node:test, CIEDE2000 verified against Sharma et al. test data
+npm install
+npm run ds-loop -- audit fixtures/radix-colors
+npm test          # 19 tests; CIEDE2000 verified against Sharma et al.
+npm run check     # biome
 ```
 
-CI runs those, then runs `sweep` against every public fixture.
+The published package ships compiled JS (`npm run build`, wired to `prepack`) because Node won't strip types under `node_modules`. Zero runtime dependencies either way.
+
+A **fixture** is a frozen snapshot of one source's token files plus a `SOURCE.json` recording exactly what was copied and from where — never a live checkout. That's what makes a measurement reproducible by a reader. Public fixtures here are open-source systems anyone can verify; client fixtures stay in a private calibration repo, with the tuned cutoffs and the before/after corpus behind them.
+
+CI runs the checks, then sweeps every public fixture — so a change that moves ΔE clustering shows up as a changed curve.
 
 ## License
 
-MIT
+MIT.

@@ -143,6 +143,30 @@ heuristics.
   calibration repo. Never vendor it here.
 - Ratios, not counts, in reports — a scorecard row has to survive codebase growth.
 
+## Writing standard for reader-facing docs
+
+**The bar is [mattpocock/skills](https://github.com/mattpocock/skills).** Applies to `README.md`, landing
+pages, skill docs — anything a stranger reads. Not to rule output (see the constraint above) and not to
+internal notes.
+
+- **Hook, then problem, then fix.** Open with what breaks for the reader, not a definition of the tool. No
+  etymology, no "this repo is X", no status disclaimer above the fold.
+- **A runnable command in the first ten lines.** The reader should be able to try it before they've read an
+  explanation of it.
+- **Install and use before architecture.** Provenance, seams, and roadmaps go near the bottom or into
+  `docs/`. A stranger doesn't care how it thinks until it has told them something true.
+- **Direct address, contractions, short sentences.** "Your tokens live in `.css` and get bypassed in
+  `.tsx`" beats "the mechanism/policy split is real but not clean". Vary length for rhythm; end sections on
+  the short one.
+- **Confident, never hedged.** State limits in a dedicated section, plainly, rather than apologising
+  throughout. "It can't price your rebrand" is honest; "most engines are scaffolding" in the intro is
+  self-sabotage.
+- **Show real output.** Paste a genuine run, unedited, and point at the two things worth noticing.
+- **Borrow authority by quoting a source in a callout.** Pocock quotes the books; here it's the field survey
+  and the systems whose rules each check encodes.
+- **Cut abstract nouns.** "policy-free mechanism", "scope line", "the leaky seam" are notes-to-self. Name
+  the thing a reader would name.
+
 ## Orientation files
 
 - `HANDOFF.md` — running project state, pending work in survey-backed order, and the user's standing
