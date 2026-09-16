@@ -24,6 +24,17 @@ export type SourceRef = {
 export type Adapter = {
   id: string;
   version: string;
+  /**
+   * File extensions this adapter reads, and a one-line statement of what it
+   * reads *inside* them. Both are consumed by `audit`'s coverage report, so the
+   * tool can say what it could not see rather than implying it saw everything.
+   *
+   * `reads` matters as much as `extensions`: `tailwind-jsx` opens a `.tsx` file
+   * but only looks at class strings, so a styled-components block in the same
+   * file is unread. "The file was opened" is not "the file was covered".
+   */
+  extensions: string[];
+  reads: string;
   /** cheap check: does this adapter recognise the source? */
   detect(source: SourceRef): boolean;
   extract(source: SourceRef, config: DsOpsConfig): RawValue[];

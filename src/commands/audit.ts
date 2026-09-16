@@ -4,6 +4,7 @@ import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
+import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
@@ -21,6 +22,8 @@ export type AuditReport = {
   };
   rulesRun: string[];
   findings: Finding[];
+  /** what this audit could not read — a clean verdict is only as wide as its coverage */
+  coverage: Coverage;
   /** ratios, not counts — a scorecard row that survives codebase growth */
   ratios: Record<string, number>;
   verdict: 'clean' | 'issues';
@@ -44,8 +47,14 @@ export function audit(
     since?: string;
     /** drop findings weaker than this */
     minSeverity?: Severity;
-    /** print nothing when there are no findings at or above minSeverity */
+    /** print nothing when there are no findings at or above minSeverity (hook mode) */
     quiet?: boolean;
+    /**
+     * Print nothing at all. `quiet` is for the guard hook, which must stay silent
+     * on a clean save but speak up on a dirty one; this is for a caller that wants
+     * the report as a value and will do its own printing — `scorecard`, a test.
+     */
+    silent?: boolean;
   } = {},
 ): AuditReport {
   const config = opts.config ?? DEFAULT_CONFIG;
@@ -72,14 +81,50 @@ export function audit(
     .filter((f) => SEVERITY_ORDER[f.severity] <= minRank)
     .sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
 
-  const distinctColors = new Set(colors.map((v) => v.raw.replace(/\s+/g, ' ').trim().toLowerCase())).size;
+  const norm = (raw: string) => raw.replace(/\s+/g, ' ').trim().toLowerCase();
+  const declared = colors.filter((v) => v.provenance.tokenName !== null);
+  const distinctColors = new Set(colors.map((v) => norm(v.raw))).size;
+
+  // Scope-aware duplication. `literal-colors-per-distinct` counts declarations
+  // against distinct values across the whole source, which a themed system
+  // inflates for free: light and dark declare every token once each. Measured on
+  // a maintained design system, that scored it [redacted] — worse than an ungoverned
+  // SaaS repo at 1.486. Counting within a selector scope removes the theme count
+  // and leaves the signal the ratio was meant to carry: one value re-typed under
+  // several names in the same scope.
+  const byScope = new Map<string, string[]>();
+  for (const v of declared) {
+    const key = `${v.provenance.file}::${v.provenance.selector ?? '(none)'}`;
+    const list = byScope.get(key) ?? [];
+    list.push(norm(v.raw));
+    byScope.set(key, list);
+  }
+  let scopedDecls = 0;
+  let scopedDistinct = 0;
+  for (const list of byScope.values()) {
+    scopedDecls += list.length;
+    scopedDistinct += new Set(list).size;
+  }
+
   const ratios = {
+    // theme-confounded; kept because the calibration corpus quotes it. See row 007.
     'literal-colors-per-distinct': round(colors.length / Math.max(distinctColors, 1)),
+    // theme-independent: the same measurement taken within each selector scope
+    'colors-per-distinct-in-scope': round(scopedDecls / Math.max(scopedDistinct, 1)),
     'ambiguous-share': round(
       values.filter((v) => v.provenance.classification === 'ambiguous').length / Math.max(values.length, 1),
     ),
-    'findings-per-rule': round(findings.length / Math.max(rules.length, 1)),
+    // `findings-per-rule` was retired: its denominator is the size of the rule
+    // set, so it moved from 0.714 to 0.455 across the corpus when rules were
+    // added and nothing about any source changed. It described the tool.
   };
+
+  const coverage = buildCoverage(
+    source.root,
+    adapters,
+    values,
+    findings.map((f) => f.ruleId),
+  );
 
   const report: AuditReport = {
     manifest: {
@@ -94,12 +139,13 @@ export function audit(
     },
     rulesRun: rules.map((r) => r.id),
     findings,
+    coverage,
     ratios,
     verdict: findings.length === 0 ? 'clean' : 'issues',
   };
 
-  const silent = opts.quiet && findings.length === 0;
-  if (!silent) {
+  const suppressed = opts.silent || (opts.quiet && findings.length === 0);
+  if (!suppressed) {
     if (opts.json) console.log(JSON.stringify(report, null, 2));
     else printReport(report, { live });
   }
@@ -127,6 +173,14 @@ function emptyReport(target: string, meta: { label: string; fixtureSha: string }
     },
     rulesRun: [],
     findings: [],
+    coverage: {
+      unreadFormats: {},
+      unreadTokenFiles: [],
+      partialReads: [],
+      unconvertible: { count: 0, samples: [] },
+      couldNotJudge: [],
+      complete: false,
+    },
     ratios: {},
     verdict: 'clean',
   };
@@ -140,7 +194,7 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
   console.log(`  ${r.rulesRun.length} rules run\n`);
 
   if (r.findings.length === 0) {
-    console.log('  ✓ clean — no deterministic findings\n');
+    console.log('  ✓ clean — no findings from the rules that ran, within the scope below\n');
   } else {
     for (const f of r.findings) {
       console.log(`  [${f.severity.toUpperCase()}] ${f.ruleId}`);
@@ -157,6 +211,9 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
         `${bySev.blocking ?? 0} blocking · ${bySev.high ?? 0} high · ${bySev.medium ?? 0} medium · ${bySev.low ?? 0} low`,
     );
   }
+
+  console.log('\n  scope — what this audit read');
+  for (const line of formatCoverage(r.coverage)) console.log(line);
 
   console.log('\n  scorecard ratios');
   for (const [k, v] of Object.entries(r.ratios)) console.log(`    ${k.padEnd(28)} ${v}`);

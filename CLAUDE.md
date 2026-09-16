@@ -96,6 +96,19 @@ classify them `ambiguous` instead of `excluded`. This exists because 76 oklch to
 every rule silently, and Radix's 72 display-p3 entries with them. Adding a colour form means adding it to
 `parseColor` **and** keeping the unparsed-function net intact.
 
+**Coverage is part of the report** (`core/coverage.ts`). `audit` states which formats no
+adapter read, what each adapter reads *inside* the files it opens, which colours were
+recognised but not convertible, and which rules could not judge. An adapter therefore
+declares `extensions` and `reads` in its type. The rule: a clean verdict is only as wide as
+its coverage, so the width ships with the verdict.
+
+**`commands/scorecard.ts` — the delta.** Appends one row per run to
+`.ds-scorecard/history.jsonl` (append-only JSONL, no service) and prints the change since
+the last row for that source. A delta is only reported as one when `adapters` and
+`configHash` match on both sides; otherwise the instrument moved and it says so. Note
+`audit`'s two suppression modes: `quiet` is hook semantics (silent only when clean),
+`silent` is programmatic (never prints).
+
 **`rules/` — deterministic checks.** A rule returns zero findings when that slice is clean. Ids are
 `domain/kebab-slug` and are **stable**: scorecards and calibration rows key on them, so renaming a rule id
 breaks historical comparison. `registry.ts` holds the list and the `RuleTarget` routing used by
@@ -152,7 +165,14 @@ heuristics.
   non-null assertions are allowed on purpose.
 - `fixtures/example-ds/example-preview-tokens.css` (a client's real tokens) lives **only** in the private
   calibration repo. Never vendor it here.
-- Ratios, not counts, in reports — a scorecard row has to survive codebase growth.
+- Ratios, not counts, in reports — a scorecard row has to survive codebase growth. No
+  ratio may describe the tool rather than the source: `findings-per-rule` was retired for
+  exactly that, since its denominator moved from 7 to 11 when rules were added and nothing
+  about any source changed.
+- `hashConfig` must change when any nested value changes. It once passed a property
+  allowlist to `JSON.stringify`, believing it sorted keys, and returned the same constant
+  for every config — so the threshold leg of the attribution model did nothing for months.
+  `test/config.test.ts` pins this.
 
 ## Writing standard for reader-facing docs
 

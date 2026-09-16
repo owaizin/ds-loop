@@ -38,6 +38,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: record a scorecard row for each public fixture
+        run: |
+          for d in fixtures/*/; do
+            [ -f "$d/SOURCE.json" ] || continue
+            node --experimental-strip-types src/cli.ts scorecard "$d" --dry-run
+          done
+
       - name: run the ΔE sweep on every public fixture
         run: |
           for d in fixtures/*/; do

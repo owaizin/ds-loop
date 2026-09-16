@@ -30,13 +30,36 @@ npx ds-loop audit . --json     # for CI
 
 It exits `1` when it finds something, so it drops straight into a pipeline.
 
-**2. Fix what's provable.** `fix` applies only the edits the code already proves — no judgement, no model:
+**2. Watch the number move.** `scorecard` appends one row of ratios to
+`.ds-scorecard/history.jsonl` and prints the change since the last run:
+
+```bash
+npx ds-loop scorecard .
+```
+
+```
+  since 2026-08-14
+
+    literal-colors-per-distinct    2 → 1  ▼ 1
+    colors-per-distinct-in-scope   2 → 1  ▼ 1
+
+  by rule
+    color/semantic-holds-literal                 4 → 0  ▼ 4
+    color/literal-duplicate-tokens               1 → 0  ▼ 1
+```
+
+A delta is only called a delta when the adapters **and** the config match on both
+sides. Change either and it says so — the instrument moved, not your code. That
+guard exists because a colour-parsing fix once silently invalidated every
+measurement taken before it.
+
+**3. Fix what's provable.** `fix` applies only the edits the code already proves — no judgement, no model:
 
 ```bash
 npx ds-loop fix . --write
 ```
 
-**3. Hold the line.** `guard` writes a `PostToolUse` hook into `./.claude/settings.json`. After any edit to a `.css`, `.jsx`, or `.tsx` file, ds-loop audits that one file and prints `high`+ findings to stderr — so the agent that wrote the problem hears about it while it still has the context to fix it:
+**4. Hold the line.** `guard` writes a `PostToolUse` hook into `./.claude/settings.json`. After any edit to a `.css`, `.jsx`, or `.tsx` file, ds-loop audits that one file and prints `high`+ findings to stderr — so the agent that wrote the problem hears about it while it still has the context to fix it:
 
 ```bash
 npx ds-loop guard on
@@ -78,7 +101,36 @@ Real output, from a real repository:
 
 Two things to notice. Every finding carries a `file:line`, which makes it a work item instead of an opinion. And when one of your tokens already holds that value, the fix **names the token** — that's a swap, not a design decision.
 
-The ratios are ratios on purpose. Counts grow with your codebase; `literal-colors-per-distinct` doesn't, so two runs a month apart are comparable.
+Then it tells you what it could not read:
+
+```
+  scope — what this audit read
+    css-custom-props@0.2.0
+      reads .css — custom-property declarations (--token: value) — not rule bodies
+    tailwind-jsx@0.2.0
+      reads .jsx .tsx .js .ts .mjs — Tailwind arbitrary values inside string
+      literals — not inline style objects, not CSS-in-JS
+    not read at all: 19× .html — no adapter handles these
+    could not judge: token/tier-model-undetectable — see the finding for why
+```
+
+**A clean result is only as wide as its coverage**, so the tool states the width.
+"The file was opened" is not "the file was covered" — and a colour it cannot
+convert is reported as unconvertible rather than quietly dropped. That section
+exists because 76 `oklch()` tokens in a real design system, and 72
+`color(display-p3 …)` entries in this repo's own control fixture, were invisible
+for the tool's entire life while it reported those sources as nearly clean.
+
+The ratios are ratios on purpose: counts grow with your codebase, ratios don't, so
+two runs a month apart are comparable.
+
+Neither ratio is a maturity score, and it is worth knowing why.
+`literal-colors-per-distinct` counts declarations against distinct values across
+the whole source, so a light/dark theme pair inflates it for free — a maintained
+design system measured [redacted] against an ungoverned SaaS repo's 1.486.
+`colors-per-distinct-in-scope` takes the same measurement inside each selector
+scope, which removes the theme count but is blind to duplication spread across
+files. Read both as descriptions of shape, not as grades.
 
 ## Why it exists
 

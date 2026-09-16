@@ -38,6 +38,8 @@ const EXTS = ['.jsx', '.tsx', '.js', '.ts', '.mjs'];
 export const tailwindJsxAdapter: Adapter = {
   id: ID,
   version: VERSION,
+  extensions: EXTS,
+  reads: 'Tailwind arbitrary values inside string literals — not inline style objects, not CSS-in-JS',
 
   detect(source: SourceRef): boolean {
     return filesInScope(source.root, EXTS, source.only).some((f) =>

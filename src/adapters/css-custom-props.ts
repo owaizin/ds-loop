@@ -12,6 +12,7 @@ const ID = 'css-custom-props';
 // being dropped. Extraction changed materially — any measurement taken at
 // 0.1.0 read an incomplete palette and is not comparable to one taken here.
 const VERSION = '0.2.0';
+const EXTS = ['.css'];
 
 /**
  * Extracts `--token: value;` declarations from `.css` files.
@@ -26,6 +27,8 @@ const VERSION = '0.2.0';
 export const cssCustomPropsAdapter: Adapter = {
   id: ID,
   version: VERSION,
+  extensions: EXTS,
+  reads: 'custom-property declarations (--token: value) — not rule bodies, not at-rules',
 
   detect(source: SourceRef): boolean {
     return listFiles(source.root, EXTS).some((f) => /--[\w-]+\s*:/.test(readFileSync(f, 'utf8')));
@@ -38,7 +41,6 @@ export const cssCustomPropsAdapter: Adapter = {
 
 type Taxonomy = DsOpsConfig['taxonomy'];
 
-const EXTS = ['.css'];
 const DECL = /(--[\w-]+)\s*:\s*([^;]+);/g;
 
 export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {

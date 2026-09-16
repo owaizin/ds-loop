@@ -149,6 +149,29 @@ try {
     assert(!/\[HIGH\]|\[MEDIUM\]/.test(r.stdout), 'context should not emit findings');
   });
 
+  check('audit states the scope it covered', () => {
+    writeFileSync(join(dir, 'theme.scss'), '$brand: #1da1f2;\n');
+    const r = run(['audit', '.']);
+    assert(r.stdout.includes('scope — what this audit read'), 'no coverage section');
+    assert(/not read at all:.*\.scss/.test(r.stdout), 'an unreadable format should be named');
+    const report = JSON.parse(run(['audit', '.', '--json']).stdout);
+    assert(report.coverage, 'coverage missing from --json');
+    assert(report.coverage.complete === false, 'complete should be false with an unread format');
+  });
+
+  check('scorecard appends a row and refuses to call a dirty comparison a delta', () => {
+    const first = JSON.parse(run(['scorecard', '.', '--json']).stdout);
+    assert(first.row.configHash, 'a row must record its instrument');
+    assert(first.previous === null, 'the first row has no predecessor');
+    const second = JSON.parse(run(['scorecard', '.', '--json']).stdout);
+    assert(second.previous, 'the second row compares against the first');
+    assert(second.comparable.clean === true, 'same adapters and config should compare cleanly');
+    const lines = readFileSync(join(dir, '.ds-scorecard', 'history.jsonl'), 'utf8')
+      .trim()
+      .split('\n');
+    assert(lines.length === 2, `expected 2 rows, got ${lines.length}`);
+  });
+
   check('a non-git directory produces no git noise', () => {
     const r = run(['audit', '.']);
     assert(!/fatal:/.test(r.stderr), `git error leaked: ${r.stderr.trim()}`);

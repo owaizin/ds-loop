@@ -77,10 +77,32 @@ export type DsOpsConfig = {
   };
 };
 
+/**
+ * Stable, order-independent digest of the whole config — one of the three causes a
+ * measurement delta must be attributable to (source / adapter / threshold).
+ *
+ * The first version passed `Object.keys(config).sort()` as JSON.stringify's second
+ * argument, believing it sorted keys. That argument is a property *allowlist*, and
+ * it applies at every depth — so only the three top-level names survived and every
+ * config on earth serialised to `{"clustering":{},"sweep":{},"taxonomy":{}}`. The
+ * hash was the constant `5c40eb56` regardless of tuning, which means the threshold
+ * leg of the attribution model never worked and every recorded `configHash` is
+ * meaningless. Found 2026-09-17 by expecting a scorecard comparison to be flagged
+ * dirty after a `--config` change and watching it pass.
+ */
 export function hashConfig(config: DsOpsConfig): string {
-  // stable, order-independent digest for the run manifest
-  const json = JSON.stringify(config, Object.keys(config).sort());
   let h = 5381;
+  const json = stableStringify(config);
   for (let i = 0; i < json.length; i++) h = (h * 33) ^ json.charCodeAt(i);
   return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+/** JSON with object keys sorted at every depth, so key order cannot change the digest */
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null';
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([, v]) => v !== undefined)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableStringify(v)}`).join(',')}}`;
 }

@@ -7,6 +7,7 @@ import { context } from './commands/context.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
 import { scan } from './commands/scan.ts';
+import { scorecard } from './commands/scorecard.ts';
 import { sweep } from './commands/sweep.ts';
 import { loadConfig } from './config/load.ts';
 import { KNOWN_TARGETS } from './rules/registry.ts';
@@ -38,6 +39,11 @@ ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from i
   ds-loop context [<path>]
       What this session is working with: which config loaded, whether the project
       declares a design system, which adapters recognise the tree. No analysis.
+
+  ds-loop scorecard [<path>] [--dry-run] [--json]
+      Append one row of ratios to .ds-scorecard/history.jsonl and print the change
+      since the last row. A delta is only called a delta when the adapters and the
+      config match on both sides — otherwise the instrument moved, not the code.
 
   ds-loop fix <path> [--write]
       Apply the mechanical fixes only — where the correct edit is provable from
@@ -75,7 +81,9 @@ function main(argv: string[]): void {
       if (!KNOWN_TARGETS.includes(target)) {
         throw new Error(`unknown target '${target}'. one of: ${KNOWN_TARGETS.join(', ')}`);
       }
-      if (loaded.source !== 'defaults' && !has(rest, 'quiet')) {
+      // never on stdout in --json mode: the whole point of --json is that a
+      // pipeline can parse it
+      if (loaded.source !== 'defaults' && !has(rest, 'quiet') && !has(rest, 'json')) {
         console.log(`  config: ${loaded.source}`);
       }
       const report = audit(auditPath, {
@@ -111,6 +119,14 @@ function main(argv: string[]): void {
     }
     case 'context': {
       context(positional[0] ?? '.', loaded);
+      break;
+    }
+    case 'scorecard': {
+      scorecard(positional[0] ?? '.', {
+        config,
+        dryRun: has(rest, 'dry-run'),
+        json: has(rest, 'json'),
+      });
       break;
     }
     case 'fix': {

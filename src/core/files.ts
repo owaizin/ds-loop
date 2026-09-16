@@ -27,6 +27,40 @@ const SKIP = new Set([
   'target',
 ]);
 
+/**
+ * Every file extension present under `root`, with counts — the same tree
+ * `listFiles` walks, so the two agree about scope.
+ *
+ * This exists so `audit` can state what it did *not* read. A linter that reports
+ * a clean result while silently skipping half the styling in a repo is worse than
+ * one that reports nothing: the reader believes it. Measured cost of that failure:
+ * 76 oklch tokens and 72 display-p3 entries invisible for the tool's whole life
+ * before anyone noticed.
+ */
+export function surveyTree(root: string): Map<string, number> {
+  const seen = new Map<string, number>();
+  const bump = (name: string) => {
+    const ext = extname(name).toLowerCase();
+    if (ext === '') return;
+    seen.set(ext, (seen.get(ext) ?? 0) + 1);
+  };
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      if (SKIP.has(entry) || entry.startsWith('.')) continue;
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) walk(full);
+      else bump(entry);
+    }
+  };
+  try {
+    if (statSync(root).isDirectory()) walk(root);
+    else bump(root);
+  } catch {
+    /* missing path — nothing to survey */
+  }
+  return seen;
+}
+
 /** every file under `root` with one of `exts`, sorted; `root` may itself be a file */
 export function listFiles(root: string, exts: string[]): string[] {
   const match = (name: string) => exts.includes(extname(name).toLowerCase());
