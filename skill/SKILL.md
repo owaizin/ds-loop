@@ -1,6 +1,6 @@
 ---
 name: ds-loop
-description: Use when the user wants to audit, build, or guardrail a design SYSTEM (not a single screen) — token layers, component libraries, Storybook structure, contribution governance. Covers token audits, drift detection, component inventory and de-duplication, the primitive→semantic→component→state layer model, the two-file token source of truth (CSS + W3C JSON), Storybook taxonomy and the 5-file component contract, API-surface restraint caps, accessibility baselines, migration lanes, branch-scope governance, and CI guardrails that stop entropy after the design-system team leaves. Also use for standing up a design system from zero, or for a Phase-0 interrogation before adding a new component. NOT for per-screen visual polish, taste, motion, or anti-slop on an individual page — that is impeccable's domain; ds-loop is the system behind the screens.
+description: Use when the user wants to audit, build, or guardrail a design SYSTEM (not a single screen) — token layers, component libraries, Storybook structure, contribution governance. Covers token audits, drift detection, component inventory and de-duplication, the primitive→semantic→component→state layer model, the two-file token source of truth (CSS + W3C JSON), Storybook taxonomy and the 5-file component contract, API-surface restraint, accessibility baselines, migration lanes, branch-scope governance, and CI guardrails that stop entropy after the design-system team leaves. Also use for standing up a design system from zero, or for a Phase-0 interrogation before adding a new component. NOT for per-screen visual polish, taste, motion, or anti-slop on an individual page — that is impeccable's domain; ds-loop is the system behind the screens.
 metadata:
   version: 0.1.0
 ---
@@ -97,15 +97,17 @@ Routing:
 ## The restraint doctrine
 
 Default stance: skeptical of additions. API-surface caps, per component's *added*
-public API — soft cap = justify in writing, hard cap = fails review:
+public API — soft cap = justify in writing, hard cap = fails review.
 
-| Dimension | Soft | Hard |
-|---|---|---|
-| Props | > 12 | > 18 |
-| `variant` | > 4 | > 6 |
-| `size` | > 4 | > 5 |
-| `tone` / `color` | > 6 | > 8 |
-| Boolean flags | > 5 | > 8 |
+**The numbers are reference-derived defaults, not universal thresholds.** They come from
+one engagement and one library. Resolve them from `DESIGN-SYSTEM.md` frontmatter or
+the project's own contribution guide first; fall back to these and say you are
+falling back. [reference/review.md](reference/review.md) is the single source —
+it carries the table and the resolution order.
+
+Where a project has stated no limit, report the count and which components are
+outliers against that project's own distribution. Do not enforce a cap the target
+never agreed to.
 
 Many booleans = a missing variant. A "just in case" prop with no usage site →
 delete it. If the author cannot name one thing they cut, the design is not

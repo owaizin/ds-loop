@@ -1,8 +1,22 @@
 # review
 
-Full component audit against the library's own bar. Returns severity-ranked
-findings (BLOCKING / HIGH / MEDIUM / LOW), each self-contained: location, problem,
-fix. Verdict is binary — READY TO MERGE or CHANGES REQUIRED, never qualified.
+Full component audit against **the target library's own bar**. Returns
+severity-ranked findings (BLOCKING / HIGH / MEDIUM / LOW), each self-contained:
+location, problem, fix. Verdict is binary — READY TO MERGE or CHANGES REQUIRED,
+never qualified.
+
+**Read the bar before applying it.** The specific numbers and storage forms below
+are **reference-derived defaults**, not universal thresholds — they came from one
+engagement and one component library. Resolve them in this order:
+
+1. `DESIGN-SYSTEM.md` frontmatter, if the project has one (`discover` writes it).
+2. The project's own contribution guide or lint config.
+3. These defaults, stated as defaults, with the deviation recorded rather than
+   silently enforced.
+
+Applying a cap the target never agreed to is how a review loses its authority. An
+absent agreement is not a violated one: if nothing states a limit, report the
+count and the trend, and let the team set the limit.
 
 Scopes — pick one before starting:
 
@@ -19,14 +33,20 @@ Scopes — pick one before starting:
 - **A2 prop naming** — booleans `is<Condition>` or clear adjectives; `onClick` not
   `onPress`; `@deprecated` JSDoc on deprecated props; discriminated unions for
   mutually exclusive prop sets.
-- **A3 token-only styling** — no raw hex / px / rem / ms / cubic-bezier. Colours
-  `hsl(var(--…))`, shadows `var(--…)`, motion `--…-duration-*`.
+- **A3 token-only styling** — no raw hex / px / rem / ms / cubic-bezier. The
+  *storage form* is the project's choice: Example DS uses `hsl(var(--…))` for colour,
+  `var(--…)` for shadow, `--…-duration-*` for motion. A project storing `oklch()`
+  or bare channel triples is not violating anything — check
+  `color/mixed-storage-forms` for whether it is *consistent*, which is the part
+  that matters.
 - **A5 import isolation** — no imports from app code. The library is standalone.
 - **A6 export completeness** — component, props type, every public union type
   exported from the barrel.
 - **A7 restraint** — count the *added* public API. Soft cap = WARN + written
-  justification; hard cap = FAIL. props 12/18, variant 4/6, size 4/5, tone 6/8,
-  boolean 5/8. Name the cut concretely: "remove `isCompact`, fold into `size='sm'`".
+  justification; hard cap = FAIL. **Example DS defaults, override per project:** props
+  12/18, variant 4/6, size 4/5, tone 6/8, boolean 5/8. These are calibrated on
+  one library; on an unfamiliar one, report the counts and say which are
+  outliers against that library's own distribution. Name the cut concretely: "remove `isCompact`, fold into `size='sm'`".
   "Just in case" prop with zero usages → FAIL next review. `<X primary />` sugar
   for `variant="primary"` → FAIL. Optional prop passed in 100% of call sites →
   make it required.
