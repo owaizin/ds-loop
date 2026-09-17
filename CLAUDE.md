@@ -11,7 +11,7 @@ change.
 
 This repo is the **open engine** (MIT): policy-free mechanism. The tuned thresholds and the corpus of
 before/after engagement runs live in a separate private repo (`ds-loop-calibration`) and are passed in at
-run time. See `README.md` § "The leaky seam" for where that split is deliberately imperfect.
+run time. See `docs/guide/reference.md` for configuration and coverage boundaries.
 
 Positioning that has been settled and should not be relitigated: ds-loop **complements** Murphy Trueman's
 LLM-based `design-system-ops` skill pack (it reads his `.ds-ops-config.yml` verbatim for interop) and
@@ -212,7 +212,7 @@ heuristics.
 
 ## Documented output must be real output
 
-`test/readme.test.ts` runs every README sample marked `<!-- verified: <id> -->` and asserts each
+`test/readme.test.ts` runs every README or `docs/guide/output.md` sample marked `<!-- verified: <id> -->` and asserts each
 documented line appears in the actual output. A stale sample fails the build; so does a fabricated
 one; so does adding a `verified:` block without registering a check for it.
 
@@ -260,7 +260,7 @@ internal notes.
 - `docs/METHODOLOGY.md` — the engagement methodology the tool automates, including the four-layer token
   model and the relationship to `design-system-ops`.
 - `skill/` — the `/ds-loop` skill: `SKILL.md`, per-command playbooks in `reference/`, the guard hook in
-  `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Most commands listed there are still
-  scaffolding; `audit`, `sweep`, `scan`, `guard` and `fix` are the ones that work.
+  `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Seven CLI commands are implemented: `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
+  `scorecard`. The other named operations are agent playbooks.
 - `product-system-skills-v0.2/` is an **unrelated, untracked** skills pack that happens to sit in this tree.
   It is not part of the engine; see its `docs/skill-quality-review.md`.

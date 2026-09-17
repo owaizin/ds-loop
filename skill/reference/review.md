@@ -2,8 +2,15 @@
 
 Full component audit against **the target library's own bar**. Returns
 severity-ranked findings (BLOCKING / HIGH / MEDIUM / LOW), each self-contained:
-location, problem, fix. Verdict is binary — READY TO MERGE or CHANGES REQUIRED,
-never qualified.
+location, problem, fix. State scope and unverified areas with the verdict.
+A checklist item is not an automated check: name the actual checker or label it
+manual/unverified. Never count an unrun check as passing.
+
+**Apply only the project's adopted bar.** The API, story, accessibility and motion
+items below are review prompts; project/framework-specific prescriptions are not
+universal requirements. Reuse existing tests and stories before proposing additions.
+For visible/interactive changes, compare rendered behavior and distinguish existing
+defects from regressions. A binary merge verdict cannot hide missing evidence.
 
 **Read the bar before applying it.** The specific numbers and storage forms below
 are **reference-derived defaults**, not universal thresholds — they came from one
@@ -98,7 +105,7 @@ press feedback (`active:scale-[0.97]`) on tactile components only, never form co
 
 ## NEVER
 
-- Qualify the verdict.
+- Present an unverified check as passing.
 - Report a finding without a concrete fix.
 - Run `full` scope on an existing component — Phase 0 is wasted there.
 - Flag typed `forwardRef` on a non-generic component as a violation.

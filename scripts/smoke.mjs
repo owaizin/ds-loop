@@ -13,9 +13,17 @@
  * the only thing standing between a refactor and a silently broken `npx`.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 const ROOT = process.cwd();
 const checks = [];
@@ -64,15 +72,39 @@ try {
     assert(!existsSync(join(dir, 'node_modules', 'ds-loop', 'src')), 'src/ should not be published');
   });
 
+  check('the installed skill has no missing local Markdown references', () => {
+    const skillRoot = join(dir, 'node_modules', 'ds-loop', 'skill');
+    function visit(folder) {
+      for (const entry of readdirSync(folder, { withFileTypes: true })) {
+        const path = join(folder, entry.name);
+        if (entry.isDirectory()) visit(path);
+        else if (entry.name.endsWith('.md')) {
+          for (const match of readFileSync(path, 'utf8').matchAll(/\]\(([^)]+)\)/g)) {
+            const target = match[1].split('#')[0];
+            if (!target || /^[a-z]+:/i.test(target)) continue;
+            assert(existsSync(resolve(dirname(path), target)), `${path} links to missing ${target}`);
+          }
+        }
+      }
+    }
+    visit(skillRoot);
+  });
+
   check('bare invocation prints usage and does not throw', () => {
     const r = run([]);
     assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
     assert(/ds-loop \d+\.\d+\.\d+/.test(r.stdout), 'no version banner in usage');
   });
 
-  check('a clean directory audits quietly, exit 0', () => {
-    const r = run(['audit', '.']);
+  check('an empty install is not-checked, and strict coverage fails it', () => {
+    const r = run(['audit', '.', '--json']);
     assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
+    const report = JSON.parse(r.stdout);
+    assert(report.verdict === 'not-checked', `empty install was ${report.verdict}`);
+    assert(report.coverage.complete === false, 'an empty install cannot be completely checked');
+    const strict = run(['audit', '.', '--json', '--require-coverage']);
+    assert(strict.status === 1, `strict coverage should fail, got ${strict.status}`);
+    assert(JSON.parse(strict.stdout).verdict === 'not-checked', 'strict mode must retain the report');
   });
 
   writeFileSync(

@@ -1,16 +1,16 @@
 # routing
 
-Shown when `/ds-loop` is invoked with no command. Present the menu; never auto-run.
+Shown when `/ds-loop` is invoked with no command. After read-only setup, present the menu; do not auto-run a build or migration.
 
 ## Menu
 
 **Starting from nothing / new to this system**
-- `discover` — map what exists (or doesn't) into `DESIGN-SYSTEM.md`. Do this first.
+- `discover` — inspect existing commitments and identify the next bounded decision.
 - `census` — inventory the components, find the duplicates.
 - `audit` — measure the token layer against the deterministic rules.
 
 **Building**
-- `tokenize` — stand up the two-file token source of truth.
+- `tokenize` — implement the agreed token source and required consumer formats.
 - `scaffold` — Storybook spine, foundations pages, the 5-file component contract.
 - `extract` — pull a repeated pattern into the system properly.
 - `shape` → `review` — interrogate a new component's design, then audit its build.
@@ -24,12 +24,12 @@ Shown when `/ds-loop` is invoked with no command. Present the menu; never auto-r
 - `scorecard` — the entropy trend line.
 
 **Something feels stale**
-- `doctor` — reconcile `DESIGN-SYSTEM.md`, the token files, config, the hook.
+- `doctor` — manually reconcile intent records, token files, config, and the hook.
 
 ## Picking for the user
 
 - Request mentions a single component → `shape` (new) or `review` (existing).
 - Request is "audit our tokens" / "is our colour system a mess" → `audit`.
-- Request is "we have no design system" → `discover`, then `census`, then a plan.
+- Request is "we have no design system" → `discover`, then the smallest foundation the evidence supports.
 - Request is "stop people breaking the tokens" → `guard on`.
 - Request is per-screen visual quality → not ds-loop. Hand to impeccable.

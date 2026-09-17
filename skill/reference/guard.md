@@ -15,14 +15,15 @@ A `PostToolUse` entry matching `Edit|Write|MultiEdit`. After any such edit the
 hook (`skill/hooks/ds-loop-guard.mjs`):
 
 1. reads the payload, pulls the file path
-2. if it is not a `.css` / `.scss` file — exits silently
-3. runs `ds-loop audit <cwd> --files <that file> --min-severity high --quiet --json`
+2. if it is not a `.css`, `.scss`, `.sass`, `.jsx`, or `.tsx` file — exits silently
+3. runs `ds-loop audit <cwd> --files <that file> --min-severity high --json`
 4. if there are `high`+ findings — prints them to stderr and exits 2, so the
-   agent gets them as feedback; otherwise exits 0 silently
+   agent gets them as feedback; a new project extraction gap also exits 2;
+   otherwise exits 0 silently
 
 **Coverage notification policy.** The hook runs at `--min-severity high`, which
 legitimately hides low findings — it must not also hide the fact that part of the
-source could not be read or judged. Three channels, three jobs:
+source could not be read or judged. The delivery channels are:
 
 | Channel | What it actually delivers | Frequency |
 |---|---|---|
@@ -58,8 +59,9 @@ removes only the ds-loop entry (matched by the `ds-loop-guard.mjs` path) and dro
 the `PostToolUse` key only if nothing else is left. Other hooks, permissions, and
 settings are untouched. `guard on` twice is a no-op.
 
-## Not yet
+## Separate checks
 
-The blocking half — token CSS/JSON parity, the 5-file component contract, the
-MDX validators — and the `scorecard` timeseries. Those ride in when `tokenize` /
-`scaffold` exist. For now `guard` is the live-edit nag only.
+Token CSS/JSON parity, component file contracts, and MDX validation require
+project-specific checkers and CI wiring. The hook does not run them or agent
+review judgments. `scorecard` exists as a separate CLI and is not installed by
+`guard on`.

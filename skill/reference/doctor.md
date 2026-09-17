@@ -1,23 +1,15 @@
 # doctor
 
-Report and repair drift between the project's ds-loop artifacts and what the
-current version reads.
+Agent procedure; no `ds-loop doctor` or `doctor --fix` command is shipped.
+Manually reconcile the project's intent records with token sources, config,
+retained audit evidence and installed hook.
 
-Status: **planned.**
+- Read the actual naming/storage contract, even if there is no `DESIGN-SYSTEM.md`.
+- Compare supported config keys with the installed engine's schema/defaults.
+  The loader merges defaults; it is not a strict unknown-key validator.
+- Use `guard status` to inspect the installed hook and path.
+- Check whether retained reports still describe the source, adapters and config.
 
-## Checks
-
-- `DESIGN-SYSTEM.md` frontmatter `schema:` version vs. what this ds-loop expects.
-- Token files present and matching the `token_storage` / `token_layers` recorded
-  in `DESIGN-SYSTEM.md`.
-- Config file (`ds-loop.config.json`) valid against the current schema; unknown
-  keys flagged, missing keys defaulted.
-- `guard` hook installed and pointing at the current CLI path.
-- The baseline (`.ds-loop/baseline.json`) freshness vs. the last token-file change.
-
-## Output
-
-A short report: what is current, what is stale, what `doctor --fix` would change.
-`--fix` applies the safe repairs (re-point the hook, default missing config keys,
-bump a tolerated schema) and lists what needs a human (a `schema:` jump that
-changes a field's meaning).
+Report evidence, discrepancies, and bounded proposed repairs. Perform only the
+repairs authorized by the task. Never invent a schema migration or claim a
+repair command exists. Retain the result where the next task can retrieve it.

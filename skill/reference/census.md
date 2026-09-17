@@ -3,8 +3,8 @@
 Component inventory. Scan the component library and its consumers, cluster
 near-duplicate components, rank by usage × blast radius.
 
-Status: **planned.** The clusterer engine is not built yet — see
-[../../docs/METHODOLOGY.md](../../docs/METHODOLOGY.md) §"the three engines".
+Status: **agent procedure**. No component clusterer CLI is shipped. Grouping
+and consolidation decisions below are review judgments.
 
 ## Intended shape
 

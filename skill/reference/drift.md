@@ -1,21 +1,16 @@
 # drift
 
-`audit` against a committed baseline. Same rule set, diff mode: report only what
-regressed since the baseline was captured.
+Agent procedure; no `ds-loop drift` command, watch mode or baseline suppressor
+is shipped. Compare two retained unfiltered `audit --json` reports manually.
 
-Status: **planned.** Needs a baseline format (`.ds-loop/baseline.json`) and a diff
-of finding sets keyed on `ruleId` + `where`.
+Establish source scope, revisions/dirty diffs, adapter versions, configuration
+hash and coverage for both runs. If the instrument changed, rerun the original
+source with the new instrument before attributing a difference to a product edit.
 
-## Intended shape
+Classify new, resolved and unchanged occurrences. Findings may aggregate many
+occurrences; five finding records before and after can still contain one fewer
+raw value. Inspect the underlying evidence. Keep unchanged findings visible in
+the retained reports; this procedure does not suppress them in `guard`.
 
-```bash
-<skill-base-dir>/bin/ds-loop drift <source> --baseline .ds-loop/baseline.json
-```
-
-- New finding not in the baseline → **regression**, reported.
-- Baseline finding now absent → **fixed**, noted.
-- Unchanged finding → suppressed (it is already tracked).
-
-`drift` is the watch-mode framing of the analyzer: the same detector that runs
-once at t=0 for the audit runs continuously here against what was true before.
-Wire it via `guard`.
+Report a regression only against an applicable commitment or preserved behavior.
+A newly visible coverage limitation is not itself a product regression.

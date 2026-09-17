@@ -1,110 +1,143 @@
 ---
 name: ds-loop
-description: Use when the user wants to audit, build, or guardrail a design SYSTEM (not a single screen) — token layers, component libraries, Storybook structure, contribution governance. Covers token audits, drift detection, component inventory and de-duplication, the primitive→semantic→component→state layer model, the two-file token source of truth (CSS + W3C JSON), Storybook taxonomy and the 5-file component contract, API-surface restraint, accessibility baselines, migration lanes, branch-scope governance, and CI guardrails that stop entropy after the design-system team leaves. Also use for standing up a design system from zero, or for a Phase-0 interrogation before adding a new component. NOT for per-screen visual polish, taste, motion, or anti-slop on an individual page — that is impeccable's domain; ds-loop is the system behind the screens.
+description: Audit token code and guide bounded design-system adoption, maintenance, and component governance using the project's own conventions. Use for establishing a system, repairing a partial one, or checking an existing library. Not for isolated screen styling or product strategy.
 metadata:
   version: 0.1.0
 ---
 
-ds-loop treats a design system as **a decision framework that happens to ship
-components**, not a component library. Its job is to remove decisions — every rule
-here is a deterministic check, a scaffold, or a question the author answers, never
-a reviewer's memory.
+The engine measures token code. The skill uses those measurements and the
+project's commitments to decide what to establish, adopt, or preserve. Findings
+are candidates for investigation; they do not establish the team's policy.
 
-Scope line: **impeccable operates on screens; ds-loop operates on the system behind
-them.** A shop runs impeccable to make a surface good and ds-loop to make sure a
-system exists and does not rot. If the request is "make this page look better",
-hand it to impeccable.
+## Start with the project
 
-## Setup
+1. Keep cwd at the target project. Run `<skill-base-dir>/bin/ds-loop context .`
+   once at setup, then `<skill-base-dir>/bin/ds-loop audit . --json` unfiltered.
+   Retain the report, including coverage. `context` runs no rules; the hook filters
+   at high severity. Neither replaces this audit.
+2. Read applicable repository instructions and the actual sources of design intent:
+   contribution guides, foundation docs, component contracts, decisions, lint
+   configuration, and relevant tests/stories. `context` searches a short list of
+   paths; it does not discover or interpret all of these. Missing `DESIGN-SYSTEM.md`
+   is not evidence that a system or policy is absent. Check what a dependency
+   resolves separately from whether the project permits that choice.
+3. Resolve only the unknowns that affect this task. Source code establishes current
+   behavior; an applicable policy establishes an intended constraint. A conflict
+   between them is evidence to investigate, not grounds to automatically prefer
+   the code. If authority is unclear and the answer changes the intervention,
+   ask the team while continuing independent inspection.
+4. For an explicit or clearly implied task, use its playbook below. For a bare
+   `/ds-loop` invocation, present [routing.md](reference/routing.md)'s menu after
+   the read-only setup; do not start a migration. Apply
+   [scope.md](reference/scope.md) before editing.
 
-1. Run `<skill-base-dir>/bin/ds-loop context` once per session (keep cwd at the
-   user's project). It reports which config loaded, what declares the system's
-   intent, and which adapters recognise the tree. It does **not** analyse anything.
-   Do not rerun it.
-2. Then run `audit .` **unfiltered, once**. This is the only way to learn which
-   checks cannot judge this source — the guard filters at `high` and `context` runs
-   no rules, so no other channel will tell you. Run it again before calling any
-   change complete: a check that could not judge before must not be reported as
-   passing after.
-3. Load the request's playbook from the Commands table below. If no command is
-   named, read `reference/routing.md` and present its menu — never auto-run.
-4. Before editing anything under the design-system directories, obey
-   `reference/scope.md` — the branch-scope policy. Audit findings never override
-   scope.
+## Choose a bounded next action
 
-## The layer model (the spine)
+These are task states inferred from evidence, **not CLI verdicts or maturity scores**:
 
-```
-Palette   →   Semantic   →   Component   →   State
-(raw)         (role)         (part)          (interaction)
-```
+| Evidence | Next action |
+|---|---|
+| Files or values are unread, or observations are insufficient | State the blind spot. Inspect relevant source manually or use a suitable existing checker; do not call the system clean. |
+| Token references exist but naming is unfamiliar | Read the naming contract. Configure existing taxonomy patterns only when they represent it faithfully; rerun and retain both reports. Do not rename the product to fit the scanner. |
+| The investigation establishes that no convention has been chosen for this scope | **Establish:** propose the smallest foundation for one concrete use case, with its tradeoff and acceptance check. Label it a new decision, not a repaired violation. |
+| A relevant commitment exists | **Adopt** it where evidence shows drift, or **Maintain** an intentional exception. Preserve working behavior and bound the affected consumers. |
 
-Each layer references only the layer above it, via `var()`. A semantic token
-holding a raw literal is a bug. A component reading a palette token directly is a
-bug. Both are grep-checkable and both are ds-loop rules.
+`token/tier-model-undetectable` describes coverage against configured naming
+patterns. It is silent at zero references. Neither its presence nor absence
+selects an adoption lane. A scanner's supported syntax is also narrower than a
+file extension: CSS rule bodies and resolved Tailwind named utilities are not
+checked by the current adapters.
 
-Two files, one source of truth: `tokens.css` (the runtime) and `tokens.json`
-(W3C design-tokens format — what every other tool reads). A CI check diffs them
-per namespace on every PR. They change together or neither changes.
+For an intervention, state the permitted files and the behavior that must survive.
+Read existing stories/tests before creating a harness. For visible or interactive
+changes, capture a rendered baseline and verify affected behavior before and after;
+separate pre-existing defects from regressions. A justified no-op is a valid result.
+For a small settled edit, reuse existing evidence and checks; do not require a
+system-wide interview or new documentation set.
+
+## Close the loop
+
+Before declaring a change complete, rerun the unfiltered audit and the checks that
+actually observe the changed behavior. Record source revision **and dirty diff**,
+configuration, coverage limits, and what changed. Changing config changes the
+instrument; it is not evidence that the product improved.
+
+Put any new system decision in the team's existing issue, ADR, component contract,
+or equivalent location. Create a small decision file only if there is no suitable
+home. Record the authority/evidence, chosen action (including no-op), affected
+scope, actual checks and limits, and what would justify revisiting it. Name the
+path and how the next task finds it; add a link from an existing entry point when
+needed. Writing a record does not suppress a rule or create a checker.
+
+For an adoption pilot, use a fresh-context continuation to check retrieval. For
+routine work, verify the discovery path without turning every edit into a pilot.
+Report measured results, design judgment, and unresolved questions separately.
+
+## Token models are project decisions
+
+Palette → semantic → component is the engine's configurable tier assumption, not
+a universal adoption requirement. State variants may use the project's own
+structure; the engine does not validate a fourth state tier. Preserve a valid
+existing model. If it cannot be represented by this engine, say the tier checks
+are not applicable rather than declaring that model broken.
+
+CSS plus design-token JSON is one possible distribution choice. Keep the project's
+source of truth; add another format only for a named consumer. CSS/JSON parity,
+component-file contracts, and MDX validation need separate project checkers.
+DS Loop does not ship those checks.
 
 ## Commands
 
 | Command | Built? | Category | Description | Reference |
 |---|---|---|---|---|
-| `context [path]` | **CLI** | Meta | What this session is working with: config loaded, whether a `DESIGN-SYSTEM.md` exists, which adapters recognise the tree | — |
+| `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage | — |
 | `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Severity-ranked findings + scorecard ratios. No LLM, no network | [reference/audit.md](reference/audit.md) |
 | `scan [path]` | **CLI** | Audit | Quick look: classification breakdown + palette clusters at the default ΔE | — |
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |
 | `guard [on\|off\|status]` | **CLI** | Guard | Install/remove the edit-time `PostToolUse` hook | [reference/guard.md](reference/guard.md) |
 | `fix [target] [--write]` | **CLI** | Guard | Apply the mechanical fixes only — where the edit is provable from the code, no LLM. v0: inserts a `var()` fallback from the target token's literal. Dry run unless `--write` | — |
-| `discover` | playbook | Discover | Interview + repo scan → `DESIGN-SYSTEM.md` (YAML frontmatter every downstream command branches on, prose underneath) | [reference/discover.md](reference/discover.md) |
+| `discover` | playbook | Discover | Read repository evidence, resolve consequential unknowns, record a bounded adoption decision | [reference/discover.md](reference/discover.md) |
 | `census [target]` | playbook | Discover | Component inventory: scan, cluster near-duplicates, rank by usage × blast radius | [reference/census.md](reference/census.md) |
 | `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
-| `tokenize [target]` | playbook | Build | Turn a proposed scale into the two-file token SSOT + the parity check | [reference/tokenize.md](reference/tokenize.md) |
+| `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
 | `scaffold [target]` | playbook | Build | Generate the Storybook spine, foundations pages, the 5-file component contract, the validators | [reference/scaffold.md](reference/scaffold.md) |
 | `extract [target]` | playbook | Build | Pull a repeated pattern into the system as a proper 5-file component | [reference/extract.md](reference/extract.md) |
 | `shape <component>` | playbook | Review | Phase 0 design-intent interrogation before a new component | [reference/shape.md](reference/shape.md) |
 | `review <component>` | playbook | Review | Full component audit — API caps, token hygiene, story structure, a11y, MDX | [reference/review.md](reference/review.md) |
-| `scorecard` | playbook | Guard | Record the ratio timeseries by hand from `audit --json`. **No CI emitter exists yet** | [reference/scorecard.md](reference/scorecard.md) |
+| `scorecard [path]` | **CLI** | Guard | Append ratios to `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews without writing; CI scheduling is separate | [reference/scorecard.md](reference/scorecard.md) |
 | `doctor` | playbook | Meta | Drift between `DESIGN-SYSTEM.md`, the token files, config, and the guard hook | [reference/doctor.md](reference/doctor.md) |
 
-**`CLI` means the engine implements it** — it runs, it exits non-zero on findings, its
-output is deterministic. **`playbook` means this document is the whole implementation:**
+**`CLI` means the engine implements it** — it is implemented. Exit behavior is command-specific: `audit` exits 1 on
+surviving findings, while `scorecard` records measurements and is not a CI gate. **`playbook` means this document is the whole implementation:**
 you are the executor, and anything you report from one is your reasoning, not engine
 output. Do not paraphrase a playbook result as if a rule produced it.
 
 
-Targets scope the work: `tokens`, `color`, `spacing`, `typography`, `elevation`,
-`motion`, `components`, a category (`forms`), a `ComponentName`, or a path.
+CLI audit targets (`--target`) are `all`, `tokens`, `color`, `spacing`,
+`typography`, `elevation`, and `motion`. The positional argument is a source path.
+A component name or category is a scope for an agent playbook, not a CLI target.
 
-Routing:
+## What runs automatically
 
-- **No argument:** present the `reference/routing.md` menu. Never auto-run.
-- **Explicit or clearly implied command:** load its reference and follow it.
-- **Missing `DESIGN-SYSTEM.md`:** a system-level request routes through `discover`
-  first. A narrow single-component request may proceed, offering `discover` after.
+`audit` runs the registered token/color rules over supported extracted values;
+`sweep` measures the configured color-clustering curve. `drift`, `census`,
+`shape`, `review`, `discover`, `tokenize`, `scaffold`, `extract`, and `doctor`
+are agent procedures, not executable CLI commands.
 
-## What is deterministic vs what is judgment
-
-- **Deterministic** (the CLI, `audit` / `sweep` / `drift`): token-layer violations,
-  raw-value counts, literal duplicates, near-duplicate primitives, storage-form
-  consistency, the ΔE plateau test, CSS/JSON parity, the 5-file contract. These
-  run with no LLM and no API key. In `guard`, they **report** — the hook is
-  `PostToolUse`, so it fires after the write lands and structurally cannot block.
-  It nags the agent that wrote the problem while the context is still open.
-- **Judgment** (the skill playbooks: `shape`, `review`, `census`): API-surface
-  restraint, "did the author name what they cut", whether a near-duplicate is a
-  deliberate ramp step, whether a component is really needed. In `guard`, these
-  **comment**, never block — a false positive that blocks a merge gets the whole
-  check disabled. Nothing in `guard` blocks anything; if you want a gate, put
-  `ds-loop audit --min-severity high` in CI, where exit 1 does the work.
+`guard` runs a file-scoped audit after supported Claude Code edits. It reports
+high-severity findings and project extraction-coverage changes; it cannot block
+an edit and does not execute design judgments. An optional CI command is
+`audit . --min-severity high --require-coverage`: a pass means no findings at
+that floor and no reported coverage gaps within the adapters' stated scope,
+not that all CSS or product behavior was checked. Use an unfiltered audit to
+see the lower-severity findings.
 
 ## The restraint doctrine
 
 Default stance: skeptical of additions. API-surface caps, per component's *added*
 public API — soft cap = justify in writing, hard cap = fails review.
 
-**The numbers are reference-derived defaults, not universal thresholds.** They come from
+**The numbers are engagement-derived examples, not universal thresholds.** They come from
 one engagement and one library. Resolve them from `DESIGN-SYSTEM.md` frontmatter or
 the project's own contribution guide first; fall back to these and say you are
 falling back. [reference/review.md](reference/review.md) is the single source —
@@ -114,15 +147,12 @@ Where a project has stated no limit, report the count and which components are
 outliers against that project's own distribution. Do not enforce a cap the target
 never agreed to.
 
-Many booleans = a missing variant. A "just in case" prop with no usage site →
-delete it. If the author cannot name one thing they cut, the design is not
-finished.
+Many booleans = a missing variant. A prop with no known usage is a review question; check external consumers
+and compatibility commitments before proposing removal.
 
 ## NEVER
 
-- Migrate production components to tokens as part of a design-system branch — that
-  is a separate engineering PR.
-- Implement an audit's production recommendations on a scoped branch. Document, stop.
+- Expand a scoped task into a production migration. Findings do not grant scope.
 - Add `tags: ['autodocs']` to a story that has a guidelines MDX.
 - Ship an interactive component without the accessibility contract from day one.
 - Let a reuse or slop check block a merge. Comment only.

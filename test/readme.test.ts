@@ -47,7 +47,9 @@ function run(args: string[], cwd: string): string {
 
 /** every ```-fenced block preceded by `<!-- verified: id -->` */
 function verifiedBlocks(): Map<string, string> {
-  const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
+  const readme = ['README.md', 'docs/guide/output.md']
+    .map((file) => readFileSync(join(ROOT, file), 'utf8'))
+    .join('\n');
   const blocks = new Map<string, string>();
   const re = /<!--\s*verified:\s*([a-z0-9-]+)\s*-->\s*\n```[a-z]*\n([\s\S]*?)```/g;
   for (const m of readme.matchAll(re)) blocks.set(m[1]!, m[2]!);
@@ -69,10 +71,7 @@ function assertBlockIsReal(id: string, documented: string, actual: string): void
     if (claim.length < 8) continue;
     assert.ok(
       haystack.includes(claim),
-      `README block "${id}" claims a line the real output does not contain:\n` +
-        `  claimed: ${claim}\n` +
-        '  Either the output changed and the README is stale, or the sample was never real.\n' +
-        `  actual output:\n${actual.replace(/^/gm, '    ')}`,
+      `README block "${id}" claims a line the real output does not contain:\n  claimed: ${claim}\n  Either the output changed and the README is stale, or the sample was never real.\n  actual output:\n${actual.replace(/^/gm, '    ')}`,
     );
   }
 }

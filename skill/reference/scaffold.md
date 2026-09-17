@@ -3,8 +3,10 @@
 Generate the structural skeleton: the Storybook spine, the foundations pages, the
 5-file component contract, the validators.
 
-Status: **planned** (generator engine). The spec it builds to is
-[../../docs/METHODOLOGY.md](../../docs/METHODOLOGY.md) §5.
+Status: **agent procedure; no generator CLI is shipped**. The structure below is
+an example for a React/Storybook project that has adopted this contract. Inspect
+existing stories, framework and contributor requirements first. Preserve another
+valid structure; do not add five files or Storybook merely to satisfy this example.
 
 ## `scaffold storybook`
 
@@ -29,5 +31,8 @@ Run `shape <Name>` first. Then `review <Name>` before the PR.
 
 ## `scaffold validators`
 
-The build-failing checks: 5-file contract, MDX-v3 syntax, MDX story-ref integrity,
-token parity, reuse (comment-only). One `validate` script runs them all.
+If the project adopts these contracts, implement its own validators for the
+chosen file structure, MDX syntax/story references or token parity. Run each
+checker against a known violation before calling it enforced, then wire it into
+CI if requested. None of these validators is supplied by DS Loop. Reuse suitability
+remains review judgment.

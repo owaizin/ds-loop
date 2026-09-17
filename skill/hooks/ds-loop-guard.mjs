@@ -81,8 +81,8 @@ const STATE = 'node_modules/.cache/ds-loop/guard-coverage.json';
  * that file, not the project — keying the signature on them makes alternating edits
  * between two files look like coverage changing back and forth. Formats nothing
  * reads and unread token files are properties of the tree and stable across edits,
- * so they are what this channel reports. Per-file judgement limits reach the agent
- * through the findings list, and the whole picture through `ds-loop context`.
+ * so they are what this channel reports. Per-file judgement limits below the severity floor require an unfiltered
+ * `ds-loop audit .`; `context` runs no rules.
  */
 function coverageSignature(c) {
   if (!c) return 'unknown';
@@ -130,9 +130,7 @@ if (coverage && transitionNeedsNotice(coverageSignature(coverage))) {
   const tokenFiles = coverage.unreadTokenFiles ?? [];
   if (tokenFiles.length > 0) parts.push(`${tokenFiles.length} design-token file(s) unread`);
   notes.push(
-    `ds-loop coverage — this project is only partly checked: ${parts.join('; ')}.\n` +
-      'A clean result from here is clean within that scope. Said once, on change; run\n' +
-      '`ds-loop context` for the full picture including per-file judgement limits.',
+    `ds-loop coverage — this project is only partly checked: ${parts.join('; ')}.\nA clean result from here is clean within that scope. Said once, on change; run\n\`ds-loop audit .\` unfiltered for rule-judgement limits.`,
   );
 }
 
@@ -148,7 +146,6 @@ const lines = findings.map(
   (f) => `  • [${String(f.severity).toUpperCase()}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
 );
 process.stderr.write(
-  `ds-loop guard — the edit to ${filePath.split('/').pop()} introduced ${findings.length} design-system issue(s):\n\n${lines.join('\n\n')}\n` +
-    (notes.length > 0 ? `\n${notes.join('\n\n')}\n` : ''),
+  `ds-loop guard — the edit to ${filePath.split('/').pop()} introduced ${findings.length} design-system issue(s):\n\n${lines.join('\n\n')}\n${notes.length > 0 ? `\n${notes.join('\n\n')}\n` : ''}`,
 );
 process.exit(2);

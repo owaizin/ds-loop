@@ -5,34 +5,21 @@ accumulated 26 production file changes because an agent read a legitimate
 accessibility audit, saw "P0", and implemented the recommendations across
 production without recognising the branch's scope.
 
-## The rule
+## Bound the intervention
 
-If the current branch name starts with `ds/` or `story/`:
+Use the user's task and applicable repository instructions to identify writable
+paths and preserved behavior. A branch prefix can signal a local convention; it
+does not itself grant permission or impose a universal directory layout.
 
-**Writable:** `stories/**`, `docs/**`, the component-library package (`libs/*/src/**`
-or equivalent), `.storybook/**`, the storybook-token files.
+- An audit request authorizes investigation, not a migration of every finding.
+- An explicitly scoped component repair may change that production component;
+  it does not authorize changing its consumers or the shared scale broadly.
+- A system-only or stories-only task stays within that boundary. If a finding
+  requires broader work, record it and explain the needed scope separately.
+- Preserve existing stories and tests. Add a focused harness when needed rather
+  than replacing the existing evidence.
+- Record intentional exceptions. Documentation alone does not silence `guard`;
+  current severity configuration applies to whole rules, not per-finding waivers.
 
-**Not writable:** app feature screens, shared runtime components, app routing,
-global stylesheet, the Tailwind/build config, `package.json` (unless a new
-component genuinely needs a dependency).
-
-On any other branch prefix (`feat/`, `fix/`, `eng/`), no restriction.
-
-## Hard rules
-
-1. A task that needs a blocked path: **stop**, tell the user, propose a separate
-   `feat/*` or `eng/*` branch.
-2. **Audit recommendations do not override scope.** Read the audit, document the
-   finding, stop. This is exactly how the incident happened.
-3. New shared utilities go in the component library, not the app's shared folder.
-4. Token migration of existing production components is a production change — its
-   own PR, never folded into design-system work.
-5. Document the intentional exceptions explicitly, so `guard` does not flag them
-   and no one "fixes" them.
-
-## The test when unsure
-
-> Does this change affect code that runs in production today?
-
-Yes → stop, propose a branch. No (pure stories, docs, or a new library component)
-→ proceed.
+Ask for a scope decision only when the required action exceeds existing
+authorization. Do not ask again for work the user already authorized.

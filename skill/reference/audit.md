@@ -12,15 +12,24 @@ present a severity-ranked report. `audit` documents; it does not fix.
 Targets: `all` (default), `tokens`, `color`, `spacing`, `typography`, `elevation`,
 `motion`. The CLI exits `1` if there is any finding.
 
-A **source** in v0 is a fixture directory (a `SOURCE.json` plus vendored token
-files). Pointing the analyzer at a live repo path is planned; until then, snapshot
-the token files into a fixture so the run is reproducible and a calibration row is
-comparable.
+A source can be a live directory/file or a frozen fixture (`SOURCE.json` plus
+its recorded files). Keep cwd at the target project so its config loads; a path
+argument alone does not change config discovery. Use `--config <file.json>` for
+an explicit JSON configuration. Retain the working-tree diff alongside HEAD when
+comparing uncommitted changes.
+
+Always inspect `verdict`, `coverage` and findings together. `not-checked` is not
+clean, and `clean` is limited to the adapters' declared reads. The CSS adapter
+reads custom-property declarations, not ordinary rule bodies; the markup adapter
+reads arbitrary-value strings, not resolved named utilities or inline styles.
+`--require-coverage` fails on reported gaps; it does not expand those reads.
 
 ## The rule set (v0)
 
 | Rule id | Severity | What it means |
 |---|---|---|
+| `token/raw-value-in-markup` | high | Arbitrary color/length values at markup use sites; investigate against the project's actual convention. |
+| `token/tier-model-undetectable` | low | Too few referencing tokens match configured tier patterns; a scanner limitation, not an absent system. Silent at zero references. |
 | `token/tier-leakage` | high | A token references across tiers the wrong way — component → primitive skips the semantic tier, or a reference points upward. Value is right, theme propagation is broken. |
 | `token/semantic-name-describes-appearance` | medium / low | A semantic token named for a colour or size word (`color.action.blue`). Low when every hit is a category / chart-series token (sanctioned — record it in `DESIGN-SYSTEM.md`). |
 | `color/semantic-holds-literal` | high | A non-primitive token holds a literal colour instead of `var(--primitive)`. Breaks the layer model. |
@@ -41,13 +50,15 @@ structural rules only.
 
 ## Verify before you report
 
-Deterministic findings are candidates, not verdicts. For each:
+Deterministic findings are candidates, not project-policy verdicts. Read the
+entry skill's evidence and decision-state procedure first. For each:
 
 1. Open the cited `file:line`. Confirm the value and the token name.
 2. Decide whether it is a real defect or a **sanctioned exception** — a documented
    compromise, a deliberate ramp step, a second-theme literal. Sanctioned
-   exceptions get recorded in `DESIGN-SYSTEM.md` prose and suppressed via config,
-   not argued each run.
+   exceptions get recorded in the project's decision location. This does not
+   suppress a finding. Severity overrides affect a whole rule; per-finding
+   waivers are not implemented. Do not lower severity merely to get a green run.
 3. Keep deterministic findings separate from any visual judgment you add.
 
 ## Report

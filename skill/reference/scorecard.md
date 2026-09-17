@@ -1,28 +1,20 @@
 # scorecard
 
-The entropy trend line. One line appended to `.ds-scorecard/history.jsonl` per CI
-run on `main`.
+Implemented CLI. Appends one measurement row to `.ds-scorecard/history.jsonl`
+in the current working directory; it does not install a CI schedule.
 
-```json
-{"ranAt":"2026-09-09T…","commit":"a1b2c3d","ratios":{
-  "raw-values-per-declared": 0.04,
-  "semantic-literal-share": 0.0,
-  "drift-per-component": 0.0,
-  "orphan-stories-per-story": 0.11
-}}
+```bash
+<skill-base-dir>/bin/ds-loop scorecard . --dry-run --json
+<skill-base-dir>/bin/ds-loop scorecard . --json
 ```
 
-## Rules
+Use the dry run to inspect the row before starting a history. Rows include source
+identity, adapters, config hash, ratios, finding counts and coverage completeness.
+Compare the actual reported ratios, not invented maturity or component scores.
+The CLI checks adapter/config compatibility between rows for the same label;
+changes in source scope or dirty working trees still need a retained manifest/diff.
 
-- **Ratios, not counts.** Raw-value count rises as the codebase grows even when
-  discipline is perfect. A trend line that punishes growth gets ignored within a
-  month.
-- **CI on `main` only.** A scorecard written from local runs is sparse and gameable.
-- **Committed to the client repo.** They own it. The renewal conversation is
-  `git log -p .ds-scorecard/history.jsonl` — six months of the line going the
-  right way, or not.
-
-## Status
-
-`audit` already emits the ratio block. `scorecard` (the append-to-file + CI
-wiring) is planned, and rides in with `guard`.
+Run from the same project directory for subsequent observations. If the team wants
+CI history, arrange its storage/commit policy explicitly. The command is a recorder,
+not a findings gate: run `audit` for findings, coverage and CI exit semantics.
+Use the full audit to interpret limitations; lower counts do not prove better UX.

@@ -1,7 +1,7 @@
 {
   "name": "ds-loop",
   "version": "0.1.0",
-  "description": "Deterministic design-system linter \u2014 finds every value in your code that bypasses your design tokens, with file:line. No LLM, no API key.",
+  "description": "Deterministic design-system checks for supported CSS and Tailwind code, with source locations and coverage limits.",
   "type": "module",
   "bin": {
     "ds-loop": "./bin/ds-loop.mjs"
@@ -9,7 +9,7 @@
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": ["bin", "dist", "skill", "README.md", "LICENSE"],
+  "files": ["bin", "dist", "skill", "README.md", "LICENSE", "docs/guide"],
   "engines": {
     "node": ">=22.6"
   },
