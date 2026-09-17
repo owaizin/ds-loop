@@ -37,7 +37,10 @@ if (!filePath || !STYLE.test(filePath)) process.exit(0);
 
 const res = spawnSync(
   process.execPath,
-  [CLI, 'audit', cwd, '--files', filePath, '--min-severity', 'high', '--quiet', '--json'],
+  // No --quiet: it suppresses the whole report when nothing survives the severity
+  // floor, which is exactly when the coverage notice is the only thing left to say.
+  // Always take the structured report; this hook decides what to announce.
+  [CLI, 'audit', cwd, '--files', filePath, '--min-severity', 'high', '--json'],
   { encoding: 'utf8', cwd, timeout: 15_000 },
 );
 
@@ -71,18 +74,33 @@ const coverage = report.coverage ?? null;
  */
 const STATE = 'node_modules/.cache/ds-loop/guard-coverage.json';
 
+/**
+ * PROJECT-scoped coverage only.
+ *
+ * This hook audits one edited file, so `unconvertible` and `couldNotJudge` describe
+ * that file, not the project — keying the signature on them makes alternating edits
+ * between two files look like coverage changing back and forth. Formats nothing
+ * reads and unread token files are properties of the tree and stable across edits,
+ * so they are what this channel reports. Per-file judgement limits reach the agent
+ * through the findings list, and the whole picture through `ds-loop context`.
+ */
 function coverageSignature(c) {
-  if (!c) return null;
-  return JSON.stringify({
-    unread: c.unreadFormats ?? {},
-    tokenFiles: (c.unreadTokenFiles ?? []).length,
-    unconvertible: c.unconvertible?.count ?? 0,
-    couldNotJudge: (c.couldNotJudge ?? []).slice().sort(),
-  });
+  if (!c) return 'unknown';
+  const unread = Object.entries(c.unreadFormats ?? {})
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([ext, n]) => `${ext}:${n}`);
+  const tokenFiles = (c.unreadTokenFiles ?? []).slice().sort();
+  if (unread.length === 0 && tokenFiles.length === 0) return 'complete';
+  return JSON.stringify({ unread, tokenFiles });
 }
 
-function coverageChanged(signature) {
-  if (!signature) return false;
+/**
+ * Every observed state is recorded, including a complete one. Writing only while
+ * incomplete meant a recovery never replaced the old signature, so
+ * incomplete -> complete -> the same incomplete state again stayed silent the
+ * second time.
+ */
+function transitionNeedsNotice(signature) {
   const path = resolve(cwd, STATE);
   let previous = null;
   try {
@@ -90,27 +108,31 @@ function coverageChanged(signature) {
   } catch {
     /* first run in this checkout */
   }
-  if (previous === signature) return false;
-  try {
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, `${JSON.stringify({ signature, at: new Date().toISOString() }, null, 2)}\n`);
-  } catch {
-    /* unwritable cache: report this time rather than going silent */
+
+  if (previous !== signature) {
+    try {
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, `${JSON.stringify({ signature, at: new Date().toISOString() }, null, 2)}\n`);
+    } catch {
+      /* unwritable cache: announce this time rather than going silent */
+    }
   }
-  return true;
+
+  // announce only when the project's coverage state is newly not-complete
+  return previous !== signature && signature !== 'complete' && signature !== 'unknown';
 }
 
 const notes = [];
-if (coverage && !coverage.complete && coverageChanged(coverageSignature(coverage))) {
-  const unread = Object.entries(coverage.unreadFormats ?? {});
+if (coverage && transitionNeedsNotice(coverageSignature(coverage))) {
   const parts = [];
+  const unread = Object.entries(coverage.unreadFormats ?? {});
   if (unread.length > 0) parts.push(`${unread.map(([e, n]) => `${n}× ${e}`).join(', ')} unread`);
-  if (coverage.unconvertible?.count) parts.push(`${coverage.unconvertible.count} colour(s) unconvertible`);
-  if ((coverage.couldNotJudge ?? []).length > 0)
-    parts.push(`${coverage.couldNotJudge.join(', ')} could not judge`);
+  const tokenFiles = coverage.unreadTokenFiles ?? [];
+  if (tokenFiles.length > 0) parts.push(`${tokenFiles.length} design-token file(s) unread`);
   notes.push(
     `ds-loop coverage — this project is only partly checked: ${parts.join('; ')}.\n` +
-      'A clean result from here is clean within that scope. Said once; run `ds-loop context` for the full picture.',
+      'A clean result from here is clean within that scope. Said once, on change; run\n' +
+      '`ds-loop context` for the full picture including per-file judgement limits.',
   );
 }
 

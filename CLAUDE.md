@@ -103,6 +103,15 @@ source must stay distinguishable in output; a linter whose silence is ambiguous 
 `coverage.complete` requires at least one adapter, so "every rule could judge" can never print inside
 a not-checked report.
 
+**The guard's coverage policy has regression tests** (`test/guard-hook.test.ts`, eight cases). Both
+failures it covers shipped and were found by a reviewer, not by this suite — writing the policy without
+moving the test count gave it no protection. The cases that matter: a notice must fire when *no finding
+survives the severity floor* (the hook passed `--quiet`, which suppressed the whole report in exactly
+that case); every observed state is recorded including a complete one (writing only while incomplete
+meant `incomplete → complete → incomplete` stayed silent the second time); and the signature is
+**project-scoped only**, because the hook audits one file and file-scoped facts would make alternating
+edits look like coverage flapping.
+
 **Coverage notification is a decided policy, not an accident.** Preserving coverage in the report is
 not the same as informing the agent: at `--min-severity high --quiet` the guard can be silent while
 coverage is incomplete. Three channels, three jobs — `context` states limits once at session setup;
