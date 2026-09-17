@@ -1,6 +1,6 @@
 {
   "name": "ds-loop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Design System Loop — deterministic design-system checks for supported CSS and Tailwind code, with source locations and stated coverage limits.",
   "type": "module",
   "bin": {

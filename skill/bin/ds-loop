@@ -9,15 +9,23 @@
 
 set -e
 
-BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+# pwd -P, not pwd: an agent that installs skills from a central directory
+# (~/.codex/skills, ~/.claude/skills) symlinks this directory, and the logical
+# path then resolves two levels up from the *link*, not from the package.
+BIN_DIR=$(cd "$(dirname "$0")" && pwd -P)
 # skill/bin/ds-loop -> package root is two levels up
-ROOT=$(cd "$BIN_DIR/../.." && pwd)
+ROOT=$(cd "$BIN_DIR/../.." && pwd -P)
 LAUNCHER="$ROOT/bin/ds-loop.mjs"
 
-if [ ! -f "$LAUNCHER" ]; then
-  echo "ds-loop: cannot find the launcher at $LAUNCHER" >&2
-  echo "ds-loop: the skill must sit inside the ds-loop package, not beside it" >&2
-  exit 1
+if [ -f "$LAUNCHER" ]; then
+  exec node "$LAUNCHER" "$@"
 fi
 
-exec node "$LAUNCHER" "$@"
+# a copied skill directory has no package around it; a normal install still does
+if command -v ds-loop >/dev/null 2>&1; then
+  exec ds-loop "$@"
+fi
+
+echo "ds-loop: no launcher at $LAUNCHER, and no ds-loop on PATH" >&2
+echo "ds-loop: install the package (npm i -g ds-loop) or symlink this skill from inside it" >&2
+exit 1

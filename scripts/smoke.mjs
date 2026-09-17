@@ -20,6 +20,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -259,6 +260,22 @@ try {
     assert(existsSync(shim), 'skill launcher missing from the package');
     const r = spawnSync(shim, ['context', '.'], { cwd: dir, encoding: 'utf8' });
     assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
+    assert(/ds-loop context/.test(r.stdout), `unexpected output: ${r.stdout.slice(0, 120)}`);
+  });
+
+  check('the skill launcher survives being symlinked into a central skills dir', () => {
+    // How an agent installs a skill: one directory per skill under ~/.codex/skills
+    // or ~/.claude/skills, usually a symlink to the package's own skill folder.
+    // The launcher resolved its package root with `pwd`, which is logical, so it
+    // walked two levels up from the *link* and reported that the skill was not
+    // inside the package. `pwd -P` resolves the link; a copied directory falls
+    // back to `ds-loop` on PATH.
+    const central = join(dir, 'central-skills');
+    mkdirSync(central, { recursive: true });
+    const link = join(central, 'ds-loop');
+    symlinkSync(join(dir, 'node_modules', 'ds-loop', 'skill'), link, 'dir');
+    const r = spawnSync(join(link, 'bin', 'ds-loop'), ['context', '.'], { cwd: dir, encoding: 'utf8' });
+    assert(r.status === 0, `exit ${r.status}: ${r.stderr.trim()}`);
     assert(/ds-loop context/.test(r.stdout), `unexpected output: ${r.stdout.slice(0, 120)}`);
   });
 
