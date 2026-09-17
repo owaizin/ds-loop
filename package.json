@@ -21,10 +21,7 @@
     "prepack": "npm run build",
     "smoke": "node scripts/smoke.mjs",
     "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
-    "type-check": "tsc --noEmit",
-    "site:serve": "node scripts/serve-site.mjs",
-    "site:examples": "node scripts/site-examples.mjs",
-    "site:check": "node scripts/site-examples.mjs --check && node scripts/check-site.mjs"
+    "type-check": "tsc --noEmit"
   },
   "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",

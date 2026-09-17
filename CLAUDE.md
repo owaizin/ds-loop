@@ -210,6 +210,11 @@ heuristics.
   not a pass — with `DS_LOOP_PRIVATE_NAMES=none` as the deliberate opt-out for a clone with no private
   material. The list holds **measurements as well as names**: a private source's ratios attached to a
   renamed label are still the engagement's data, and `src/` comments survive into `dist/`.
+  CI passes the list to the smoke job from the `DS_LOOP_PRIVATE_NAMES` secret and **fails a trusted run
+  that does not have it**; a fork PR cannot read the secret, so that run warns and skips the scan.
+  Scan **the ref being published and the packed tarball** — not `git log --all`, which in a working clone
+  also walks Codex checkpoint refs holding pre-rewrite objects, and not `main` alone, which misses the
+  artifact.
 - Ratios, not counts, in reports — a scorecard row has to survive codebase growth. No
   ratio may describe the tool rather than the source: `findings-per-rule` was retired for
   exactly that, since its denominator moved from 7 to 11 when rules were added and nothing

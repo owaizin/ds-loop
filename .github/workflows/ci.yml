@@ -21,12 +21,31 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     needs: check
+    env:
+      # The packed-artifact leak check needs the private deny list, which is not in
+      # the repository. A fresh checkout has none, and an absent list fails the
+      # check rather than passing quietly — so it has to arrive here.
+      DENY_LIST: ${{ secrets.DS_LOOP_PRIVATE_NAMES }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm install
+      - name: place the deny list
+        run: |
+          if [ -n "$DENY_LIST" ]; then
+            # gitignored; one name or measurement per line, as the secret stores them
+            printf '%s\n' "$DENY_LIST" > .private-names
+            echo "deny list placed: $(grep -vc '^[[:space:]]*\(#.*\)\?$' .private-names) entries"
+          elif [ "${{ github.event_name }}" = pull_request ] \
+            && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo 'DS_LOOP_PRIVATE_NAMES=none' >> "$GITHUB_ENV"
+            echo "::warning title=leak check skipped::a fork PR cannot read the deny-list secret, so the packed artifact was not scanned for private material. A trusted run on main scans it."
+          else
+            echo "::error title=no deny list::DS_LOOP_PRIVATE_NAMES is unset on a trusted run. Release verification must scan the packed artifact against the real list; set the repository secret. Never substitute 'none' here."
+            exit 1
+          fi
       - name: pack, install and drive the published package
         run: npm run smoke
 
