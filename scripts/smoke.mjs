@@ -72,6 +72,48 @@ try {
     assert(!existsSync(join(dir, 'node_modules', 'ds-loop', 'src')), 'src/ should not be published');
   });
 
+  check('the packed artifact carries no private names', () => {
+    // The narrow version of this check searched tracked source for two spellings and
+    // declared it clean twice. The references were in `dist/` — where TypeScript
+    // comments survive compilation — and in a shipped skill file. So: every packed
+    // file, and the deny list lives outside this repository.
+    //
+    // Names go in `.private-names` (gitignored, one pattern per line, `#` comments)
+    // or DS_LOOP_PRIVATE_NAMES=a,b. No list means nothing to check, not a pass.
+    const listFile = join(ROOT, '.private-names');
+    const patterns = [
+      ...(process.env.DS_LOOP_PRIVATE_NAMES ?? '').split(','),
+      ...(existsSync(listFile) ? readFileSync(listFile, 'utf8').split('\n') : []),
+    ]
+      .map((line) => line.split('#')[0].trim())
+      .filter(Boolean);
+
+    if (patterns.length === 0) {
+      process.stdout.write('    (no .private-names list — nothing checked)\n');
+      return;
+    }
+
+    // a word-shaped name is matched on word boundaries, so `example-ds` does not fire on
+    // `rescue`; anything with punctuation (`--ds-`) is matched as a plain substring
+    const re = new RegExp(
+      patterns
+        .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .map((p) => (/^\w+$/.test(p) ? `\\b${p}\\b` : p))
+        .join('|'),
+      'i',
+    );
+    const hits = [];
+    function scan(folder) {
+      for (const entry of readdirSync(folder, { withFileTypes: true })) {
+        const path = join(folder, entry.name);
+        if (entry.isDirectory()) scan(path);
+        else if (re.test(readFileSync(path, 'latin1'))) hits.push(path);
+      }
+    }
+    scan(join(dir, 'node_modules', 'ds-loop'));
+    assert(hits.length === 0, `private names ship in:\n      ${hits.join('\n      ')}`);
+  });
+
   check('the installed skill has no missing local Markdown references', () => {
     const skillRoot = join(dir, 'node_modules', 'ds-loop', 'skill');
     function visit(folder) {

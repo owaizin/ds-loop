@@ -18,3 +18,11 @@ docs/SKILLS-*.md
 docs/FEEDBACK-TRIAGE-*.md
 docs/algorithm-audit-*.md
 docs/PILOT-BRIEF-*.md
+
+# Local visual review evidence; design contracts are tracked.
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/hook.cache.json
+
+# private engagement names used by the smoke leak check
+.private-names

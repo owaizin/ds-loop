@@ -200,7 +200,13 @@ heuristics.
   non-null assertions are allowed on purpose.
 - **Client fixtures live only in the private calibration repo.** A client's real token file, and the
   findings measured on it, never come into this repo — not the file, not the ratios, not the repo name.
-  Public fixtures here are open-source systems anyone can verify.
+  Public fixtures here are open-source systems anyone can verify. Examples in defaults, tests and skill
+  docs are independently constructed (`--ds-*`, "Example DS"); a private namespace renamed and presented
+  as a generic default is still the engagement's data.
+  The check is mechanical: `npm run smoke` greps **every packed file** — `dist/` included, where TS
+  comments survive — against `.private-names` (gitignored, one name per line) or
+  `DS_LOOP_PRIVATE_NAMES`. Grepping tracked source for two spellings is what declared it clean twice
+  while the names shipped in the npm manifest. No list present means nothing was checked, not a pass.
 - Ratios, not counts, in reports — a scorecard row has to survive codebase growth. No
   ratio may describe the tool rather than the source: `findings-per-rule` was retired for
   exactly that, since its denominator moved from 7 to 11 when rules were added and nothing

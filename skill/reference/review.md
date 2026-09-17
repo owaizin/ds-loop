@@ -13,8 +13,8 @@ For visible/interactive changes, compare rendered behavior and distinguish exist
 defects from regressions. A binary merge verdict cannot hide missing evidence.
 
 **Read the bar before applying it.** The specific numbers and storage forms below
-are **reference-derived defaults**, not universal thresholds — they came from one
-engagement and one component library. Resolve them in this order:
+are **reference defaults**, not universal thresholds — they were calibrated on a
+single component library and are not evidence about yours. Resolve them in this order:
 
 1. `DESIGN-SYSTEM.md` frontmatter, if the project has one (`discover` writes it).
 2. The project's own contribution guide or lint config.
@@ -41,8 +41,8 @@ Scopes — pick one before starting:
   `onPress`; `@deprecated` JSDoc on deprecated props; discriminated unions for
   mutually exclusive prop sets.
 - **A3 token-only styling** — no raw hex / px / rem / ms / cubic-bezier. The
-  *storage form* is the project's choice: Example DS uses `hsl(var(--…))` for colour,
-  `var(--…)` for shadow, `--…-duration-*` for motion. A project storing `oklch()`
+  *storage form* is the project's choice. One convention is `hsl(var(--…))` for
+  colour, `var(--…)` for shadow, `--…-duration-*` for motion. A project storing `oklch()`
   or bare channel triples is not violating anything — check
   `color/mixed-storage-forms` for whether it is *consistent*, which is the part
   that matters.
@@ -50,7 +50,7 @@ Scopes — pick one before starting:
 - **A6 export completeness** — component, props type, every public union type
   exported from the barrel.
 - **A7 restraint** — count the *added* public API. Soft cap = WARN + written
-  justification; hard cap = FAIL. **Example DS defaults, override per project:** props
+  justification; hard cap = FAIL. **Reference defaults, override per project:** props
   12/18, variant 4/6, size 4/5, tone 6/8, boolean 5/8. These are calibrated on
   one library; on an unfamiliar one, report the counts and say which are
   outliers against that library's own distribution. Name the cut concretely: "remove `isCompact`, fold into `size='sm'`".

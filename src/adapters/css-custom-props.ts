@@ -22,7 +22,7 @@ const EXTS = ['.css'];
  *
  * Handles the two conventions design systems actually use:
  *   --slate-9: #0f172a;                 (full color values — Radix, Primer)
- *   --brand-default: 222.2 47.4% 11.2%; (bare HSL channels — Tailwind convention, Example DS)
+ *   --brand-default: 222.2 47.4% 11.2%; (bare HSL channels — the Tailwind/shadcn convention)
  *
  * Values that are `var(...)` references are skipped: those are the semantic layer
  * pointing at primitives, not literals the analyzer can cluster.

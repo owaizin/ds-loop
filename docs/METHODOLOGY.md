@@ -1,11 +1,15 @@
 # The methodology ds-loop automates
 
-> This is the seed spec. Every engine and skill in `ds-loop` exists to execute one
-> step of the engagement below with less human time and no drift. Distilled from
-> **Example DS** (Example DS), a code-first design system for a dense
-> multi-product SaaS, cross-checked against Polaris, Primer, Spectrum, Carbon, ADS.
+> **This is a proposal, not a description of the shipped tool.** It records the
+> engagement methodology `ds-loop` is aimed at, distilled from one code-first
+> design system for a dense multi-product SaaS and cross-checked against Polaris,
+> Primer, Spectrum, Carbon and ADS.
 >
-> Read the principle, then the mechanism. The mechanism is what the tool ships.
+> Most of the mechanisms named below are **not implemented**. The seven commands
+> that exist are `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
+> `scorecard`; see [the CLI reference](guide/reference.md) for what each one
+> actually does. Everything here described as a clusterer, a generator or a watch
+> mode is a plan. Read this for the reasoning, and the reference for the tool.
 
 The one-sentence thesis:
 
@@ -23,8 +27,10 @@ communication, plus 12 knowledge notes. This document does **not** re-derive tha
 For contribution workflows, deprecation process, decision records, adoption
 reporting, onboarding, and the maturity model, use that pack.
 
-ds-loop is the **deterministic layer** it does not have: math, not prompts —
-CIEDE2000 sweeps, tier-reference checks, provenance records, a calibration corpus.
+`ds-loop` contributes a deterministic layer: CIEDE2000 sweeps, tier-reference
+checks, provenance records, a calibration corpus. The two are complementary in
+practice; this is a description of what this tool does, not an audit of what any
+other tool lacks.
 The token model, severity vocabulary, and `.ds-loop-config.yml` format here are
 kept compatible with that pack on purpose.
 
@@ -32,16 +38,19 @@ kept compatible with that pack on purpose.
 
 ## The engagement, and which engine owns each phase
 
+Engine column marked **shipped** or **planned**; nothing here is a capability
+claim on its own.
+
 | Phase | Human work | ds-loop engine / mode |
 | --- | --- | --- |
-| 1. Discovery | interview + repo scan → `DS-CONTEXT` (YAML frontmatter every downstream skill branches on, prose underneath) | analyzer `scan` (repo facts) |
-| 2. Token audit | every hardcoded color/space/type/shadow → proposed primitive+semantic scale + drift report | **analyzer `sweep` / `scan`** ← v0 |
-| 3. Component inventory | census, cluster duplicates, rank by usage × blast radius | clusterer one-shot |
-| 4. Scaffold | Storybook + sidebar spine + foundations pages + 5-file contract + validators | generator |
-| 5. Pilot | migrate one surface end-to-end, before/after scorecard | human, tool-assisted |
-| 6. Guardrails | token-parity (block), structure validator (block), reuse (comment), slop (comment) | analyzer + clusterer watch mode |
+| 1. Discovery | interview + repo scan → `DS-CONTEXT` (YAML frontmatter every downstream skill branches on, prose underneath) | **shipped:** `context`, `scan` |
+| 2. Token audit | every hardcoded color/space/type/shadow → proposed primitive+semantic scale + drift report | **shipped:** `audit`, `sweep`, `scan` |
+| 3. Component inventory | census, cluster duplicates, rank by usage × blast radius | *planned* — no clusterer exists |
+| 4. Scaffold | Storybook + sidebar spine + foundations pages + 5-file contract + validators | *planned* — no generator exists |
+| 5. Pilot | migrate one surface end-to-end, before/after scorecard | human, with `audit` and `scorecard` for before/after |
+| 6. Guardrails | token-parity (block), structure validator (block), reuse (comment), slop (comment) | **shipped:** `guard` (edit-time, reports only) + `audit` in CI; no watch mode |
 | 7. Exit | engineer takes ownership: green CI, populated Storybook, skills installed in their repo, scorecard baseline committed | generator |
-| ongoing | `new-component` (Phase 0 interrogation), `component-review`, `token-review`, `slop-check` | skills |
+| ongoing | `new-component` (Phase 0 interrogation), `component-review`, `token-review`, `slop-check` | agent playbooks, not engine commands |
 
 ---
 
@@ -113,8 +122,9 @@ file — grep-enforced. Everything is a token.
 > Less, but better. Default review stance: skeptical of additions. Configurability
 > is a liability — every prop has a documentation, test, and misuse cost.
 
-API-surface caps, calibrated against the library's own worst offenders once it has
-~50 components (Example DS's numbers, per component's *added* public API):
+API-surface caps, calibrated against one library's own worst offenders once it had
+~50 components, per component's *added* public API. **Reference numbers from a
+single system — not thresholds for yours:**
 
 | Dimension | Soft cap (justify in writing) | Hard cap (fails review) |
 | --- | --- | --- |
