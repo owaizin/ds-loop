@@ -76,7 +76,7 @@ export function audit(
     // must stay distinguishable: an empty repository, styling in a format nothing
     // reads, and a source that was read but could not be judged. None of them may
     // masquerade as a checked system.
-    return noAdapterReport(ruleTarget, meta, source.root, opts);
+    return noAdapterReport(ruleTarget, meta, source.root, config, opts);
   }
 
   const values = adapters.flatMap((a) => a.extract(source, config));
@@ -171,11 +171,7 @@ export function audit(
     else printReport(report, { live });
   }
 
-  if (opts.outDir) {
-    mkdirSync(opts.outDir, { recursive: true });
-    const slug = meta.label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    writeFileSync(join(opts.outDir, `${slug}.audit.json`), `${JSON.stringify(report, null, 2)}\n`);
-  }
+  writeReport(report, meta, opts.outDir);
 
   return report;
 }
@@ -189,7 +185,8 @@ function noAdapterReport(
   target: string,
   meta: { label: string; fixtureSha: string },
   root: string,
-  opts: { json?: boolean; quiet?: boolean; silent?: boolean },
+  config: DsOpsConfig,
+  opts: { json?: boolean; quiet?: boolean; silent?: boolean; outDir?: string },
 ): AuditReport {
   const coverage = buildCoverage(root, [], [], []);
   const present = surveyTree(root);
@@ -203,7 +200,9 @@ function noAdapterReport(
       fixtureLabel: meta.label,
       fixtureSha: meta.fixtureSha,
       adapter: 'none',
-      configHash: '00000000',
+      // the real hash, not a placeholder: a not-checked run still happened under a
+      // specific configuration, and a report that lies about which is not evidence
+      configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
     },
     rulesRun: [],
@@ -212,6 +211,11 @@ function noAdapterReport(
     ratios: {},
     verdict: 'not-checked',
   };
+
+  // every verdict leaves through the same door: print, and export when asked.
+  // The early return used to skip --out entirely, so a not-checked run produced no
+  // artifact at all — the one verdict a reader most needs on disk.
+  writeReport(report, meta, opts.outDir);
 
   if (!opts.silent && !opts.quiet) {
     if (opts.json) {
@@ -273,6 +277,14 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
   console.log('\n  scorecard ratios');
   for (const [k, v] of Object.entries(r.ratios)) console.log(`    ${k.padEnd(28)} ${v}`);
   console.log('');
+}
+
+/** the single export path — used by every verdict, including not-checked */
+function writeReport(report: AuditReport, meta: { label: string }, outDir: string | undefined): void {
+  if (!outDir) return;
+  mkdirSync(outDir, { recursive: true });
+  const slug = meta.label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  writeFileSync(join(outDir, `${slug}.audit.json`), `${JSON.stringify(report, null, 2)}\n`);
 }
 
 const round = (n: number) => Math.round(n * 1000) / 1000;

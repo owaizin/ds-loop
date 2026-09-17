@@ -59,7 +59,18 @@ measurement taken before it.
 npx ds-loop fix . --write
 ```
 
-**4. Hold the line.** `guard` writes a `PostToolUse` hook into `./.claude/settings.json`. After any edit to a `.css`, `.jsx`, or `.tsx` file, ds-loop audits that one file and prints `high`+ findings to stderr — so the agent that wrote the problem hears about it while it still has the context to fix it:
+**4. Decide what a green build means.** Exit 0 says "no findings" — never
+"sufficiently checked". Ask for the stronger claim explicitly:
+
+```bash
+npx ds-loop audit . --min-severity high --require-coverage
+```
+
+That exits 1 when part of the source could not be read or judged, so a passing
+pipeline means checked *and* clean. It is opt-in because it would otherwise fail
+every repository containing one `.scss` file.
+
+**5. Hold the line.** `guard` writes a `PostToolUse` hook into `./.claude/settings.json`. After any edit to a `.css`, `.jsx`, or `.tsx` file, ds-loop audits that one file and prints `high`+ findings to stderr — so the agent that wrote the problem hears about it while it still has the context to fix it:
 
 ```bash
 npx ds-loop guard on

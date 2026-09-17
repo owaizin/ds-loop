@@ -20,6 +20,20 @@ hook (`skill/hooks/ds-loop-guard.mjs`):
 4. if there are `high`+ findings — prints them to stderr and exits 2, so the
    agent gets them as feedback; otherwise exits 0 silently
 
+**Coverage notification policy.** The hook runs at `--min-severity high`, which
+legitimately hides low findings — it must not also hide the fact that part of the
+source could not be read or judged. Three channels, three jobs:
+
+| Channel | Job | Frequency |
+|---|---|---|
+| `ds-loop context` | State the scope limits before work starts | once per session |
+| this hook | Report a coverage **change** | first sight, then only when it changes |
+| `audit --require-coverage` | Make a green pipeline mean "checked and clean" | every CI run, opt-in |
+
+The hook keeps a signature at `node_modules/.cache/ds-loop/guard-coverage.json`.
+Repeating a limitation after every save would train the agent to ignore this
+channel, which is worse than saying it once.
+
 It **never blocks** the edit — a PostToolUse hook fires after the write already
 landed. It nags; it does not stop.
 

@@ -10,6 +10,7 @@ import { scan } from './commands/scan.ts';
 import { scorecard } from './commands/scorecard.ts';
 import { sweep } from './commands/sweep.ts';
 import { loadConfig } from './config/load.ts';
+import { formatCoverage } from './core/coverage.ts';
 import { KNOWN_TARGETS } from './rules/registry.ts';
 import type { RuleTarget, Severity } from './rules/types.ts';
 
@@ -19,11 +20,13 @@ const pkg = JSON.parse(readFileSync(join(HERE, '..', 'package.json'), 'utf8'));
 const USAGE = `
 ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from its code
 
-  ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--out <dir>]
+  ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--out <dir>] [--require-coverage]
                       [--files <a,b>] [--since <ref>] [--min-severity <sev>] [--quiet] [--config <file>]
       Run every deterministic rule against <path>. <path> is a fixture dir
       (has SOURCE.json) or any dir / .css file (live scan of the working tree).
       --files / --since narrow to changed files. Exit 1 on any surviving finding.
+      --require-coverage also exits 1 when part of the source could not be read or
+      judged, so a green pipeline means "checked and clean" rather than "silent".
 
   ds-loop sweep <path> [--out <dir>] [--config <file>]
       Sweep the CIEDE2000 ΔE cutoff across the configured range. Full curve.
@@ -98,6 +101,17 @@ function main(argv: string[]): void {
         quiet: has(rest, 'quiet'),
       });
       if (report.findings.length > 0) process.exitCode = 1;
+      // A zero exit says "no findings", never "sufficiently checked". CI that needs
+      // the stronger claim asks for it explicitly, because forcing it would fail
+      // every repository containing a format no adapter reads yet.
+      if (has(rest, 'require-coverage') && !report.coverage.complete) {
+        if (!has(rest, 'quiet')) {
+          console.error('\n  coverage is incomplete and --require-coverage was set:');
+          for (const line of formatCoverage(report.coverage)) console.error(line);
+          console.error('');
+        }
+        process.exitCode = 1;
+      }
       break;
     }
     case 'sweep': {

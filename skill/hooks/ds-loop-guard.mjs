@@ -11,7 +11,7 @@
  * It never blocks: a PostToolUse hook fires after the edit already landed.
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -52,12 +52,81 @@ try {
 }
 
 const findings = report.findings ?? [];
-if (findings.length === 0) process.exit(0);
+const coverage = report.coverage ?? null;
+
+/**
+ * Coverage notification policy, decided explicitly.
+ *
+ * Three channels, three jobs:
+ *   session setup  `ds-loop context` states the scope limits once, before work.
+ *   this hook       reports a coverage CHANGE once — never after every edit.
+ *   CI              `audit --require-coverage` makes a green pipeline mean
+ *                   "checked and clean" instead of "silent".
+ *
+ * The hook runs at --min-severity high, which legitimately hides low findings. It
+ * must not also hide the fact that part of the source could not be read or judged —
+ * but repeating that on every save would train the agent to ignore this channel,
+ * which is worse than saying it once. So: signature in, signature compared, report
+ * only on first sight or change.
+ */
+const STATE = 'node_modules/.cache/ds-loop/guard-coverage.json';
+
+function coverageSignature(c) {
+  if (!c) return null;
+  return JSON.stringify({
+    unread: c.unreadFormats ?? {},
+    tokenFiles: (c.unreadTokenFiles ?? []).length,
+    unconvertible: c.unconvertible?.count ?? 0,
+    couldNotJudge: (c.couldNotJudge ?? []).slice().sort(),
+  });
+}
+
+function coverageChanged(signature) {
+  if (!signature) return false;
+  const path = resolve(cwd, STATE);
+  let previous = null;
+  try {
+    previous = JSON.parse(readFileSync(path, 'utf8')).signature ?? null;
+  } catch {
+    /* first run in this checkout */
+  }
+  if (previous === signature) return false;
+  try {
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, `${JSON.stringify({ signature, at: new Date().toISOString() }, null, 2)}\n`);
+  } catch {
+    /* unwritable cache: report this time rather than going silent */
+  }
+  return true;
+}
+
+const notes = [];
+if (coverage && !coverage.complete && coverageChanged(coverageSignature(coverage))) {
+  const unread = Object.entries(coverage.unreadFormats ?? {});
+  const parts = [];
+  if (unread.length > 0) parts.push(`${unread.map(([e, n]) => `${n}× ${e}`).join(', ')} unread`);
+  if (coverage.unconvertible?.count) parts.push(`${coverage.unconvertible.count} colour(s) unconvertible`);
+  if ((coverage.couldNotJudge ?? []).length > 0)
+    parts.push(`${coverage.couldNotJudge.join(', ')} could not judge`);
+  notes.push(
+    `ds-loop coverage — this project is only partly checked: ${parts.join('; ')}.\n` +
+      'A clean result from here is clean within that scope. Said once; run `ds-loop context` for the full picture.',
+  );
+}
+
+if (findings.length === 0) {
+  if (notes.length > 0) {
+    process.stderr.write(`${notes.join('\n\n')}\n`);
+    process.exit(2);
+  }
+  process.exit(0);
+}
 
 const lines = findings.map(
   (f) => `  • [${String(f.severity).toUpperCase()}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
 );
 process.stderr.write(
-  `ds-loop guard — the edit to ${filePath.split('/').pop()} introduced ${findings.length} design-system issue(s):\n\n${lines.join('\n\n')}\n`,
+  `ds-loop guard — the edit to ${filePath.split('/').pop()} introduced ${findings.length} design-system issue(s):\n\n${lines.join('\n\n')}\n` +
+    (notes.length > 0 ? `\n${notes.join('\n\n')}\n` : ''),
 );
 process.exit(2);

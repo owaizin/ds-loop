@@ -103,6 +103,14 @@ source must stay distinguishable in output; a linter whose silence is ambiguous 
 `coverage.complete` requires at least one adapter, so "every rule could judge" can never print inside
 a not-checked report.
 
+**Coverage notification is a decided policy, not an accident.** Preserving coverage in the report is
+not the same as informing the agent: at `--min-severity high --quiet` the guard can be silent while
+coverage is incomplete. Three channels, three jobs — `context` states limits once at session setup;
+the hook reports a coverage *change* only (signature in `node_modules/.cache/ds-loop/`), because
+repeating it per save trains the agent to ignore the channel; `audit --require-coverage` exits 1 on
+incomplete coverage so CI can demand the stronger claim. Changing any of these three means changing
+the policy, so say so.
+
 **A severity floor filters findings, never coverage.** `couldNotJudge` is built from the *unfiltered*
 finding set. The guard hook runs at `--min-severity high`, which is exactly where hiding a
 "could not judge" would read as a pass. `test/coverage.test.ts` pins both.

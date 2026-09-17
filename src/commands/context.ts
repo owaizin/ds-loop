@@ -1,7 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { adaptersFor } from '../adapters/registry.ts';
+
 import type { LoadedConfig } from '../config/load.ts';
+import { buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { resolveSource } from '../core/source.ts';
 
 /**
@@ -44,12 +46,20 @@ export function context(target: string, loaded: LoadedConfig): void {
     'STYLEGUIDE.md',
     'docs/design-system.md',
   ];
-  const found = INTENT_SOURCES.filter((p) => existsSync(join(source.root, p)));
+  // a decision directory is an intent source as much as a file is; only one of the
+  // two can be read as text, and assuming otherwise crashed with EISDIR
+  const found = INTENT_SOURCES.filter((p) => existsSync(join(source.root, p))).map((p) => ({
+    path: p,
+    isDir: statSync(join(source.root, p)).isDirectory(),
+  }));
 
   if (found.length > 0) {
-    const primary = found[0]!;
-    const front = readFileSync(join(source.root, primary), 'utf8').split('\n')[0] ?? '';
-    console.log(`  declared    ${found.join(', ')}${front.startsWith('---') ? ' (frontmatter)' : ''}`);
+    const firstFile = found.find((f) => !f.isDir);
+    const front = firstFile
+      ? (readFileSync(join(source.root, firstFile.path), 'utf8').split('\n')[0] ?? '')
+      : '';
+    const shown = found.map((f) => (f.isDir ? `${f.path}/` : f.path)).join(', ');
+    console.log(`  declared    ${shown}${front.startsWith('---') ? ' (frontmatter)' : ''}`);
     console.log('              read these before treating any finding as drift — a value that');
     console.log('              disagrees with a stated convention is drift; one that disagrees');
     console.log('              with nothing is a convention nobody wrote down yet.');
@@ -66,6 +76,21 @@ export function context(target: string, loaded: LoadedConfig): void {
     console.log('  adapters    none recognise this tree — no token files or class strings found.');
   } else {
     console.log(`  adapters    ${adapters.map((a) => `${a.id}@${a.version}`).join(' + ')}`);
+  }
+
+  // Coverage limits belong here, once, at session setup. The guard cannot carry
+  // them after every edit without becoming noise, and a severity floor legitimately
+  // hides low findings — so this is the channel that states the scope up front.
+  // No rules are run, so rule-judgement limits are not knowable yet; extraction
+  // limits are, and those are the ones that silently shrink every later result.
+  if (adapters.length > 0) {
+    const values = adapters.flatMap((a) => a.extract(source, loaded.config));
+    const coverage = buildCoverage(source.root, adapters, values, []);
+    if (!coverage.complete) {
+      console.log('\n  scope limits (established now, not repeated after every edit)');
+      for (const line of formatCoverage(coverage)) console.log(line);
+      console.log('              a later clean audit is clean WITHIN this scope');
+    }
   }
 
   console.log('\n  next        ds-loop audit .        every deterministic rule, severity-ranked');
