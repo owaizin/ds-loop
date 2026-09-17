@@ -13,7 +13,7 @@
  * the only thing standing between a refactor and a silently broken `npx`.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -170,6 +170,17 @@ try {
       .trim()
       .split('\n');
     assert(lines.length === 2, `expected 2 rows, got ${lines.length}`);
+  });
+
+  check('an unreadable source is reported as not-checked, never as clean', () => {
+    const sub = join(dir, 'unreadable');
+    mkdirSync(sub, { recursive: true });
+    writeFileSync(join(sub, 'theme.scss'), '$brand: #1da1f2;\n');
+    const r = run(['audit', 'unreadable']);
+    assert(/not checked/.test(r.stdout), `expected a not-checked verdict, got: ${r.stdout.slice(0, 120)}`);
+    assert(!/✓ clean/.test(r.stdout), 'an unread source must never print clean');
+    const report = JSON.parse(run(['audit', 'unreadable', '--json']).stdout);
+    assert(report.verdict === 'not-checked', `verdict was ${report.verdict}`);
   });
 
   check('a non-git directory produces no git noise', () => {

@@ -41,7 +41,12 @@ export type Coverage = {
   undecided: { count: number; samples: string[] };
   /** rules that returned nothing because they could not judge, not because it was clean */
   couldNotJudge: string[];
-  /** true when nothing is unread, unconvertible, or unjudged */
+  /**
+   * True only when an adapter actually read something AND nothing was unread,
+   * unconvertible, or unjudged. With no adapter there is no coverage to be complete
+   * about, and saying "every rule could judge" inside a not-checked report is
+   * reassurance the reader has not earned.
+   */
   complete: boolean;
 };
 
@@ -112,6 +117,7 @@ export function buildCoverage(
     // `undecided` does not make an audit incomplete: the tool read the value and
     // converted it. Someone has to decide what it means, which is not a gap.
     complete:
+      adapters.length > 0 &&
       Object.keys(unreadFormats).length === 0 &&
       tokenFiles.length === 0 &&
       cannotConvert.length === 0 &&
@@ -160,7 +166,9 @@ export function formatCoverage(c: Coverage): string[] {
     lines.push(`    could not judge: ${c.couldNotJudge.join(', ')} — see the finding for why`);
   }
 
-  if (c.complete) {
+  if (c.partialReads.length === 0) {
+    lines.push('    no adapter read anything here — there is no coverage to report');
+  } else if (c.complete) {
     lines.push('    every format in scope was read, every colour converted, every rule able to judge');
   }
 

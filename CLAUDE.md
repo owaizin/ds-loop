@@ -96,6 +96,17 @@ classify them `ambiguous` instead of `excluded`. This exists because 76 oklch to
 every rule silently, and Radix's 72 display-p3 entries with them. Adding a colour form means adding it to
 `parseColor` **and** keeping the unparsed-function net intact.
 
+**Three outcomes, never conflated.** `verdict` is `clean` | `issues` | `not-checked`. A source no
+adapter reads returns `not-checked` and prints its coverage — it used to return early, before the
+report it most needed. An empty tree, styling in an unreadable format, and a read-but-unjudgeable
+source must stay distinguishable in output; a linter whose silence is ambiguous is worse than none.
+`coverage.complete` requires at least one adapter, so "every rule could judge" can never print inside
+a not-checked report.
+
+**A severity floor filters findings, never coverage.** `couldNotJudge` is built from the *unfiltered*
+finding set. The guard hook runs at `--min-severity high`, which is exactly where hiding a
+"could not judge" would read as a pass. `test/coverage.test.ts` pins both.
+
 **Coverage is part of the report** (`core/coverage.ts`). `audit` states which formats no
 adapter read, what each adapter reads *inside* the files it opens, which colours were
 recognised but not convertible, and which rules could not judge. An adapter therefore

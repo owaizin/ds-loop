@@ -5,6 +5,7 @@ import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
+import { surveyTree } from '../core/files.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
@@ -26,7 +27,12 @@ export type AuditReport = {
   coverage: Coverage;
   /** ratios, not counts — a scorecard row that survives codebase growth */
   ratios: Record<string, number>;
-  verdict: 'clean' | 'issues';
+  /**
+   * `clean` means every rule that could judge did, and found nothing.
+   * `issues` means findings survived.
+   * `not-checked` means no adapter read the source — never a pass.
+   */
+  verdict: 'clean' | 'issues' | 'not-checked';
 };
 
 /**
@@ -65,8 +71,12 @@ export function audit(
   const { meta, source, live } = resolveSource(targetPath, { only: only.length ? only : undefined });
   const adapters = adaptersFor(source);
   if (adapters.length === 0) {
-    // no recognisable token files in scope — a clean no-op, not an error (hook mode)
-    return emptyReport(ruleTarget, meta);
+    // No adapter recognised this tree. That is NOT a clean result, and it used to
+    // return before printing the coverage report it most needed. Three outcomes
+    // must stay distinguishable: an empty repository, styling in a format nothing
+    // reads, and a source that was read but could not be judged. None of them may
+    // masquerade as a checked system.
+    return noAdapterReport(ruleTarget, meta, source.root, opts);
   }
 
   const values = adapters.flatMap((a) => a.extract(source, config));
@@ -75,9 +85,11 @@ export function audit(
 
   const rules = rulesForTarget(ruleTarget);
   const minRank = opts.minSeverity ? SEVERITY_ORDER[opts.minSeverity] : Number.POSITIVE_INFINITY;
-  const findings = rules
+  const allFindings = rules
     .flatMap((r) => r.run(ctx))
-    .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f))
+    .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f));
+
+  const findings = allFindings
     .filter((f) => SEVERITY_ORDER[f.severity] <= minRank)
     .sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
 
@@ -130,7 +142,9 @@ export function audit(
     source.root,
     adapters,
     values,
-    findings.map((f) => f.ruleId),
+    // unfiltered on purpose: a severity floor may hide a finding, never the fact
+    // that a check could not judge this source
+    allFindings.map((f) => f.ruleId),
   );
 
   const report: AuditReport = {
@@ -166,8 +180,22 @@ export function audit(
   return report;
 }
 
-function emptyReport(target: string, meta: { label: string; fixtureSha: string }): AuditReport {
-  return {
+/**
+ * No adapter recognised the source. Distinguishes an empty tree from styling in an
+ * unreadable format, and prints the coverage report either way — the reader needs
+ * to know the difference between "nothing to check" and "could not check".
+ */
+function noAdapterReport(
+  target: string,
+  meta: { label: string; fixtureSha: string },
+  root: string,
+  opts: { json?: boolean; quiet?: boolean; silent?: boolean },
+): AuditReport {
+  const coverage = buildCoverage(root, [], [], []);
+  const present = surveyTree(root);
+  const anyFiles = present.size > 0;
+
+  const report: AuditReport = {
     manifest: {
       tool: 'ds-loop',
       command: 'audit',
@@ -180,18 +208,32 @@ function emptyReport(target: string, meta: { label: string; fixtureSha: string }
     },
     rulesRun: [],
     findings: [],
-    coverage: {
-      unreadFormats: {},
-      unreadTokenFiles: [],
-      partialReads: [],
-      unconvertible: { count: 0, samples: [] },
-      undecided: { count: 0, samples: [] },
-      couldNotJudge: [],
-      complete: false,
-    },
+    coverage,
     ratios: {},
-    verdict: 'clean',
+    verdict: 'not-checked',
   };
+
+  if (!opts.silent && !opts.quiet) {
+    if (opts.json) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      console.log(`\n  ds-loop audit — ${meta.label}`);
+      console.log(
+        anyFiles
+          ? '\n  ✗ not checked — no adapter reads any styling format found here.\n'
+          : '\n  ✗ not checked — nothing to read: no files in scope.\n',
+      );
+      console.log('  scope — what this audit read');
+      for (const line of formatCoverage(coverage)) console.log(line);
+      if (anyFiles) {
+        const top = [...present.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+        console.log(`    formats present: ${top.map(([e, n]) => `${n}× ${e}`).join(', ')}`);
+      }
+      console.log('\n  This is not a clean result. Nothing was judged.\n');
+    }
+  }
+
+  return report;
 }
 
 function printReport(r: AuditReport, opts: { live: boolean } = { live: false }): void {
@@ -202,7 +244,12 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
   console.log(`  ${r.rulesRun.length} rules run\n`);
 
   if (r.findings.length === 0) {
-    console.log('  ✓ clean — no findings from the rules that ran, within the scope below\n');
+    const blind = r.coverage.couldNotJudge.length > 0 || !r.coverage.complete;
+    console.log(
+      blind
+        ? '  ✓ no findings — but the scope below is narrower than the whole source\n'
+        : '  ✓ clean — every rule that ran could judge this source, and found nothing\n',
+    );
   } else {
     for (const f of r.findings) {
       console.log(`  [${f.severity.toUpperCase()}] ${f.ruleId}`);

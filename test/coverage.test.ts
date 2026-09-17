@@ -110,3 +110,58 @@ test('a source with nothing unread and every colour converted reports complete',
   assert.equal(coverage.unconvertible.count, 0);
   assert.equal(coverage.complete, true);
 });
+
+test('three outcomes stay distinguishable: empty, unreadable, unjudgeable', () => {
+  // none of them may masquerade as a successfully checked system
+  const empty = inTree({ 'notes.md': '# hello\n' }, (root) => audit(root, { silent: true }));
+  assert.equal(empty.verdict, 'not-checked', 'nothing to read is not a pass');
+  assert.equal(empty.coverage.complete, false, 'no adapter means no coverage to be complete about');
+  assert.deepEqual(empty.coverage.partialReads, []);
+
+  const unreadable = inTree(
+    { 'theme.scss': '$brand: #1da1f2;\n', 'W.vue': '<template><div/></template>\n' },
+    (root) => audit(root, { silent: true }),
+  );
+  assert.equal(unreadable.verdict, 'not-checked', 'styling nothing reads is not a pass');
+  assert.deepEqual(unreadable.coverage.unreadFormats, { '.scss': 1, '.vue': 1 });
+
+  const unjudgeable = inTree({ 'tokens.css': ':root{--brand:#1da1f2;--accent:var(--brand)}\n' }, (root) =>
+    audit(root, { silent: true }),
+  );
+  // read fine, rules ran, and one of them reported that it could not judge
+  assert.equal(unjudgeable.verdict, 'issues');
+  assert.ok(unjudgeable.coverage.partialReads.length > 0, 'an adapter did read it');
+  assert.ok(
+    unjudgeable.coverage.couldNotJudge.includes('token/tier-model-undetectable'),
+    'the tier check could not judge these names and must say so',
+  );
+
+  const checked = inTree({ 'tokens.css': ':root{--palette-blue-500:#1da1f2;}\n' }, (root) =>
+    audit(root, { silent: true }),
+  );
+  assert.equal(checked.verdict, 'clean');
+  assert.equal(checked.coverage.complete, true);
+});
+
+test('a severity floor hides findings, never the fact that a check could not judge', () => {
+  // the guard hook runs at --min-severity high, which is exactly where losing a
+  // "could not judge" does the most damage: the agent reads silence as a pass
+  const files = { 'tokens.css': ':root{--brand:#1da1f2;--accent:var(--brand)}\n' };
+
+  const all = inTree(files, (root) => audit(root, { silent: true }));
+  const filtered = inTree(files, (root) => audit(root, { silent: true, minSeverity: 'high' }));
+
+  assert.ok(
+    all.findings.some((f) => f.ruleId === 'token/tier-model-undetectable'),
+    'the low-severity limitation is a finding at no floor',
+  );
+  assert.ok(
+    !filtered.findings.some((f) => f.ruleId === 'token/tier-model-undetectable'),
+    'and is filtered out of the findings list at --min-severity high',
+  );
+  assert.deepEqual(
+    filtered.coverage.couldNotJudge,
+    all.coverage.couldNotJudge,
+    'but coverage must report it either way',
+  );
+});

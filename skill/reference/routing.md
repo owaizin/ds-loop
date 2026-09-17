@@ -16,7 +16,10 @@ Shown when `/ds-loop` is invoked with no command. Present the menu; never auto-r
 - `shape` → `review` — interrogate a new component's design, then audit its build.
 
 **Keeping it from rotting**
-- `guard on` — wire the checks into CI and pre-commit.
+- `guard on` — install the edit-time hook (Claude Code `PostToolUse`). It reports
+  after a write lands and **cannot block**; it is one integration surface, not every
+  editor or a shell-written change. CI gating is separate and deliberate: put
+  `ds-loop audit --min-severity high` in the pipeline, where exit 1 does the work.
 - `drift` — what regressed since the baseline.
 - `scorecard` — the entropy trend line.
 

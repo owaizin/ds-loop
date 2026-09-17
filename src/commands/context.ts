@@ -30,16 +30,36 @@ export function context(target: string, loaded: LoadedConfig): void {
     console.log('              Run `ds-loop sweep` before trusting a ΔE cutoff on this palette.');
   }
 
-  const declared = ['DESIGN-SYSTEM.md', 'docs/DESIGN-SYSTEM.md'].find((p) =>
-    existsSync(join(source.root, p)),
-  );
-  if (declared) {
-    const front = readFileSync(join(source.root, declared), 'utf8').split('\n').slice(0, 1).join('');
-    console.log(`  declared    ${declared}${front.startsWith('---') ? ' (has frontmatter)' : ''}`);
+  // Intent is not only ever written in a DESIGN-SYSTEM.md. It lives in contribution
+  // guides, ADRs, component contracts and team decisions, and treating one missing
+  // filename as "nothing states the intent" is an overclaim about someone's project.
+  const INTENT_SOURCES = [
+    'DESIGN-SYSTEM.md',
+    'docs/DESIGN-SYSTEM.md',
+    'CONTRIBUTING.md',
+    'docs/CONTRIBUTING.md',
+    '.github/CONTRIBUTING.md',
+    'docs/adr',
+    'docs/decisions',
+    'STYLEGUIDE.md',
+    'docs/design-system.md',
+  ];
+  const found = INTENT_SOURCES.filter((p) => existsSync(join(source.root, p)));
+
+  if (found.length > 0) {
+    const primary = found[0]!;
+    const front = readFileSync(join(source.root, primary), 'utf8').split('\n')[0] ?? '';
+    console.log(`  declared    ${found.join(', ')}${front.startsWith('---') ? ' (frontmatter)' : ''}`);
+    console.log('              read these before treating any finding as drift — a value that');
+    console.log('              disagrees with a stated convention is drift; one that disagrees');
+    console.log('              with nothing is a convention nobody wrote down yet.');
   } else {
-    console.log('  declared    no DESIGN-SYSTEM.md — nothing states what this system intends.');
-    console.log('              An absent agreement is not a violated one: without a declared');
-    console.log('              expectation, an arbitrary value is not yet evidence of drift.');
+    console.log(`  declared    none found in ${INTENT_SOURCES.length} usual places`);
+    console.log('              which is not the same as "this team has no conventions". Intent');
+    console.log('              also lives in component contracts, lint configs, review habits,');
+    console.log('              and decisions never written down. Ask before assuming absence:');
+    console.log('              an absent agreement is not a violated one, and a convention you');
+    console.log('              have not found is not a convention that does not exist.');
   }
 
   if (adapters.length === 0) {

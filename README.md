@@ -105,6 +105,24 @@ Real output, verbatim, from the public Radix fixture in this repo — run
     ambiguous-share              0.5
 ```
 
+A source it cannot read is reported as **`not-checked`**, never as clean:
+
+```
+  ✗ not checked — no adapter reads any styling format found here.
+
+  scope — what this audit read
+    not read at all: 1× .vue, 1× .scss — no adapter handles these
+    formats present: 1× .vue, 1× .scss
+
+  This is not a clean result. Nothing was judged.
+```
+
+Three outcomes stay distinguishable — nothing to read, nothing that *can* be read,
+and read-but-unjudgeable — because a linter whose silence is ambiguous is worse than
+no linter. And a severity floor can hide a finding but never the fact that a check
+could not judge: the guard runs at `--min-severity high`, which is exactly where
+losing that would do the most damage.
+
 That last section is the honest part. Radix ships 72 sRGB entries **and** 72
 `color(display-p3 …)` entries, and ds-loop can only convert the first set — so it
 says so, instead of reporting a clean palette it only half read. **A clean verdict
