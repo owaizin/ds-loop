@@ -334,7 +334,8 @@ internal notes.
 - `docs/METHODOLOGY.md` — the engagement methodology the tool automates, including the four-layer token
   model and the relationship to `design-system-ops`.
 - `skill/` — the `/ds-loop` skill: `SKILL.md`, per-command playbooks in `reference/`, the guard hook in
-  `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Seven CLI commands are implemented: `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
+  `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Eight CLI commands are implemented:
+  `start` (also the bare invocation), `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
   `scorecard`. The other named operations are agent playbooks.
 - `product-system-skills-v0.2/` is an **unrelated, untracked** skills pack that happens to sit in this tree.
   It is not part of the engine. Its review history lives in

@@ -5,10 +5,10 @@
 > design system for a dense multi-product SaaS and cross-checked against Polaris,
 > Primer, Spectrum, Carbon and ADS.
 >
-> Most of the mechanisms named below are **not implemented**. The seven commands
-> that exist are `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
-> `scorecard`; see [the CLI reference](guide/reference.md) for what each one
-> actually does. Everything here described as a clusterer, a generator or a watch
+> Most of the mechanisms named below are **not implemented**. The commands that
+> exist are `start` (also what bare `ds-loop` runs), `context`, `audit`, `scan`,
+> `sweep`, `guard`, `fix` and `scorecard`; see
+> [the CLI reference](guide/reference.md) for what each one actually does. Everything here described as a clusterer, a generator or a watch
 > mode is a plan. Read this for the reasoning, and the reference for the tool.
 
 The one-sentence thesis:

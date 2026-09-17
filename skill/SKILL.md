@@ -14,7 +14,9 @@ are candidates for investigation; they do not establish the team's policy.
 1. Keep cwd at the target project. Run `<skill-base-dir>/bin/ds-loop context .`
    once at setup, then `<skill-base-dir>/bin/ds-loop audit . --json` unfiltered.
    Retain the report, including coverage. `context` runs no rules; the hook filters
-   at high severity. Neither replaces this audit.
+   at high severity. Neither replaces this audit. The report's `next` array names
+   the follow-up command this run actually supports — including whether `fix` can
+   act at all, which is not the same as a rule's own count.
 2. Read applicable repository instructions and the actual sources of design intent:
    contribution guides, foundation docs, component contracts, decisions, lint
    configuration, and relevant tests/stories. `context` searches a short list of
@@ -90,8 +92,9 @@ Design System Loop does not ship those checks.
 
 | Command | Built? | Category | Description | Reference |
 |---|---|---|---|---|
+| `start [path]` / bare `ds-loop` | **CLI** | Meta | Verdict for this directory, its biggest finding, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
 | `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage | — |
-| `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Severity-ranked findings + scorecard ratios. No LLM, no network | [reference/audit.md](reference/audit.md) |
+| `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Severity-ranked findings, scorecard ratios, and a `next` block naming the follow-up command. No LLM, no network | [reference/audit.md](reference/audit.md) |
 | `scan [path]` | **CLI** | Audit | Quick look: classification breakdown + palette clusters at the default ΔE | — |
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |
 | `guard [on\|off\|status]` | **CLI** | Guard | Install/remove the edit-time `PostToolUse` hook | [reference/guard.md](reference/guard.md) |
