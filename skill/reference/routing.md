@@ -12,7 +12,7 @@ Shown when `/ds-loop` is invoked with no command. After read-only setup, present
 **Building**
 - `tokenize` — implement the agreed token source and required consumer formats.
 - `scaffold` — Storybook spine, foundations pages, the 5-file component contract.
-- `extract` — pull a repeated pattern into the system properly.
+- `extract` — move a pattern consumer code re-implemented into the system, then migrate its call sites.
 - `shape` → `review` — interrogate a new component's design, then audit its build.
 
 **Keeping the system's commitments in view**

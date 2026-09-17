@@ -84,7 +84,7 @@ are not applicable rather than declaring that model broken.
 CSS plus design-token JSON is one possible distribution choice. Keep the project's
 source of truth; add another format only for a named consumer. CSS/JSON parity,
 component-file contracts, and MDX validation need separate project checkers.
-DS Loop does not ship those checks.
+Design System Loop does not ship those checks.
 
 ## Commands
 
@@ -101,7 +101,7 @@ DS Loop does not ship those checks.
 | `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
 | `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
 | `scaffold [target]` | playbook | Build | Generate the Storybook spine, foundations pages, the 5-file component contract, the validators | [reference/scaffold.md](reference/scaffold.md) |
-| `extract [target]` | playbook | Build | Pull a repeated pattern into the system as a proper 5-file component | [reference/extract.md](reference/extract.md) |
+| `extract [target]` | playbook | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
 | `shape <component>` | playbook | Review | Phase 0 design-intent interrogation before a new component | [reference/shape.md](reference/shape.md) |
 | `review <component>` | playbook | Review | Full component audit — API caps, token hygiene, story structure, a11y, MDX | [reference/review.md](reference/review.md) |
 | `scorecard [path]` | **CLI** | Guard | Append ratios to `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews without writing; CI scheduling is separate | [reference/scorecard.md](reference/scorecard.md) |
