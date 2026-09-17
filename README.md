@@ -5,7 +5,7 @@ As your product grows, teams build different versions of the same controls, tabl
 Install in your project with Node 22.6 or later:
 
 ```sh
-npm install --save-dev ds-loop@0.1.1
+npm install --save-dev ds-loop@0.1.2
 ./node_modules/.bin/ds-loop context .
 ./node_modules/.bin/ds-loop audit . --json
 ```

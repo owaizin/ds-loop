@@ -2,7 +2,7 @@
 name: ds-loop
 description: Audit token code and guide bounded design-system adoption, maintenance, and component governance using the project's own conventions. Use for establishing a system, repairing a partial one, or checking an existing library. Not for isolated screen styling or product strategy.
 metadata:
-  version: 0.1.1
+  version: 0.1.2
 ---
 
 The engine measures token code. The skill uses those measurements and the
