@@ -1,10 +1,16 @@
 # shape
 
-Phase 0 design-intent interrogation, before a single file of a new component is
-written. Weak answers are a signal to challenge — not to accept and build.
+Design intent, settled before a single file of a new component is written. A
+thin answer is a signal to look harder at the evidence — not to accept it and
+build.
 
-Ask all questions at once, as one numbered list. Do not proceed until they are
-answered.
+**Read before asking.** Existing components, the contribution guide, the
+foundation docs and recent component PRs already answer several of these for
+most repositories. Ask only the questions that are still open *and* whose answer
+changes what gets built; carry the rest as findings with their source. A
+numbered interrogation the author has to complete before anything proceeds is
+not a quality gate — an unanswered question only blocks when proceeding would
+commit the project to a decision it has not made.
 
 ## Questions
 
@@ -14,9 +20,10 @@ answered.
 2. **Usage context** — name 2–3 specific screens or features where this appears.
    Is the consumer a product engineer, or design-system internals only?
 3. **API** — variants / sizes / tones on day one vs. deferred to v2. The minimal
-   prop surface. **What did you cut during design?** Name at least one prop,
-   variant, or size that almost made it in. Are you within the caps (props ≤ 12,
-   variants ≤ 4, sizes ≤ 4, tones ≤ 6, booleans ≤ 5)?
+   prop surface. Where does this sit against the project's own limits, or against
+   the distribution of its existing components? [review.md](review.md) carries the
+   caps and their resolution order; they are proposals to measure against, not a
+   number this component has to clear.
 4. **Composition** — what wraps this (Card, Table row, Drawer)? What does it wrap?
    Behaviour on a dark surface, inside a compact density?
 5. **Edge cases** — empty / null content, long text (truncate, wrap, overflow?),
@@ -32,16 +39,18 @@ answered.
 
 | Signal | Action |
 |---|---|
-| "Nothing does X" but an existing component does X | Stop. Show it. Challenge the need. |
-| Variant/size/tone list over the soft cap on day one | Push back. Cut to the cap; extra ships later with a real use case. |
-| Author cannot name anything cut | Push back. No cuts = no restraint applied = design not finished. |
-| No specific screens named | Challenge. Components built without a usage context get over-engineered. |
-| "It'll be used everywhere" | Red flag. Ask for one concrete example. |
-| "We'll add a11y later" | Block. Not optional. |
-| Touch target < 44×44 with no hit-area plan | Block. Pad, or document a density exception in the guidelines. |
-| Polymorphic (`as` prop) with no semantic reason | Default to a fixed element. |
+| "Nothing does X" but an existing component does X | Name the file and line. The overlap is the finding; the team decides whether to extend or add. |
+| Surface over the project's stated limit | Quote the limit and the count. Over a *proposed* cap with no project limit: report the count and the existing outliers, and leave the call with the team. |
+| No specific screens named, and none found in the repository | Say so. A component with no located consumer is built on a guess about its shape. |
+| "It'll be used everywhere" | Ask for one concrete file. |
+| Interactive, with no keyboard contract or accessible name | Blocks — the missing contract is observable in the code, not a matter of taste. |
+| Touch target < 44×44 with no hit-area plan | Report the measured box. Pad it, or record the density exception where the project records exceptions. |
+| Polymorphic (`as` prop) with no semantic reason given | Default to a fixed element. |
 
-Only after satisfactory answers → hand off to `scaffold <component>` (or the
+Every row above is either a located piece of evidence or a question for the
+team. None of them is merge authority this playbook holds on its own.
+
+Once the open questions are settled → hand off to `scaffold <component>` (or the
 project's own new-component flow).
 
 ## NEVER

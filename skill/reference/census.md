@@ -19,5 +19,8 @@ and consolidation decisions below are review judgments.
 ## Rule that carries over
 
 Only consolidate things used 3+ times with the **same intent**. Two buttons that
-look alike but serve different purposes stay separate. Premature abstraction is
-worse than duplication.
+look alike but serve different purposes stay separate — an abstraction over two
+different intents costs more than the duplication it removes.
+
+The 3-use threshold is common practice, not a measurement from this project;
+where the target repository states its own, use that.

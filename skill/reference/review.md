@@ -85,9 +85,19 @@ completeness; form-control association; contrast (4.5 / 3:1 — a failing token
 
 ### F — Design engineering
 
-No animation on interactions used 10+×/day; entering `ease-out`, exiting `ease-in`,
-no `transition: all`; duration ≤ 300ms via tokens; scale from `0.95` not `0`;
-press feedback (`active:scale-[0.97]`) on tactile components only, never form controls.
+These are one library's motion conventions, resolved like every other number here
+(project frontmatter → contribution guide/lint config → these, stated as defaults).
+Report a deviation against the project's own motion tokens; do not convert a house
+style into a finding.
+
+Observable regardless of house style: `transition: all` (names properties the
+component does not control), a duration written as a literal where the project has
+motion tokens, and a transition with no `prefers-reduced-motion` path.
+
+Conventions, as proposals: no animation on interactions used dozens of times a day;
+entering `ease-out`, exiting `ease-in`; duration ≤ 300ms via tokens; scale from
+`0.95` rather than `0`; press feedback (`active:scale-[0.97]`) on tactile
+components only, never form controls.
 
 ## Output
 

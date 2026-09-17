@@ -7,7 +7,7 @@
     "ds-loop": "./bin/ds-loop.mjs"
   },
   "exports": {
-    ".": "./dist/index.js"
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
   },
   "files": ["bin", "dist", "skill", "README.md", "LICENSE", "docs/guide"],
   "engines": {
@@ -21,7 +21,10 @@
     "prepack": "npm run build",
     "smoke": "node scripts/smoke.mjs",
     "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "site:serve": "node scripts/serve-site.mjs",
+    "site:examples": "node scripts/site-examples.mjs",
+    "site:check": "node scripts/site-examples.mjs --check && node scripts/check-site.mjs"
   },
   "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",

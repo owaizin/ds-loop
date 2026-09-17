@@ -283,8 +283,10 @@ internal notes.
   throughout. "It can't price your rebrand" is honest; "most engines are scaffolding" in the intro is
   self-sabotage.
 - **Show real output.** Paste a genuine run, unedited, and point at the two things worth noticing.
-- **Borrow authority by quoting a source in a callout.** Pocock quotes the books; here it's the field survey
-  and the systems whose rules each check encodes.
+- **Cite a source for the specific claim it supports.** A quote in a callout carries weight only when the
+  source actually says the thing the sentence claims — the field survey for a survey number, the system
+  whose rule a check encodes for that rule. A named source next to an unsupported generalisation is how
+  this project shipped comparative claims about other tools that nothing backed.
 - **Cut abstract nouns.** "policy-free mechanism", "scope line", "the leaky seam" are notes-to-self. Name
   the thing a reader would name.
 

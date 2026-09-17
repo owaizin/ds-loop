@@ -1,11 +1,15 @@
 # extract
 
-Pull a repeated pattern out of consumer code and into the system as a proper
-5-file component, then migrate the call sites.
+Pull a repeated pattern out of consumer code into the system as a component that
+matches the project's own component contract, then migrate the call sites.
 
-Status: **planned.** Overlaps impeccable's `extract`; ds-loop's version is
-system-structure-first (it produces the 5 files and wires the registry), not
-taste-first.
+**This document is the whole implementation** — a playbook you execute, with no
+engine command behind it. Anything reported from it is your reasoning, not a
+deterministic finding.
+
+Component extraction is well-trodden ground; this playbook's only contribution is
+sequencing it against the evidence `audit` and `census` produce. Where the project
+already has an extraction process, follow that one.
 
 ## Steps
 
@@ -16,7 +20,10 @@ taste-first.
    Two lookalikes with different purposes stay separate.
 3. **`shape`** the component API from the real call sites. What varies across them
    is the variant/prop surface; what is constant is the default.
-4. **`scaffold component`** — the 5 files.
+4. **`scaffold component`** — the files the project's contract requires. The
+   five-file contract in [scaffold.md](scaffold.md) is one such contract, adopted
+   by projects that want it; read the target's existing components before assuming
+   its shape.
 5. **Migrate** every call site to the shared version. Test visual + functional parity.
 6. **Delete** the old implementations. Update the registry `usedIn`.
 

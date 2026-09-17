@@ -114,6 +114,44 @@ try {
     assert(hits.length === 0, `private names ship in:\n      ${hits.join('\n      ')}`);
   });
 
+  check('the typed API resolves from an installed package', () => {
+    // `src/index.ts` exports types, so the package is importable as a library, not
+    // only as a CLI. Declaration emit was off, which made every one of those
+    // exports `any` at the consumer. This compiles a consumer against the
+    // installed package with the resolver a consumer actually uses.
+    const probe = join(dir, 'consumer.ts');
+    writeFileSync(
+      probe,
+      "import { audit, hashConfig, DEFAULT_CONFIG } from 'ds-loop';\n" +
+        "import type { AuditReport, Finding } from 'ds-loop';\n" +
+        'const f: Finding = {} as never;\n' +
+        'const r: AuditReport = audit as never;\n' +
+        'void [f, r, hashConfig(DEFAULT_CONFIG)];\n',
+    );
+    writeFileSync(
+      join(dir, 'tsconfig.json'),
+      JSON.stringify({
+        compilerOptions: {
+          module: 'nodenext',
+          moduleResolution: 'nodenext',
+          target: 'es2022',
+          strict: true,
+          noEmit: true,
+        },
+        files: ['consumer.ts'],
+      }),
+    );
+    assert(
+      existsSync(join(dir, 'node_modules', 'ds-loop', 'dist', 'index.d.ts')),
+      'no dist/index.d.ts in the installed package',
+    );
+    const tsc = spawnSync(join(ROOT, 'node_modules', '.bin', 'tsc'), ['-p', 'tsconfig.json'], {
+      cwd: dir,
+      encoding: 'utf8',
+    });
+    assert(tsc.status === 0, `a consumer cannot type-check against the package:\n${tsc.stdout}`);
+  });
+
   check('the installed skill has no missing local Markdown references', () => {
     const skillRoot = join(dir, 'node_modules', 'ds-loop', 'skill');
     function visit(folder) {
