@@ -210,12 +210,12 @@ heuristics.
   for every config — so the threshold leg of the attribution model did nothing for months.
   `test/config.test.ts` pins this.
 
-## The name: Design System Loops, `ds-loop`
+## The name: Design System Loop, `ds-loop`
 
-**The public product is "Design System Loops". The identifier is `ds-loop`, everywhere.** A naming
+**The public product is "Design System Loop". The identifier is `ds-loop`, everywhere.** A naming
 decision, not a restructuring — capabilities and verified output do not change with it.
 
-| Use "Design System Loops" | Keep `ds-loop` |
+| Use "Design System Loop" | Keep `ds-loop` |
 |---|---|
 | Prose in reader-facing docs, the site, a title, a sentence introducing the product | `package.json` `name` and `bin` · the CLI you type · the repository · every path and directory · config filenames · `skill/SKILL.md`'s `name:` · the `$ds-loop` skill invocation |
 

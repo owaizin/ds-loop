@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 /**
- * The public product is "Design System Loops"; the identifier is `ds-loop`.
+ * The public product is "Design System Loop"; the identifier is `ds-loop`.
  *
  * This file guards the identifier half. A naming pass reads the branding half and
  * reasonably concludes that `ds-loop` looks like the old name — but these strings
@@ -65,6 +65,6 @@ test('CLI report headers are the command name, not the product name', () => {
   for (const file of ['audit.ts', 'context.ts', 'scorecard.ts', 'sweep.ts']) {
     const src = read(join('src', 'commands', file));
     assert.match(src, /ds-loop (audit|context|scorecard|sweep) —/, `${file} header must stay ds-loop`);
-    assert.doesNotMatch(src, /Design System Loops/, `${file} must not carry product branding in output`);
+    assert.doesNotMatch(src, /Design System Loop/, `${file} must not carry product branding in output`);
   }
 });
