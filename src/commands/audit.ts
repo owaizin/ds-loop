@@ -83,7 +83,6 @@ export function audit(
 
   const norm = (raw: string) => raw.replace(/\s+/g, ' ').trim().toLowerCase();
   const declared = colors.filter((v) => v.provenance.tokenName !== null);
-  const distinctColors = new Set(colors.map((v) => norm(v.raw))).size;
 
   // Scope-aware duplication. `literal-colors-per-distinct` counts declarations
   // against distinct values across the whole source, which a themed system
@@ -106,9 +105,17 @@ export function audit(
     scopedDistinct += new Set(list).size;
   }
 
+  // Declarations only. Rows 001-005 were measured before a markup adapter existed,
+  // so this ratio was declarations-only by construction. Once `tailwind-jsx`
+  // shipped, the same name silently began counting use-site literals too: a real
+  // app measured [redacted] where its declared palette is [redacted]. That is a different
+  // quantity under an unchanged name, which is the one thing a calibration metric
+  // may never do. Use-site volume is reported by `token/raw-value-in-markup`.
+  const distinctDeclared = new Set(declared.map((v) => norm(v.raw))).size;
+
   const ratios = {
     // theme-confounded; kept because the calibration corpus quotes it. See row 007.
-    'literal-colors-per-distinct': round(colors.length / Math.max(distinctColors, 1)),
+    'literal-colors-per-distinct': round(declared.length / Math.max(distinctDeclared, 1)),
     // theme-independent: the same measurement taken within each selector scope
     'colors-per-distinct-in-scope': round(scopedDecls / Math.max(scopedDistinct, 1)),
     'ambiguous-share': round(
@@ -178,6 +185,7 @@ function emptyReport(target: string, meta: { label: string; fixtureSha: string }
       unreadTokenFiles: [],
       partialReads: [],
       unconvertible: { count: 0, samples: [] },
+      undecided: { count: 0, samples: [] },
       couldNotJudge: [],
       complete: false,
     },

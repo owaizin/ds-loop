@@ -53,6 +53,15 @@ export type DsOpsConfig = {
      */
     primitivePattern: string;
     /**
+     * Name segments that mark a token as a CATEGORY token — a chart series, a
+     * subject colour — where the colour name IS the identity. These look like
+     * numbered scale steps (`--chart-1`) and so match `primitivePattern`, which
+     * made a source with no palette tier report ten primitives and get told to
+     * "point each at a primitive". Identified in calibration row 007, still
+     * misreporting three rows later.
+     */
+    categoryTokenHints: string[];
+    /**
      * RegExp source (case-insensitive) matching a COMPONENT-tier token name
      * (button.background, card.padding). Component tokens may reference only
      * semantic tokens — never primitives, never upward.

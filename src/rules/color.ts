@@ -1,10 +1,19 @@
 import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { toLab } from '../color/convert.ts';
 import { ciede2000 } from '../color/delta-e.ts';
+import type { DsOpsConfig } from '../config/schema.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
 
-function isPrimitive(tokenName: string | null, pattern: string): boolean {
-  return tokenName != null && new RegExp(pattern, 'i').test(tokenName);
+function isPrimitive(tokenName: string | null, cfg: DsOpsConfig): boolean {
+  if (tokenName == null) return false;
+  const name = tokenName.toLowerCase();
+  // a category token (--chart-1, --subject-3) is named for its colour by design:
+  // the colour IS the identity. It matches the trailing-number branch of
+  // primitivePattern but is not a palette step.
+  if (cfg.taxonomy.categoryTokenHints.some((h) => new RegExp(`(^|-)${h}(-|\\d|$)`).test(name))) {
+    return false;
+  }
+  return new RegExp(cfg.taxonomy.primitivePattern, 'i').test(name);
 }
 
 function normRaw(raw: string): string {
@@ -22,9 +31,8 @@ export const semanticLiteralRule: Rule = {
   title: 'Semantic token holds a literal colour, not a var() reference',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
-    const pattern = ctx.config.taxonomy.primitivePattern;
     const offenders = ctx.colors.filter(
-      (v) => v.provenance.tokenName !== null && !isPrimitive(v.provenance.tokenName, pattern),
+      (v) => v.provenance.tokenName !== null && !isPrimitive(v.provenance.tokenName, ctx.config),
     );
     if (offenders.length === 0) return [];
 
@@ -33,7 +41,7 @@ export const semanticLiteralRule: Rule = {
     // reported 649 declarations across 118 names and 35 files.
     const distinctNames = new Set(offenders.map((v) => v.provenance.tokenName)).size;
     const files = new Set(offenders.map((v) => v.provenance.file)).size;
-    const primitives = ctx.colors.filter((v) => isPrimitive(v.provenance.tokenName, pattern)).length;
+    const primitives = ctx.colors.filter((v) => isPrimitive(v.provenance.tokenName, ctx.config)).length;
     return [
       {
         ruleId: this.id,
@@ -104,10 +112,9 @@ export const nearDuplicatePaletteRule: Rule = {
   title: 'Palette primitives are perceptually indistinguishable',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
-    const pattern = ctx.config.taxonomy.primitivePattern;
     const prims = dedupe(
       ctx.colors
-        .filter((v) => isPrimitive(v.provenance.tokenName, pattern))
+        .filter((v) => isPrimitive(v.provenance.tokenName, ctx.config))
         .map((v) => ({ id: v.provenance.tokenName ?? v.raw, raw: v.raw })),
     );
     const threshold = ctx.config.clustering.deltaE;

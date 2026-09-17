@@ -67,6 +67,9 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
       'border-b',
       'border-l',
     ],
+    // chart/series/category tokens are named for their colour on purpose; they are
+    // not palette primitives, even though `--chart-1` looks like a scale step
+    categoryTokenHints: ['chart', 'series', 'category', 'subject'],
     // `raw`/`palette`/`scale`/`ref` anywhere, OR a trailing numeric scale step
     // (--slate-500, --amber-9), OR a trailing named scale step
     // (--font-size-xs, --line-height-tight, --radius-full). Tailwind, Radix, Example DS.

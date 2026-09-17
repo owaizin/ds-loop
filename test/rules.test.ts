@@ -53,6 +53,23 @@ test('semantic-holds-literal flags non-primitive names, ignores scale steps', ()
   assert.equal(findings[0]?.data?.count, 2);
 });
 
+test('a category token is not a palette primitive', () => {
+  // --chart-1 looks like a numbered scale step and matches primitivePattern, so a
+  // source with no palette tier reported ten primitives and got told to "point each
+  // at a primitive". Identified in calibration row 007, still misreporting at row 008.
+  const colors = [
+    value('--chart-1', '#1da1f2'),
+    value('--chart-2', '#0f172a'),
+    value('--subject-3', '#24704b'),
+    value('--slate-500', '#64748b'), // a real scale step, still primitive
+  ];
+  const findings = semanticLiteralRule.run(ctx(colors));
+  assert.equal(findings.length, 1);
+  // the three category tokens are offenders; the scale step is not
+  assert.equal(findings[0]?.data?.count, 3);
+  assert.equal(findings[0]?.data?.primitivesInSource, 1, 'only --slate-500 is a primitive');
+});
+
 test('literal-duplicate-tokens groups tokens that share a value', () => {
   const colors = [
     value('--palette-white', '#ffffff'),

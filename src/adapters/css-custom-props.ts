@@ -11,7 +11,10 @@ const ID = 'css-custom-props';
 // 0.2.0: oklch() parses; lab/lch/hwb/color() surface as ambiguous instead of
 // being dropped. Extraction changed materially — any measurement taken at
 // 0.1.0 read an incomplete palette and is not comparable to one taken here.
-const VERSION = '0.2.0';
+// 0.3.0: a declaration may end at `}` as well as `;`, so the last declaration in
+// a compact block is no longer missed. Verified to change nothing in any corpus
+// fixture (all of them use trailing semicolons), so 0.2.0 numbers stand.
+const VERSION = '0.3.0';
 const EXTS = ['.css'];
 
 /**
@@ -41,7 +44,14 @@ export const cssCustomPropsAdapter: Adapter = {
 
 type Taxonomy = DsOpsConfig['taxonomy'];
 
-const DECL = /(--[\w-]+)\s*:\s*([^;]+);/g;
+// A declaration ends at `;` or at the closing `}` of its block. Requiring the
+// semicolon missed the last declaration in any compact block — 50 of them in one
+// real app, 28 in another, and `--accent:#1da1f2}` is perfectly valid CSS. Zero
+// in every corpus fixture, which is why this could be fixed without invalidating
+// a single calibration row.
+// ponytail: a value containing a literal `}` (a quoted string) would truncate.
+// No real token does that; a parser is the fix if one ever shows up.
+const DECL = /(--[\w-]+)\s*:\s*([^;}]+)[;}]/g;
 
 export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
   const out: RawValue[] = [];
