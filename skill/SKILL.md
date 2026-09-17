@@ -18,12 +18,17 @@ hand it to impeccable.
 ## Setup
 
 1. Run `<skill-base-dir>/bin/ds-loop context` once per session (keep cwd at the
-   user's project). It reports which config loaded, whether the project declares a
-   `DESIGN-SYSTEM.md`, and which adapters recognise the tree. It does **not**
-   analyse anything — run `audit` for that. Do not rerun it.
-2. Load the request's playbook from the Commands table below. If no command is
+   user's project). It reports which config loaded, what declares the system's
+   intent, and which adapters recognise the tree. It does **not** analyse anything.
+   Do not rerun it.
+2. Then run `audit .` **unfiltered, once**. This is the only way to learn which
+   checks cannot judge this source — the guard filters at `high` and `context` runs
+   no rules, so no other channel will tell you. Run it again before calling any
+   change complete: a check that could not judge before must not be reported as
+   passing after.
+3. Load the request's playbook from the Commands table below. If no command is
    named, read `reference/routing.md` and present its menu — never auto-run.
-3. Before editing anything under the design-system directories, obey
+4. Before editing anything under the design-system directories, obey
    `reference/scope.md` — the branch-scope policy. Audit findings never override
    scope.
 

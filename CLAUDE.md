@@ -112,13 +112,20 @@ meant `incomplete → complete → incomplete` stayed silent the second time); a
 **project-scoped only**, because the hook audits one file and file-scoped facts would make alternating
 edits look like coverage flapping.
 
-**Coverage notification is a decided policy, not an accident.** Preserving coverage in the report is
-not the same as informing the agent: at `--min-severity high --quiet` the guard can be silent while
-coverage is incomplete. Three channels, three jobs — `context` states limits once at session setup;
-the hook reports a coverage *change* only (signature in `node_modules/.cache/ds-loop/`), because
-repeating it per save trains the agent to ignore the channel; `audit --require-coverage` exits 1 on
-incomplete coverage so CI can demand the stronger claim. Changing any of these three means changing
-the policy, so say so.
+**Coverage notification is a decided policy, and each limitation has exactly one channel.** Preserving
+coverage in the report is not the same as informing the agent.
+
+| Limitation | Delivered by | Not delivered by |
+|---|---|---|
+| Formats nothing reads, unread token files | `context` at setup; the hook on change | — |
+| **Which checks could not judge** | **`audit .` unfiltered, run deliberately** | the hook (filters at `high`), `context` (runs no rules) |
+| CI's stronger claim | `audit --require-coverage` (exit 1) | a zero exit alone |
+
+The middle row was claimed twice in docs to arrive "through the findings list". It does not, while the
+hook filters that list — `token/tier-model-undetectable` is low severity. The skill's setup step now
+requires an unfiltered audit at session start **and** before calling a change complete, and
+`test/guard-hook.test.ts` pins the fact that the hook does *not* deliver it. If that test starts
+failing, the hook policy widened and every one of these documents has to change with it.
 
 **A severity floor filters findings, never coverage.** `couldNotJudge` is built from the *unfiltered*
 finding set. The guard hook runs at `--min-severity high`, which is exactly where hiding a

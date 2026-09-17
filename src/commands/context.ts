@@ -87,10 +87,18 @@ export function context(target: string, loaded: LoadedConfig): void {
     const values = adapters.flatMap((a) => a.extract(source, loaded.config));
     const coverage = buildCoverage(source.root, adapters, values, []);
     if (!coverage.complete) {
-      console.log('\n  scope limits (established now, not repeated after every edit)');
+      console.log('\n  extraction limits (established now, not repeated after every edit)');
       for (const line of formatCoverage(coverage)) console.log(line);
       console.log('              a later clean audit is clean WITHIN this scope');
     }
+    // This command runs no rules, so it cannot know which checks will be unable to
+    // judge this source. That is only visible in an unfiltered audit, and the guard
+    // hook filters at `high` — so nothing else will tell you.
+    console.log('\n  not covered here');
+    console.log('              which checks can JUDGE this source needs a rule run.');
+    console.log('              run `ds-loop audit . --json` unfiltered once now, and');
+    console.log('              again before calling any change complete: the guard');
+    console.log('              filters at high severity and will not surface it.');
   }
 
   console.log('\n  next        ds-loop audit .        every deterministic rule, severity-ranked');

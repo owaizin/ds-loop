@@ -102,14 +102,62 @@ test('guard: a different coverage gap is announced as a change', () => {
   });
 });
 
-test('guard: editing different files does not look like coverage changing', () => {
-  inProject(PARTLY_UNREADABLE, (dir) => {
-    assert.ok(edit(dir, 'tokens.css').noticed, 'first sight announces');
-    // the signature is project-scoped, so alternating between two files must not flap
-    for (const file of ['other.css', 'tokens.css', 'other.css', 'tokens.css']) {
-      const r = edit(dir, file);
-      assert.ok(!r.noticed, `editing ${file} re-announced project coverage`);
-    }
+test('guard: alternating files with different coverage profiles does not flap', () => {
+  // The first version of this test used two ordinary palette files, which never
+  // exercised the distinction that caused the flapping. These two differ in exactly
+  // the file-scoped facts the signature must ignore: `odd.css` holds an
+  // unconvertible colour and a reference whose name matches no tier convention;
+  // `plain.css` holds neither.
+  inProject(
+    {
+      'odd.css': ':root{--weird:lab(52% 40 60);--brand:#1da1f2;--accent:var(--brand)}\n',
+      'plain.css': ':root{--palette-blue-500:#1da1f2;}\n',
+      'theme.scss': '$brand: #1da1f2;\n',
+    },
+    (dir) => {
+      const first = edit(dir, 'odd.css');
+      assert.ok(first.noticed, 'first sight announces the project format gap');
+
+      for (const file of ['plain.css', 'odd.css', 'plain.css', 'odd.css']) {
+        const r = edit(dir, file);
+        assert.ok(
+          !r.noticed,
+          `editing ${file} re-announced project coverage — the signature is not project-scoped`,
+        );
+      }
+    },
+  );
+});
+
+test('guard: file-scoped judgement limits are NOT delivered by this channel', () => {
+  // Documenting the truth rather than a hope. `token/tier-model-undetectable` is
+  // low severity and the hook filters at high, so it cannot arrive here — and
+  // `context` runs no rules, so it cannot supply it either. The only channel is an
+  // unfiltered `audit`, which the skill's setup step now requires explicitly.
+  // If this test ever fails, the hook policy widened and the docs must change with it.
+  inProject({ 'tokens.css': ':root{--brand:#1da1f2;--accent:var(--brand)}\n' }, (dir) => {
+    const r = edit(dir, 'tokens.css');
+    assert.doesNotMatch(
+      r.stderr,
+      /tier-model-undetectable/,
+      'the hook filters at high severity; claiming otherwise in docs was the bug',
+    );
+
+    // and the limit is genuinely there, in an unfiltered run
+    const audit = spawnSync(
+      process.execPath,
+      [
+        '--experimental-strip-types',
+        '--no-warnings',
+        join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'cli.ts'),
+        'audit',
+        '.',
+        '--json',
+      ],
+      { cwd: dir, encoding: 'utf8' },
+    );
+    const report = JSON.parse(audit.stdout);
+    assert.deepEqual(report.coverage.couldNotJudge, ['token/tier-model-undetectable']);
   });
 });
 

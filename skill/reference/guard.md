@@ -24,15 +24,23 @@ hook (`skill/hooks/ds-loop-guard.mjs`):
 legitimately hides low findings — it must not also hide the fact that part of the
 source could not be read or judged. Three channels, three jobs:
 
-| Channel | Job | Frequency |
+| Channel | What it actually delivers | Frequency |
 |---|---|---|
-| `ds-loop context` | State the scope limits before work starts | once per session |
-| this hook | Report a coverage **change** | first sight, then only when it changes |
-| `audit --require-coverage` | Make a green pipeline mean "checked and clean" | every CI run, opt-in |
+| `ds-loop context` | Project shape: config, declared intent, **extraction** limits | once per session |
+| **`ds-loop audit .` unfiltered** | **The only channel for rule-judgement limits** — which checks could not judge this source | at session setup, and again before calling a change complete |
+| this hook | Project **format** changes, and **high-severity** findings on the edited file | per edit; the format notice only on change |
+| `audit --require-coverage` | A CI gate: green means checked *and* clean | every CI run, opt-in |
 
-The hook keeps a signature at `node_modules/.cache/ds-loop/guard-coverage.json`.
-Repeating a limitation after every save would train the agent to ignore this
-channel, which is worse than saying it once.
+**The hook does not deliver judgement limits, and neither does `context`.**
+`token/tier-model-undetectable` is low severity, so the hook's `--min-severity high`
+filter removes it; `context` runs no rules, so it cannot know. An earlier version of
+this document claimed those limits "reach the agent through the findings list" —
+false while the hook filters that list. The unfiltered audit is the channel, and it
+has to be run deliberately.
+
+The hook keeps a signature at `node_modules/.cache/ds-loop/guard-coverage.json`,
+keyed on **project-scoped** facts only. Repeating a limitation after every save would
+train the agent to ignore this channel, which is worse than saying it once.
 
 It **never blocks** the edit — a PostToolUse hook fires after the write already
 landed. It nags; it does not stop.
