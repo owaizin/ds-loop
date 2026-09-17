@@ -296,4 +296,6 @@ internal notes.
   `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Seven CLI commands are implemented: `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
   `scorecard`. The other named operations are agent playbooks.
 - `product-system-skills-v0.2/` is an **unrelated, untracked** skills pack that happens to sit in this tree.
-  It is not part of the engine; see its `docs/skill-quality-review.md`.
+  It is not part of the engine. Its review history lives in
+  `docs/FEEDBACK-TRIAGE-2026-09-16.md` (untracked), which records every accept/reject
+  decision and the lines worth preserving if a skill there is ever cut.
