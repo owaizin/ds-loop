@@ -93,8 +93,9 @@ try {
       return;
     }
 
-    // a word-shaped name is matched on word boundaries, so `example-ds` does not fire on
-    // `rescue`; anything with punctuation (`--ds-`) is matched as a plain substring
+    // a word-shaped name is matched on word boundaries, so a three-letter name does
+    // not fire inside a longer word; anything carrying punctuation (a `--prefix-`) is
+    // matched as a plain substring
     const re = new RegExp(
       patterns
         .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
