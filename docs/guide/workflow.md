@@ -1,6 +1,6 @@
 # Choose your first task
 
-DS Loop combines an agent skill for design-system work with an engine that checks supported code. Choose a task based on your team's situation. Scanner silence does not tell you whether a design system exists.
+Design System Loop combines an agent skill for design-system work with an engine that checks supported code. Choose a task based on your team's situation. Scanner silence does not tell you whether a design system exists.
 
 ## Start a design system
 
@@ -46,7 +46,7 @@ The audit loop supports a particular change: run context and an unfiltered audit
 
 The optional guard loop runs during supported Claude Code edits: enable the hook, edit, audit the edited file, report high-severity findings and newly detected project extraction gaps, then review and revise if needed. It runs after the edit and cannot block it. Lower-severity judgment limits still require an unfiltered audit; CI gating is separate.
 
-The loops share your existing project conventions and the decisions you retain. DS Loop does not maintain a central knowledge service or independently approve and ship changes. The website's guide provides an interactive version at `docs.html#loops`.
+The loops share your existing project conventions and the decisions you retain. Design System Loop does not maintain a central knowledge service or independently approve and ship changes. The website's guide provides an interactive version at `docs.html#loops`.
 
 ## Work with your agent
 

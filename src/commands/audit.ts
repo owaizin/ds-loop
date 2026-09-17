@@ -98,11 +98,11 @@ export function audit(
 
   // Scope-aware duplication. `literal-colors-per-distinct` counts declarations
   // against distinct values across the whole source, which a themed system
-  // inflates for free: light and dark declare every token once each. Measured on
-  // a maintained design system, that scored it [redacted] — worse than an ungoverned
-  // SaaS repo at 1.486. Counting within a selector scope removes the theme count
-  // and leaves the signal the ratio was meant to carry: one value re-typed under
-  // several names in the same scope.
+  // inflates for free: light and dark declare every token once each. On the
+  // calibration corpus that ranked a maintained design system below an
+  // ungoverned SaaS repo. Counting within a selector scope removes the theme
+  // count and leaves the signal the ratio was meant to carry: one value re-typed
+  // under several names in the same scope.
   const byScope = new Map<string, string[]>();
   for (const v of declared) {
     const key = `${v.provenance.file}::${v.provenance.selector ?? '(none)'}`;
@@ -119,10 +119,11 @@ export function audit(
 
   // Declarations only. Early calibration rows were measured before a markup adapter existed,
   // so this ratio was declarations-only by construction. Once `tailwind-jsx`
-  // shipped, the same name silently began counting use-site literals too: a real
-  // app measured [redacted] where its declared palette is [redacted]. That is a different
-  // quantity under an unchanged name, which is the one thing a calibration metric
-  // may never do. Use-site volume is reported by `token/raw-value-in-markup`.
+  // shipped, the same name silently began counting use-site literals too, which
+  // moved one corpus source's figure by more than an order of magnitude. That is
+  // a different quantity under an unchanged name, the one thing a calibration
+  // metric may never do. Use-site volume is reported by
+  // `token/raw-value-in-markup`.
   const distinctDeclared = new Set(declared.map((v) => norm(v.raw))).size;
 
   const ratios = {

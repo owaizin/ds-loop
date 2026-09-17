@@ -88,8 +88,17 @@ try {
       .map((line) => line.split('#')[0].trim())
       .filter(Boolean);
 
-    if (patterns.length === 0) {
-      process.stdout.write('    (no .private-names list — nothing checked)\n');
+    // An absent list used to print a note and pass, which reads as a clean result
+    // in the summary line. Nothing checked is not a pass, so it fails here.
+    // `DS_LOOP_PRIVATE_NAMES=none` is the deliberate opt-out for a clone that has
+    // no private material to check against.
+    assert(
+      patterns.length > 0,
+      'no deny list: create .private-names (one name or measurement per line) or set\n' +
+        '      DS_LOOP_PRIVATE_NAMES. Pass DS_LOOP_PRIVATE_NAMES=none to skip deliberately.',
+    );
+    if (patterns.length === 1 && patterns[0] === 'none') {
+      process.stdout.write('    (skipped by DS_LOOP_PRIVATE_NAMES=none)\n');
       return;
     }
 

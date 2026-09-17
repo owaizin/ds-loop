@@ -74,9 +74,10 @@ test('a low-alpha colour is undecided, not unconvertible', () => {
 });
 
 test('literal-colors-per-distinct counts declarations only', () => {
-  // it silently changed quantity when the markup adapter shipped: a real app
-  // measured [redacted] against a declared palette of [redacted], under an unchanged name.
-  // Rows 001-005 were declarations-only by construction, so it must stay that way.
+  // it silently changed quantity when the markup adapter shipped, moving one
+  // corpus source's figure by more than an order of magnitude under an unchanged
+  // name. Rows 001-005 were declarations-only by construction, so it must stay
+  // that way.
   const report = inTree(
     {
       'tokens.css': ':root{--brand:#1da1f2;--accent:#1da1f2}\n',

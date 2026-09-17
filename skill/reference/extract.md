@@ -11,19 +11,21 @@ so most of the judgement here is yours and has to be stated as such.
 
 ## What the engine can and cannot tell you
 
-`audit <path> --json` unfiltered gives you, per occurrence, `file · line ·
-selector · property · tokenName · classification · reason`. Two things in that
-record matter here:
+Run `audit <path> --json` without a severity filter. The report contains findings,
+coverage, and aggregate measurements; it does not expose every adapter record.
+For `token/raw-value-in-markup`, `data` includes occurrence and distinct-value
+counts, matching declared tokens, and up to 40 example hits with source locations.
+That sample is not a complete inventory. Inspect the relevant source to locate
+all consumers before planning a migration.
 
-- **`tokenName: null` means a use site, not a declaration.** A cluster of use
-  sites re-typing the same literal in the same shape is the only extraction
-  signal the engine produces. `token/raw-value-in-markup` is where it lands.
-- **Occurrences are not the work.** One calibration source reported [redacted]
-  use-site literals over **[redacted] distinct values** — the same `text-[11px]`
-  recurring across dozens of pages. Group by distinct value and by the shape
-  around it before you count anything. Lead with the distinct count; an
-  occurrence count reads as hopeless and measures the codebase's size, not the
-  decision in front of you.
+Internally, the engine uses `tokenName: null` to distinguish a use site from a
+token declaration. Repeated literals can suggest a shared token or component,
+but their purpose and surrounding structure require inspection.
+
+Group repeated values by meaning and use, not just by occurrence count. The same
+value may serve different purposes, and one shared pattern may use several values.
+Report both occurrence and distinct-value counts with the inspected scope; neither
+count alone estimates the migration work.
 
 What it cannot tell you: that a pattern is a component. The adapters read CSS
 custom-property declarations and Tailwind **arbitrary values in string
@@ -36,9 +38,9 @@ playbook, not a clusterer.
 ## Sequence
 
 1. **Establish the target's contract first.** `context .` names the intent
-   sources it found; read them, and read the ones it does not search for —
-   `AGENTS.md`, the contribution guide, foundation docs, component contracts,
-   recent component PRs. A pilot in this project spent three paragraphs arguing a
+   sources it found, including root agent instructions. Read those and check
+   relevant nested instructions, foundation docs, component contracts, and recent
+   component PRs that the command does not discover. A pilot in this project spent three paragraphs arguing a
    radius choice was "genuinely open" while the repository it was auditing said
    *never use these utilities* in `AGENTS.md`. Absence of a `DESIGN-SYSTEM.md` is
    not absence of policy.
@@ -84,4 +86,4 @@ playbook.
 ## Scope
 
 [scope.md](scope.md) applies before editing. Findings do not grant scope: an
-audit that surfaces [redacted] distinct values does not authorise touching [redacted] of them.
+audit finding does not authorise changing every matching use site.

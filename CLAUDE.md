@@ -206,7 +206,10 @@ heuristics.
   The check is mechanical: `npm run smoke` greps **every packed file** — `dist/` included, where TS
   comments survive — against `.private-names` (gitignored, one name per line) or
   `DS_LOOP_PRIVATE_NAMES`. Grepping tracked source for two spellings is what declared it clean twice
-  while the names shipped in the npm manifest. No list present means nothing was checked, not a pass.
+  while the names shipped in the npm manifest. **An absent list fails the check** — nothing checked is
+  not a pass — with `DS_LOOP_PRIVATE_NAMES=none` as the deliberate opt-out for a clone with no private
+  material. The list holds **measurements as well as names**: a private source's ratios attached to a
+  renamed label are still the engagement's data, and `src/` comments survive into `dist/`.
 - Ratios, not counts, in reports — a scorecard row has to survive codebase growth. No
   ratio may describe the tool rather than the source: `findings-per-rule` was retired for
   exactly that, since its denominator moved from 7 to 11 when rules were added and nothing

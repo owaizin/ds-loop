@@ -1,58 +1,49 @@
-# DS Loop
+# Design System Loop
 
-**Your design decisions shouldn't disappear in the next code change.** A component bypasses a shared token. A theme change misses it. Your next task starts by reconstructing why.
+As your product grows, teams build different versions of the same controls, tables, and forms. Updating them means finding every version and deciding which one to keep. Design System Loop helps designers and engineers establish shared components and tokens, fix inconsistencies, and maintain the system as new features are built.
 
-Try the public fixture from a checkout with Node 22.6 or later:
-
-```sh
-npm ci
-npm run ds-loop -- audit fixtures/radix-colors
-```
-
-DS Loop helps you turn conventions into checks and decisions your next task can read. A deterministic engine reports supported token and styling issues with source locations. The companion agent skill helps establish missing conventions, investigate differences, and verify a bounded change against your project's intent.
-
-> “Never hardcode colors, spacing, or typography values.”
-> — [Fluent UI's agent instructions, rule 1](https://github.com/microsoft/fluentui/blob/master/AGENTS.md#critical-rules-never-violate)
-
-A written rule tells your agent what to do. A check shows where supported code disagrees. DS Loop checks parts of that commitment in CSS custom properties and Tailwind arbitrary values; your team decides whether a difference is a defect or an intentional exception. The [State of AI in Design Systems survey](https://github.com/kaelig/state-of-ai-in-design-systems) provides broader field context.
-
-No model, API key, runtime network, or runtime dependencies in the engine.
-
-[Set up DS Loop](docs/guide/install.md) · [Choose a workflow](docs/guide/workflow.md) · [Commands and coverage](docs/guide/reference.md) · [Example reports](docs/guide/output.md)
-
-## Use it on your project
-
-From this repository, run `npm pack` to create `ds-loop-0.1.0.tgz`. In an isolated copy of the project you want to inspect:
+Install in your project with Node 22.6 or later:
 
 ```sh
-npm install --save-dev /absolute/path/to/ds-loop-0.1.0.tgz
+npm install --save-dev ds-loop@0.1.0
 ./node_modules/.bin/ds-loop context .
 ./node_modules/.bin/ds-loop audit . --json
 ```
 
-An audit exits 1 on findings. A `not-checked` result can exit 0 without `--require-coverage`; inspect `verdict` and `coverage`. The [installation guide](docs/guide/install.md) covers the skill, edit feedback and CI.
+Before the first npm release, use the [source installation](docs/guide/install.md#install-from-source) instead. An audit exits 1 when it reports findings.
 
-For agent-guided work, load `node_modules/ds-loop/skill/SKILL.md` and ask:
+[Installation guide](docs/guide/install.md) · [Design-system workflows](docs/guide/workflow.md) · [CLI reference](docs/guide/reference.md)
 
-> Use DS Loop to investigate the inconsistent button styles in our settings screen. Read the shared component and previous decisions. Fix unintended differences within this screen and verify its states and themes. Keep any difference that serves a real need and record why. Link the checks and saved decision.
+## Work on your design system
 
-Keep the whole package installed. The skill's launcher needs the adjacent `bin/` and `dist/` directories.
+Start with one area of your product, such as settings or billing. Compare its screens, read the existing components and conventions, and agree on what should be shared before changing it.
 
-## Choose your first task
+- **Starting a system:** identify repeated patterns and propose shared tokens and components. Try them in a real screen before adopting them elsewhere.
+- **Improving a partial system:** compare competing implementations with the team's conventions. Reuse the agreed pattern where it fits, and explain differences that need to stay.
+- **Maintaining a system:** review new components and changes against existing conventions. Check affected screens and update the documentation when the team makes a new decision.
 
-| Your situation | What you provide | What your agent returns |
-| --- | --- | --- |
-| Start a design system | A real screen, product constraints, and visual direction | A proposed foundation and rendered example, with decisions for your team |
-| Improve a partial system | One inconsistency and the intended behavior | A checked change or a reason to preserve the difference |
-| Maintain an existing system | A diff, component contracts, and previous decisions | A review with checks, source locations, and unresolved questions |
+The package includes an **agent skill** that guides this work and a **command-line engine** that checks supported token and styling code. Your team chooses the design direction and reviews the result. The engine reports source locations and coverage limits; it runs locally without a model, API key, network access, or runtime dependencies.
 
-The [task guide](docs/guide/workflow.md) includes prompts and explains what to review. The [complete worked example](docs/guide/example.md) follows a synthetic theme bug through the request, change, browser checks, and saved decision. Preview the website to use the rendered example.
+The skill's broader reviews require an agent to inspect the code and rendered UI. They are not automated engine checks. See the [workflow guide](docs/guide/workflow.md) for examples and expected results.
 
-The skill guides investigation and decisions; the engine measures supported code. Agent playbooks such as `discover` and `review` are not CLI commands. Find commands for auditing, edit feedback, and CI in the [technical reference](docs/guide/reference.md).
+## Use it in your project
 
-## See what it finds
+`context` lists configuration, likely sources of design conventions, and supported formats. `audit` runs the code checks. Read the report's `verdict` and `coverage`: exit code 0 can mean nothing was checked. Use `--require-coverage` when CI should fail on reported coverage gaps.
 
-A synthetic component repeats a declared color and uses two arbitrary lengths. The audit reports:
+Ask your coding agent to read `node_modules/ds-loop/skill/SKILL.md`, then describe the area you want to work on. For example:
+
+> Compare the forms across our settings screens. Read the shared components and repository guidelines. Identify which differences are accidental and which support different behavior. Propose what to reuse before editing. Once we agree, update the settings screens, check their states and keyboard behavior, and document the decisions beside the components.
+
+Keep the whole package installed; the skill needs its launcher and compiled engine. The [installation guide](docs/guide/install.md) also explains how to enable feedback after Claude Code edits and configure CI checks.
+
+## What the engine finds
+
+Token rules already appear in design-system guidance:
+
+> “Never hardcode colors, spacing, or typography values.”
+> — [Fluent UI's agent instructions, rule 1](https://github.com/microsoft/fluentui/blob/master/AGENTS.md#critical-rules-never-violate)
+
+The engine checks for specific ways code can bypass tokens. In this synthetic example, a component hardcodes a color already declared as a token and two lengths:
 
 <!-- verified: audit-markup -->
 ```
@@ -63,26 +54,30 @@ A synthetic component repeats a declared color and uses two arbitrary lengths. T
     fix:   #1da1f2 is already --palette-blue-500. Swap those first.
 ```
 
-The matching token is evidence for investigating a replacement. Check its role, theme behavior and consumers before changing the component.
+Before replacing the color, check that the token serves the same purpose in every affected theme. A matching value alone does not establish that.
 
-## Know the coverage
+[View more audit reports](docs/guide/output.md) or [follow a theme fix](docs/guide/example.md) from the original code through browser checks and a documented decision. The [State of AI in Design Systems survey](https://github.com/kaelig/state-of-ai-in-design-systems) provides further examples of how teams guide agents to use their systems.
 
-The CSS adapter reads custom-property declarations, not ordinary rule bodies or at-rules. The Tailwind adapter reads arbitrary-value strings in JS/TS, not resolved named utilities, inline styles or CSS-in-JS. Sass maps and token JSON are unsupported. A supported extension does not mean the whole file was checked.
+## Current limits
 
-The engine cannot decide design intent or verify a rendered experience. Visible changes need browser and behavior checks. The default taxonomy and clustering thresholds are configurable starting points, not universal design policy.
+- The CSS adapter reads custom-property declarations. It does not check ordinary CSS rule bodies or at-rules.
+- The Tailwind adapter reads arbitrary values in JavaScript and TypeScript strings. It does not resolve named utilities or check inline styles, CSS-in-JS, Sass maps, or token JSON.
+- The engine does not review layouts, interactions, accessibility, or whether a design choice is appropriate. Check the rendered UI separately.
+- Token naming patterns and color-clustering thresholds are configurable. Adjust them to your system before relying on those checks.
 
-**Status: supervised alpha.** Begin with a bounded task in an isolated checkout and review its result before broader use. [Coverage and limitations](docs/guide/reference.md#coverage) describes the boundaries.
+**Supervised alpha:** review changes in an isolated checkout before applying them more widely. A clean audit applies only to the code and checks it covered. [Read the full coverage limits](docs/guide/reference.md#coverage).
 
-## Develop and contribute
+## Development
+
+From a repository checkout, run `npm ci`, then:
 
 ```sh
 npm test
 npm run check
 npm run type-check
 npm run smoke
-npm run site:serve
 ```
 
-The last command serves the static website at `http://127.0.0.1:4187`. See [website maintenance](https://github.com/owaizin/ds-loop/blob/main/site/README.md), [engine contribution notes](https://github.com/owaizin/ds-loop/blob/main/CLAUDE.md), and the [methodology](https://github.com/owaizin/ds-loop/blob/main/docs/METHODOLOGY.md). Public examples use open-source or synthetic inputs. Client material stays outside this repository.
+See [contribution notes](https://github.com/owaizin/ds-loop/blob/main/CLAUDE.md), and the [methodology](https://github.com/owaizin/ds-loop/blob/main/docs/METHODOLOGY.md).
 
-The engine is MIT licensed. The self-hosted website font has its own [OFL license](site/assets/OFL.txt).
+Public examples use open-source or synthetic inputs. Client material stays outside this repository. See [LICENSE](LICENSE) for the MIT terms.

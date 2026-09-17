@@ -1,30 +1,20 @@
-# Set up DS Loop
+# Set up Design System Loop
 
-Use Node 22.6 or later. These instructions use a local package built from source; they do not assume a published npm release.
+Use Node 22.6 or later. Install the complete package in the project you want to inspect.
 
-## Build the package
-
-```sh
-git clone https://github.com/owaizin/ds-loop.git
-cd ds-loop
-npm ci
-npm pack
-```
-
-This creates `ds-loop-0.1.0.tgz`. `npm pack` runs the TypeScript build. It publishes nothing. To try the bundled public fixture first:
+## Install from npm
 
 ```sh
-npm run ds-loop -- audit fixtures/radix-colors
+npm install --save-dev ds-loop@0.1.0
 ```
 
-The fixture contains known findings, so exit 1 is expected.
+Before the first npm release, use [source installation](#install-from-source) instead. Both paths install the same CLI and companion skill.
 
 ## Inspect your project
 
-In an isolated checkout of the project you want to inspect, install the tarball using its actual absolute path:
+From your project directory:
 
 ```sh
-npm install --save-dev /absolute/path/to/ds-loop-0.1.0.tgz
 ./node_modules/.bin/ds-loop context .
 ./node_modules/.bin/ds-loop audit . --json
 ```
@@ -59,5 +49,32 @@ This fails on findings at the chosen floor or reported coverage gaps. Its pass a
 ## Check the installation
 
 You should receive a report containing a verdict, adapter coverage and findings or their absence. If the result is `not-checked`, consult [coverage](reference.md#coverage); reinstalling will not add an adapter for an unsupported format.
+
+## Install from source
+
+Use this path before the npm release, or to test a local change. In a directory outside the project you want to inspect:
+
+```sh
+git clone https://github.com/owaizin/ds-loop.git
+cd ds-loop
+npm ci
+npm pack
+```
+
+This builds `ds-loop-0.1.0.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
+
+```sh
+npm install --save-dev /absolute/path/to/ds-loop-0.1.0.tgz
+```
+
+Continue with [Inspect your project](#inspect-your-project). The launcher uses the compiled JavaScript included in the package.
+
+To try the public Radix Colors fixture from the source checkout:
+
+```sh
+npm run ds-loop -- audit fixtures/radix-colors
+```
+
+The fixture contains known findings, so exit 1 is expected. Fixtures and development scripts are not included in the npm package.
 
 [Next: work through a change](workflow.md)
