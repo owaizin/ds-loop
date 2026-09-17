@@ -194,6 +194,21 @@ heuristics.
   for every config — so the threshold leg of the attribution model did nothing for months.
   `test/config.test.ts` pins this.
 
+## Documented output must be real output
+
+`test/readme.test.ts` runs every README sample marked `<!-- verified: <id> -->` and asserts each
+documented line appears in the actual output. A stale sample fails the build; so does a fabricated
+one; so does adding a `verified:` block without registering a check for it.
+
+This exists because a sample was once **composed from memory and presented as "real output"** — it was
+plausible, it was wrong, and it was caught by accident. Another carried an invented date. On its first
+run this test caught a third: two finding pairs spliced together across a line wrap as though
+contiguous, silently dropping the two entries between them.
+
+**When adding a sample: run the command, paste the output, mark it verified, register it.** Reflowing
+for width is allowed — lines are matched after whitespace normalisation, and a trailing `…` marks
+truncation — but reordering or splicing is not, because that is how a wrapped line becomes a false one.
+
 ## Writing standard for reader-facing docs
 
 **The bar is [mattpocock/skills](https://github.com/mattpocock/skills).** Applies to `README.md`, landing

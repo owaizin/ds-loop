@@ -37,16 +37,24 @@ It exits `1` when it finds something, so it drops straight into a pipeline.
 npx ds-loop scorecard .
 ```
 
+<!-- verified: scorecard-delta -->
 ```
-  since 2026-08-14
+  since 2026-09-17
 
     literal-colors-per-distinct    2 → 1  ▼ 1
     colors-per-distinct-in-scope   2 → 1  ▼ 1
+    ambiguous-share                0 → 0  unchanged
 
   by rule
-    color/semantic-holds-literal                 4 → 0  ▼ 4
     color/literal-duplicate-tokens               1 → 0  ▼ 1
+    color/semantic-holds-literal                 4 → 0  ▼ 4
+    token/tier-model-undetectable                0 → 1  ▲ +1
 ```
+
+That last row is the honest part too: aliasing the duplicates introduced `var()`
+references whose names match no tier convention, so a check that previously had
+nothing to judge now reports that it cannot judge. Fixing one thing surfaced
+another, and the tool said so rather than quietly improving its own score.
 
 A delta is only called a delta when the adapters **and** the config match on both
 sides. Change either and it says so — the instrument moved, not your code. That
@@ -85,6 +93,7 @@ Silent on a clean save. Silent on files it doesn't read. **Never blocks** — a 
 Real output, verbatim, from the public Radix fixture in this repo — run
 `npx ds-loop audit fixtures/radix-colors` and you get exactly this:
 
+<!-- verified: audit-radix -->
 ```
   ds-loop audit — Radix Colors  ·  target: all  ·  fixture
   version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.3.0   config 4cdd7f44
@@ -94,7 +103,7 @@ Real output, verbatim, from the public Radix fixture in this repo — run
     20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable
     just-noticeable difference
     where: --amber-1 ≈ --blue-1 (ΔE 2.252285); --amber-1 ≈ --green-1 (ΔE 1.956419);
-           --amber-1 ≈ --red-1 (ΔE 1.652821); --blue-1 ≈ --blue-2 (ΔE 2.127851) …
+           --amber-1 ≈ --red-1 (ΔE 1.652821); --amber-1 ≈ --slate-1 (ΔE 1.563758) …
     fix:   Confirm each pair is a deliberate ramp step. Collapse the ones that are not.
 
   [LOW] color/no-intent-plateau
@@ -118,6 +127,7 @@ Real output, verbatim, from the public Radix fixture in this repo — run
 
 A source it cannot read is reported as **`not-checked`**, never as clean:
 
+<!-- verified: audit-not-checked -->
 ```
   ✗ not checked — no adapter reads any styling format found here.
 
@@ -142,6 +152,7 @@ is only as wide as its coverage, so the width ships with the verdict.**
 Now a drifting one. Given a `tokens.css` that declares `--palette-blue-500: #1da1f2`
 and a component that writes the hex straight into the markup:
 
+<!-- verified: audit-markup -->
 ```
   [HIGH] token/raw-value-in-markup
     3 hardcoded value(s) at use sites bypass the token layer
