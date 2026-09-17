@@ -6,6 +6,7 @@ import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { surveyTree } from '../core/files.ts';
+import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
@@ -27,6 +28,12 @@ export type AuditReport = {
   coverage: Coverage;
   /** ratios, not counts — a scorecard row that survives codebase growth */
   ratios: Record<string, number>;
+  /**
+   * What to run next, derived from this run: whether the fixer can act, whether a
+   * baseline exists, whether the guard is installed. Part of the report so an
+   * agent reading `--json` gets the same handover a person reads on screen.
+   */
+  next: NextAction[];
   /**
    * `clean` means every rule that could judge did, and found nothing.
    * `issues` means findings survived.
@@ -76,7 +83,7 @@ export function audit(
     // must stay distinguishable: an empty repository, styling in a format nothing
     // reads, and a source that was read but could not be judged. None of them may
     // masquerade as a checked system.
-    return noAdapterReport(ruleTarget, meta, source.root, config, opts);
+    return noAdapterReport(ruleTarget, meta, source.root, targetPath, config, opts);
   }
 
   const values = adapters.flatMap((a) => a.extract(source, config));
@@ -163,8 +170,10 @@ export function audit(
     findings,
     coverage,
     ratios,
+    next: [],
     verdict: findings.length === 0 ? 'clean' : 'issues',
   };
+  report.next = nextAfterAudit(report, { root: source.root, path: targetPath, config });
 
   const suppressed = opts.silent || (opts.quiet && findings.length === 0);
   if (!suppressed) {
@@ -186,6 +195,8 @@ function noAdapterReport(
   target: string,
   meta: { label: string; fixtureSha: string },
   root: string,
+  /** the path as the user spelled it, so a suggested command is copy-pasteable */
+  path: string,
   config: DsOpsConfig,
   opts: { json?: boolean; quiet?: boolean; silent?: boolean; outDir?: string },
 ): AuditReport {
@@ -210,8 +221,10 @@ function noAdapterReport(
     findings: [],
     coverage,
     ratios: {},
+    next: [],
     verdict: 'not-checked',
   };
+  report.next = nextAfterAudit(report, { root, path, config });
 
   // every verdict leaves through the same door: print, and export when asked.
   // The early return used to skip --out entirely, so a not-checked run produced no
@@ -234,7 +247,13 @@ function noAdapterReport(
         const top = [...present.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
         console.log(`    formats present: ${top.map(([e, n]) => `${n}× ${e}`).join(', ')}`);
       }
-      console.log('\n  This is not a clean result. Nothing was judged.\n');
+      console.log('\n  This is not a clean result. Nothing was judged.');
+      const notCheckedNext = formatNext(report.next);
+      if (notCheckedNext.length > 0) {
+        console.log('');
+        for (const line of notCheckedNext) console.log(line);
+      }
+      console.log('');
     }
   }
 
@@ -275,8 +294,17 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
   console.log('\n  scope — what this audit read');
   for (const line of formatCoverage(r.coverage)) console.log(line);
 
-  console.log('\n  scorecard ratios');
+  // Ratios are the instrument for comparing two runs, so they used to be the last
+  // thing on screen — where a first-time reader has nothing to compare them to.
+  // They stay; the handover goes last.
+  console.log('\n  scorecard ratios  (a baseline for the next run, not a grade)');
   for (const [k, v] of Object.entries(r.ratios)) console.log(`    ${k.padEnd(28)} ${v}`);
+
+  const next = formatNext(r.next);
+  if (next.length > 0) {
+    console.log('');
+    for (const line of next) console.log(line);
+  }
   console.log('');
 }
 

@@ -16,10 +16,15 @@ import { resolveSource } from '../core/source.ts';
  * Dry-run by default. `--write` applies.
  */
 
-type Edit = { file: string; line: number; from: string; to: string; token: string };
+export type Edit = { file: string; line: number; from: string; to: string; token: string };
 
-export function fix(targetPath: string, opts: { write?: boolean; config?: DsOpsConfig } = {}): Edit[] {
-  const config = opts.config ?? DEFAULT_CONFIG;
+/**
+ * What `fix` *would* do, without printing or writing. Split out so other commands
+ * can say "N of these are mechanically fixable" in a next-step line without
+ * guessing: the count a rule reports is not the count this fixer can act on, since
+ * a `var()` whose target is not a resolvable literal is skipped.
+ */
+export function planFixes(targetPath: string, config: DsOpsConfig = DEFAULT_CONFIG): Edit[] {
   const { source } = resolveSource(targetPath);
   const values = cssCustomPropsAdapter.extract(source, config);
 
@@ -53,8 +58,18 @@ export function fix(targetPath: string, opts: { write?: boolean; config?: DsOpsC
     }
   }
 
+  return edits;
+}
+
+export function fix(targetPath: string, opts: { write?: boolean; config?: DsOpsConfig } = {}): Edit[] {
+  const config = opts.config ?? DEFAULT_CONFIG;
+  const { source } = resolveSource(targetPath);
+  const edits = planFixes(targetPath, config);
+
   if (edits.length === 0) {
-    console.log('\n  ds-loop fix — nothing mechanically fixable.\n');
+    console.log('\n  ds-loop fix — nothing mechanically fixable.');
+    console.log('  Findings that remain need a decision: `ds-loop audit .` prints each one\n');
+    console.log('  with its fix line.\n');
     return edits;
   }
 

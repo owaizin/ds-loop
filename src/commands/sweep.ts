@@ -5,6 +5,7 @@ import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
+import { formatNext, nextAfterSweep } from '../core/next.ts';
 import { resolveSource } from '../core/source.ts';
 
 export type SweepPoint = { deltaE: number; clusters: number };
@@ -91,7 +92,7 @@ export function sweep(fixtureDir: string, opts: { outDir?: string; config?: DsOp
     verdict,
   };
 
-  printReport(result);
+  printReport(result, { path: fixtureDir, config });
 
   if (opts.outDir) {
     mkdirSync(opts.outDir, { recursive: true });
@@ -104,7 +105,7 @@ export function sweep(fixtureDir: string, opts: { outDir?: string; config?: DsOp
   return result;
 }
 
-function printReport(r: SweepResult): void {
+function printReport(r: SweepResult, ctx: { path: string; config: DsOpsConfig }): void {
   console.log(`\n  ds-loop sweep — ${r.manifest.fixtureLabel}`);
   console.log(
     `  fixture ${r.manifest.fixtureSha}   adapter ${r.manifest.adapter}   config ${r.manifest.configHash}\n`,
@@ -138,6 +139,10 @@ function printReport(r: SweepResult): void {
   }
   console.log('');
   console.log(`  verdict: ${r.verdict}`);
+  console.log('');
+  for (const line of formatNext(nextAfterSweep({ root: ctx.path, path: ctx.path, config: ctx.config }))) {
+    console.log(line);
+  }
   console.log('');
 }
 

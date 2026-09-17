@@ -6,6 +6,7 @@ import { audit } from './commands/audit.ts';
 import { context } from './commands/context.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
+import { overview } from './commands/overview.ts';
 import { scan } from './commands/scan.ts';
 import { scorecard } from './commands/scorecard.ts';
 import { sweep } from './commands/sweep.ts';
@@ -19,6 +20,9 @@ const pkg = JSON.parse(readFileSync(join(HERE, '..', 'package.json'), 'utf8'));
 
 const USAGE = `
 ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from its code
+
+  Start here:  ds-loop            verdict for this directory, and what to run next
+               ds-loop start      the same, spelled out
 
   ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--out <dir>] [--require-coverage]
                       [--files <a,b>] [--since <ref>] [--min-severity <sev>] [--quiet] [--config <file>]
@@ -148,7 +152,15 @@ function main(argv: string[]): void {
       fix(positional[0], { write: has(rest, 'write'), config });
       break;
     }
-    case undefined:
+    case 'start':
+    case undefined: {
+      // A reference manual is the wrong answer to "I installed it, now what". The
+      // manual is still one flag away, and every other command prints its own
+      // handover, so the loop has an entrance instead of a menu.
+      const code = overview(positional[0] ?? '.', loaded);
+      if (code !== 0) process.exitCode = code;
+      break;
+    }
     case '-h':
     case '--help':
       console.log(USAGE);

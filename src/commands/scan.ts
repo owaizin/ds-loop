@@ -3,6 +3,7 @@ import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
+import { formatNext, nextAfterScan } from '../core/next.ts';
 import type { RawValue } from '../core/provenance.ts';
 import { resolveSource } from '../core/source.ts';
 
@@ -57,7 +58,11 @@ export function scan(fixtureDir: string, config: DsOpsConfig = DEFAULT_CONFIG): 
       `    humans shipped ${meta.shippedPrimitiveCount} primitives  (machine ${delta >= 0 ? '+' : ''}${delta})`,
     );
   }
-  console.log('    run `ds-loop sweep` to find the ΔE where the cluster count matches intent.\n');
+  console.log('');
+  for (const line of formatNext(nextAfterScan({ root: fixtureDir, path: fixtureDir, config }))) {
+    console.log(line);
+  }
+  console.log('');
 }
 
 function groupBy<T>(xs: T[], key: (x: T) => string): Record<string, T[]> {

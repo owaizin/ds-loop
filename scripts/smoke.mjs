@@ -181,10 +181,22 @@ try {
     visit(skillRoot);
   });
 
-  check('bare invocation prints usage and does not throw', () => {
+  check('bare invocation audits the directory and names the next command', () => {
+    // It used to print the whole flag manual, which is the wrong answer to "I
+    // installed it, now what". The manual moved to --help.
     const r = run([]);
     assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
+    assert(/clean|findings|not checked/.test(r.stdout), `no verdict in:\n${r.stdout}`);
+    assert(/\n {2}next\n/.test(r.stdout), `no handover block in:\n${r.stdout}`);
+    assert(!/--require-coverage/.test(r.stdout), 'the flag manual belongs to --help');
+  });
+
+  check('--help still prints the full reference', () => {
+    const r = run(['--help']);
+    assert(r.status === 0, `exit ${r.status}: ${r.stderr}`);
     assert(/ds-loop \d+\.\d+\.\d+/.test(r.stdout), 'no version banner in usage');
+    assert(/--require-coverage/.test(r.stdout), 'the reference must stay complete');
+    assert(/Start here/.test(r.stdout), 'the reference should name the entrance first');
   });
 
   check('an empty install is not-checked, and strict coverage fails it', () => {

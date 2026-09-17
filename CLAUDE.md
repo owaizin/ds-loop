@@ -257,6 +257,31 @@ The website task owns `site/` and its assets. The original Codex task owns `READ
 documentation under `docs/guide/`. Neither boundary is a suggestion: editing another task's surface
 during a naming pass is how a coordinated rename becomes a merge conflict with opinions in it.
 
+## Every exit names the next command
+
+`src/core/next.ts` builds the `next` block that `audit`, `scan`, `sweep` and the bare command end
+on, and it lands in `AuditReport.next` so `--json` carries the same handover a person reads.
+
+Why it exists: a user installed the package, typed `ds-loop`, and got the seven-command flag manual
+— which is a reference, and the wrong answer to "now what". Meanwhile `audit` ended on scorecard
+ratios, the one number that says nothing until a second run exists, and nothing anywhere mentioned
+that `fix` could repair a subset of the findings just printed. `PRODUCT.md`'s jobs section records
+this as job 1, the worst-served job.
+
+The rules, all pinned by `test/next.test.ts`:
+
+- **Bare `ds-loop` and `ds-loop start` audit the directory** and print verdict, biggest finding,
+  what was read, and the handover. `--help` keeps the full reference, with the entrance named first.
+- **`fix` is offered only when the fixer can actually act.** The count comes from `planFixes`, not
+  from a rule's own count — a rule counts `var()` references, the fixer skips any whose target is not
+  a resolvable literal. Offering a command that then says "nothing mechanically fixable" is the same
+  broken promise as no guidance at all.
+- **A baseline is offered only when no history exists**; otherwise the row says how many rows it
+  would compare against. The guard row disappears once the hook is installed.
+- **Ratios stay, but never last.** They are the comparison instrument, not the reading.
+- **The handover names commands. It does not restate findings.** Rule summaries and fix text are
+  untouched — see the output-strings constraint above; this is sequence, not translation.
+
 ## Documented output must be real output
 
 `test/readme.test.ts` runs every README or `docs/guide/output.md` sample marked `<!-- verified: <id> -->` and asserts each
