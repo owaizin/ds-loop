@@ -163,8 +163,9 @@ heuristics.
   comment naming the ceiling and the upgrade path, as `dimension.ts`, `tier.ts` and `tailwind-jsx.ts` do.
 - biome: single quotes, trailing commas, 110-column lines, `fixtures/**` ignored. `console.log` and
   non-null assertions are allowed on purpose.
-- `fixtures/example-ds/example-preview-tokens.css` (a client's real tokens) lives **only** in the private
-  calibration repo. Never vendor it here.
+- **Client fixtures live only in the private calibration repo.** A client's real token file, and the
+  findings measured on it, never come into this repo — not the file, not the ratios, not the repo name.
+  Public fixtures here are open-source systems anyone can verify.
 - Ratios, not counts, in reports — a scorecard row has to survive codebase growth. No
   ratio may describe the tool rather than the source: `findings-per-rule` was retired for
   exactly that, since its denominator moved from 7 to 11 when rules were added and nothing
@@ -200,8 +201,10 @@ internal notes.
 
 ## Orientation files
 
-- `HANDOFF.md` — running project state, pending work in survey-backed order, and the user's standing
-  corrections. Read it before proposing direction.
+- `HANDOFF.md` — running project state, pending work, and the user's standing corrections. Read it
+  before proposing direction. **Untracked on purpose**: it quotes client findings and calibration
+  ratios, which belong with the private corpus. Present on disk, absent from the published history —
+  as are `STRATEGY.md` and the review/triage documents under `docs/`.
 - `STRATEGY.md` — the portfolio read: what the engine, the calibration corpus and the skills pack are each
   for, and what is missing.
 - `docs/METHODOLOGY.md` — the engagement methodology the tool automates, including the four-layer token

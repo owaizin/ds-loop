@@ -105,7 +105,7 @@ export function audit(
     scopedDistinct += new Set(list).size;
   }
 
-  // Declarations only. Rows 001-005 were measured before a markup adapter existed,
+  // Declarations only. Early calibration rows were measured before a markup adapter existed,
   // so this ratio was declarations-only by construction. Once `tailwind-jsx`
   // shipped, the same name silently began counting use-site literals too: a real
   // app measured [redacted] where its declared palette is [redacted]. That is a different

@@ -20,7 +20,7 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
     shadowAlphaCeiling: 0.25,
     nonColorTokenHints: ['gradient', 'backdrop', 'scrim-opacity'],
     // spacing, type and radius come off a scale; width/height/inset/transform
-    // are geometry and are excluded on purpose. Measured on example-design-system:
+    // are geometry and are excluded on purpose. Measured on a real design system:
     // 241 dimension hits, of which ~28 of 40 sampled were geometry, not drift.
     scaleUtilities: [
       'p',
@@ -121,8 +121,8 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
       'stone',
       'neutral',
     ],
-    // measured: example-integrations-app classified 0 of 17 referencing tokens,
-    // example-readiness 2 of 71. Both looked like a clean tier pass.
+    // measured on two real repos: one classified 0 of 17 referencing tokens, the
+    // other 2 of 71. Both looked like a clean tier pass and neither was checked.
     tierCoverageFloor: 0.5,
   },
   sweep: {

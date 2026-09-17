@@ -7,3 +7,13 @@ dist/
 
 # unrelated skills pack — home not yet decided, keep it out of the engine repo
 product-system-skills-v0.2/
+
+# Internal records: session handoffs, strategy, reviews, triage. They quote client
+# findings and calibration ratios, which belong with the private corpus, not in the
+# open engine. Kept on disk so a session can still read them — CLAUDE.md points at
+# HANDOFF.md by design — and out of the published history.
+HANDOFF.md
+STRATEGY.md
+docs/SKILLS-*.md
+docs/FEEDBACK-TRIAGE-*.md
+docs/algorithm-audit-*.md

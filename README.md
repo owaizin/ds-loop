@@ -71,35 +71,59 @@ Silent on a clean save. Silent on files it doesn't read. **Never blocks** — a 
 
 ## What it tells you
 
-Real output, from a real repository:
+Real output, verbatim, from the public Radix fixture in this repo — run
+`npx ds-loop audit fixtures/radix-colors` and you get exactly this:
 
 ```
-  ds-loop audit — example-design-system  ·  target: all  ·  live scan
-  version git:47d0cc0220a6   adapter css-custom-props@0.1.0 + tailwind-jsx@0.1.0
+  ds-loop audit — Radix Colors  ·  target: all  ·  fixture
+  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.3.0   config 4cdd7f44
   11 rules run
 
-  [HIGH] color/semantic-holds-literal
-    66 semantic token declaration(s) hold a literal colour instead of referencing
-    a primitive
-    where: --background = oklch(1 0 0) (src/styles/globals.css:67);
-           --primary = oklch(0.208 0.042 265.755) (src/styles/globals.css:73) …
-    fix:   There is no primitive tier in this source — every colour is declared
-           where it is used. Add a palette layer first, then point these at it.
+  [LOW] color/near-duplicate-primitives
+    20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable
+    just-noticeable difference
+    where: --amber-1 ≈ --blue-1 (ΔE 2.252285); --amber-1 ≈ --green-1 (ΔE 1.956419);
+           --amber-1 ≈ --red-1 (ΔE 1.652821); --blue-1 ≈ --blue-2 (ΔE 2.127851) …
+    fix:   Confirm each pair is a deliberate ramp step. Collapse the ones that are not.
 
-  [HIGH] token/raw-value-in-markup
-    2 hardcoded value(s) at use sites bypass the token layer (0 colour, 2 length)
-    where: text-[10px] at src/components/animations/animated-tooltip.tsx:58;
-           rounded-t-[10px] at src/components/ui/drawer.tsx:46
+  [LOW] color/no-intent-plateau
+    no ΔE band holds a cluster count within 15% of the 72 shipped primitives
+    where: swept ΔE 0.5–12
 
-  [MEDIUM] color/literal-duplicate-tokens
-    14 colour value(s) are declared by 48 different tokens
-    where: oklch(0.208 0.042 265.755) <- --primary, --secondary-foreground,
-           --sidebar-primary …
+  2 findings — 0 blocking · 0 high · 0 medium · 2 low
 
-  4 findings — 0 blocking · 2 high · 1 medium · 1 low
+  scope — what this audit read
+    css-custom-props@0.3.0
+      reads .css — custom-property declarations (--token: value) — not rule bodies
+    72 colour value(s) this version cannot convert:
+      color(display-p3 0.995 0.992 0.985), color(display-p3 0.994 0.986 0.921) …
+      excluded from every colour rule — a gap in the engine, not in your code
+
+  scorecard ratios
+    literal-colors-per-distinct  1
+    colors-per-distinct-in-scope 1
+    ambiguous-share              0.5
 ```
 
-Two things to notice. Every finding carries a `file:line`, which makes it a work item instead of an opinion. And when one of your tokens already holds that value, the fix **names the token** — that's a swap, not a design decision.
+That last section is the honest part. Radix ships 72 sRGB entries **and** 72
+`color(display-p3 …)` entries, and ds-loop can only convert the first set — so it
+says so, instead of reporting a clean palette it only half read. **A clean verdict
+is only as wide as its coverage, so the width ships with the verdict.**
+
+Now a drifting one. Given a `tokens.css` that declares `--palette-blue-500: #1da1f2`
+and a component that writes the hex straight into the markup:
+
+```
+  [HIGH] token/raw-value-in-markup
+    3 hardcoded value(s) at use sites bypass the token layer
+    (1 colour, 2 length; 3 distinct, 1 already declared as a token)
+    where: bg-[#1da1f2] at Card.tsx:2; p-[13px] at Card.tsx:2; text-[14px] at Card.tsx:3
+    fix:   #1da1f2 is already --palette-blue-500. Swap those first.
+```
+
+Two things to notice. Every finding carries a `file:line`, which makes it a work
+item instead of an opinion. And where one of your tokens already holds that value,
+the fix **names the token** — that's a swap, not a design decision.
 
 Then it tells you what it could not read:
 
