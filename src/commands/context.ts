@@ -36,6 +36,18 @@ export function context(target: string, loaded: LoadedConfig): void {
   // guides, ADRs, component contracts and team decisions, and treating one missing
   // filename as "nothing states the intent" is an overclaim about someone's project.
   const INTENT_SOURCES = [
+    // Agent instruction files first, because that is where a team writing for
+    // agents puts the rules an agent is about to break. Learned the hard way: a
+    // drawer pilot argued for three paragraphs that a radius convention might not
+    // exist, while the repository's own AGENTS.md said "strict scale — no others
+    // allowed" and named the exact utilities never to use. This command reported
+    // only `docs/decisions/` because it was not looking here.
+    'AGENTS.md',
+    'CLAUDE.md',
+    '.github/AGENTS.md',
+    '.cursorrules',
+    '.cursor/rules',
+    // then the human-facing homes for the same intent
     'DESIGN-SYSTEM.md',
     'docs/DESIGN-SYSTEM.md',
     'CONTRIBUTING.md',
