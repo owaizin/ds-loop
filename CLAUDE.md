@@ -210,6 +210,39 @@ heuristics.
   for every config — so the threshold leg of the attribution model did nothing for months.
   `test/config.test.ts` pins this.
 
+## The name: Design System Loops, `ds-loop`
+
+**The public product is "Design System Loops". The identifier is `ds-loop`, everywhere.** A naming
+decision, not a restructuring — capabilities and verified output do not change with it.
+
+| Use "Design System Loops" | Keep `ds-loop` |
+|---|---|
+| Prose in reader-facing docs, the site, a title, a sentence introducing the product | `package.json` `name` and `bin` · the CLI you type · the repository · every path and directory · config filenames · `skill/SKILL.md`'s `name:` · the `$ds-loop` skill invocation |
+
+**Do not rename any of the following**, and do not "modernise" them for brand consistency:
+
+- `ds-loop` — the package, the binary, the command in every example
+- `.ds-loop-config.{yml,yaml}`, `ds-loop.config.json`, and `.ds-ops-config.{yml,yaml}` — the last is
+  Murphy Trueman's filename, kept verbatim for interop, and renaming it breaks that
+- `.ds-scorecard/history.jsonl` — an append-only file in users' repositories
+- `skill/hooks/ds-loop-guard.mjs` — referenced by hook entries already written into users'
+  `.claude/settings.json`; renaming it silently disables their guard
+- `node_modules/.cache/ds-loop/` — the guard's state directory
+
+**Never rebrand CLI output.** Report headers like `ds-loop audit — <label>` are checked against real
+runs by `test/readme.test.ts`, and rebranding a header breaks documentation verification. An agent that
+then "fixes" the failing test has quietly removed the guard against fabricated samples. The name in the
+banner is the command, not the product.
+
+`test/naming.test.ts` enforces the identifier half of this table, so the distinction survives a future
+agent who reads only the branding half.
+
+### Ownership while the rename lands
+
+The website task owns `site/` and its assets. The original Codex task owns `README.md` and the core
+documentation under `docs/guide/`. Neither boundary is a suggestion: editing another task's surface
+during a naming pass is how a coordinated rename becomes a merge conflict with opinions in it.
+
 ## Documented output must be real output
 
 `test/readme.test.ts` runs every README or `docs/guide/output.md` sample marked `<!-- verified: <id> -->` and asserts each
