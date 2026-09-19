@@ -109,3 +109,34 @@ test('rawDimensionRule: flags semantic/component tokens with raw lengths, not pr
   assert.equal(findings.length, 1);
   assert.equal(findings[0]?.data?.count, 2);
 });
+
+test('rawDimensionRule: a widget-named token is not promoted by its last segment', () => {
+  // --panel-radius reached the dimension rule as "semantic" because classifyTier
+  // stripped --panel- and read "radius" as a namespace. Two HIGH findings on this
+  // repo's own site/theme.css came from that, and 2 of 3 on a real client repo.
+  const dim = (name: string, raw: string): RawValue => ({
+    raw,
+    provenance: {
+      file: 't.css',
+      line: 1,
+      selector: ':root',
+      property: name,
+      tokenName: name,
+      classification: 'dimension',
+      reason: 'test',
+      fixtureSha: 't',
+      adapterId: 't',
+      adapterVersion: '0',
+    },
+  });
+  const findings = rawDimensionRule.run(
+    ctx([
+      dim('--panel-radius', '18px'), // widget token, unknown tier — not judged
+      dim('--header-size', '20px'), // same shape
+      dim('--color-action-text', '12px'), // namespace opens the name — flag
+    ]),
+  );
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.data?.count, 1);
+  assert.match(findings[0]?.where ?? '', /--color-action-text/);
+});

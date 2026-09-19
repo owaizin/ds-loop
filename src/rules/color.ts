@@ -1,20 +1,15 @@
 import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { toLab } from '../color/convert.ts';
 import { ciede2000 } from '../color/delta-e.ts';
-import type { DsOpsConfig } from '../config/schema.ts';
+import { isPrimitiveName } from './tier.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
 
-function isPrimitive(tokenName: string | null, cfg: DsOpsConfig): boolean {
-  if (tokenName == null) return false;
-  const name = tokenName.toLowerCase();
-  // a category token (--chart-1, --subject-3) is named for its colour by design:
-  // the colour IS the identity. It matches the trailing-number branch of
-  // primitivePattern but is not a palette step.
-  if (cfg.taxonomy.categoryTokenHints.some((h) => new RegExp(`(^|-)${h}(-|\\d|$)`).test(name))) {
-    return false;
-  }
-  return new RegExp(cfg.taxonomy.primitivePattern, 'i').test(name);
-}
+// One definition of "is a palette primitive", shared with classifyTier — the two
+// used to disagree about --chart-1 (category hints were applied here and nowhere
+// else), so the colour rules and the tier rules judged the same token differently.
+// The remaining asymmetry is deliberate: a colour rule treats unknown-tier tokens
+// as offenders (a hex is never a config constant), a dimension rule does not.
+const isPrimitive = isPrimitiveName;
 
 function normRaw(raw: string): string {
   return raw.replace(/\s+/g, ' ').trim().toLowerCase();

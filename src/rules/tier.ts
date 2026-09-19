@@ -11,6 +11,18 @@ export type Tier = 'primitive' | 'semantic' | 'component' | 'unknown';
  * Tier detection is by name convention and therefore a judgment call about the
  * target — every pattern is config (`taxonomy.*Pattern`, `semanticNamespaces`).
  */
+export function isPrimitiveName(tokenName: string | null, cfg: DsOpsConfig): boolean {
+  if (tokenName == null) return false;
+  const name = tokenName.toLowerCase();
+  // a category token (--chart-1, --subject-3) is named for its colour by design:
+  // the colour IS the identity. It matches the trailing-number branch of
+  // primitivePattern but is not a palette step.
+  if (cfg.taxonomy.categoryTokenHints.some((h) => new RegExp(`(^|-)${h}(-|\\d|$)`).test(name))) {
+    return false;
+  }
+  return new RegExp(cfg.taxonomy.primitivePattern, 'i').test(name);
+}
+
 export function classifyTier(tokenName: string | null, cfg: DsOpsConfig): Tier {
   if (!tokenName) return 'unknown';
   const name = tokenName.toLowerCase();
@@ -18,9 +30,17 @@ export function classifyTier(tokenName: string | null, cfg: DsOpsConfig): Tier {
   // order matters: a token in a semantic namespace (--ns-color-bg-skeleton) is
   // semantic even though "skeleton" is a widget word. Component tokens name the
   // widget right after the --ns- prefix (--ns-button-padding).
-  if (new RegExp(t.primitivePattern, 'i').test(name)) return 'primitive';
-  const stripped = name.replace(/^--[a-z0-9]+-/i, ''); // drop the --ns- prefix
-  if (t.semanticNamespaces.some((ns) => stripped.startsWith(`${ns}-`) || stripped === ns)) {
+  if (isPrimitiveName(name, cfg)) return 'primitive';
+  // A semantic namespace has to OPEN the name, either at the first segment
+  // (--color-action-bg, Tailwind v4's own shape) or right after a brand prefix
+  // (--ds-color-bg). It may not arrive at the end: --panel-radius names a panel,
+  // not the radius namespace, and stripping the first segment unconditionally
+  // turned every --<widget>-<namespace> token into a semantic one. Measured on a
+  // real repo: 2 of 3 "high" tier findings were component tokens promoted this way.
+  const bare = name.replace(/^--/, '');
+  const afterPrefix = bare.includes('-') ? bare.slice(bare.indexOf('-') + 1) : '';
+  const opensWith = (s: string, ns: string) => s.startsWith(`${ns}-`);
+  if (t.semanticNamespaces.some((ns) => opensWith(bare, ns) || bare === ns || opensWith(afterPrefix, ns))) {
     return 'semantic';
   }
   if (new RegExp(t.componentPattern, 'i').test(name)) return 'component';
