@@ -21,7 +21,9 @@ are candidates for investigation; they do not establish the team's policy.
    contribution guides, foundation docs, component contracts, decisions, lint
    configuration, and relevant tests/stories. `context` searches a short list of
    paths; it does not discover or interpret all of these. Missing `DESIGN-SYSTEM.md`
-   is not evidence that a system or policy is absent. Check what a dependency
+   is not evidence that a system or policy is absent — if the team wants one,
+   `ds-loop context . --write-contract` starts it from measurement and leaves every
+   judgment call as a TODO for them to answer. Check what a dependency
    resolves separately from whether the project permits that choice.
 3. Resolve only the unknowns that affect this task. Source code establishes current
    behavior; an applicable policy establishes an intended constraint. A conflict
@@ -93,7 +95,7 @@ Design System Loop does not ship those checks.
 | Command | Built? | Category | Description | Reference |
 |---|---|---|---|---|
 | `start [path]` / bare `ds-loop` | **CLI** | Meta | Verdict for this directory, its biggest finding, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
-| `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage | — |
+| `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage. `--write-contract` starts `DESIGN-SYSTEM.md` from measured counts, with the decisions the tool cannot read left as TODO | — |
 | `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Severity-ranked findings, scorecard ratios, and a `next` block naming the follow-up command. No LLM, no network | [reference/audit.md](reference/audit.md) |
 | `scan [path]` | **CLI** | Audit | Quick look: classification breakdown + palette clusters at the default ΔE | — |
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |

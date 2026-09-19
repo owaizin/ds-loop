@@ -232,7 +232,7 @@ export const colorKneeRule: Rule = {
   },
 };
 
-function classifyForm(raw: string): string {
+export function classifyForm(raw: string): string {
   const s = raw.trim().toLowerCase();
   if (s.startsWith('#')) return 'hex';
   if (/^-?\d*\.?\d+\s+-?\d*\.?\d+%\s+-?\d*\.?\d+%$/.test(s)) return 'hsl-channels';

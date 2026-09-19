@@ -43,9 +43,12 @@ ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from i
       \`ds-loop audit\` on the file after any Edit/Write to a style file and
       surfaces high-severity findings. Preserves other hooks.
 
-  ds-loop context [<path>]
+  ds-loop context [<path>] [--write-contract]
       What this session is working with: which config loaded, whether the project
       declares a design system, which adapters recognise the tree. No analysis.
+      --write-contract starts DESIGN-SYSTEM.md from what the adapters measured,
+      with the decisions ds-loop cannot read off code left as TODO. Never
+      overwrites an existing file.
 
   ds-loop scorecard [<path>] [--dry-run] [--json]
       Append one row of ratios to .ds-scorecard/history.jsonl and print the change
@@ -136,7 +139,7 @@ function main(argv: string[]): void {
       break;
     }
     case 'context': {
-      context(positional[0] ?? '.', loaded);
+      context(positional[0] ?? '.', loaded, { writeContract: has(rest, 'write-contract') });
       break;
     }
     case 'scorecard': {

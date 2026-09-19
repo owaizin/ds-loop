@@ -6,7 +6,7 @@ Run commands from the target project so configuration resolves from its working 
 
 | Command | Result | Writes? |
 | --- | --- | --- |
-| `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | No |
+| `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | Only with `--write-contract`, which creates `DESIGN-SYSTEM.md` and never overwrites one |
 | `audit [path]` | Findings, ratios, verdict and coverage | Only with `--out <dir>` |
 | `scan <path>` | Extracted-value taxonomy and palette clusters | No |
 | `sweep <path>` | Clustering curve across the configured ΔE range | Only with `--out <dir>` |
@@ -15,6 +15,20 @@ Run commands from the target project so configuration resolves from its working 
 | `guard on\|off\|status` | Claude Code post-edit feedback configuration | `on` and `off` edit `.claude/settings.json` |
 
 `fix` is not an automatic token migration. `scorecard` does not gate CI. `guard` cannot prevent an edit.
+
+### The contract file
+
+`ds-loop context --write-contract` starts `DESIGN-SYSTEM.md` — the file two rules already tell you to
+record a sanctioned deviation in, and that nothing in the tool used to create. It writes two things and
+nothing else: the counts the adapters measured (declarations, namespaces, tiers as the configured patterns
+read them, colour storage forms, tokens with no namespace at all), and the decisions ds-loop cannot read
+off code, left as `TODO` — which tier a namespace is, which notation is canonical, which namespaces are
+designed with two tiers rather than three. It never states a convention nobody wrote down, and it never
+overwrites an existing file. Recorded `ignore` exceptions are mirrored into it with their reasons, so a
+reader can argue with an exception before arguing with the finding it removed.
+
+Answer the TODO lines, put the matching patterns in your config, and the tier rules stop reading a
+default instead of your system.
 
 ## Agent procedures
 

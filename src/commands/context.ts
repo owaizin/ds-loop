@@ -1,10 +1,14 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { adaptersFor } from '../adapters/registry.ts';
 
 import type { LoadedConfig } from '../config/load.ts';
+import { renderContract } from '../core/contract.ts';
 import { buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { resolveSource } from '../core/source.ts';
+
+/** the contract's home, and the first place `INTENT_SOURCES` looks for it */
+const CONTRACT = 'DESIGN-SYSTEM.md';
 
 /**
  * `context` — what a session needs to know before it does anything else.
@@ -15,7 +19,7 @@ import { resolveSource } from '../core/source.ts';
  * declares a design system, and which adapters recognise the tree. No analysis,
  * no findings — run `audit` for those.
  */
-export function context(target: string, loaded: LoadedConfig): void {
+export function context(target: string, loaded: LoadedConfig, opts: { writeContract?: boolean } = {}): void {
   const { meta, source, live } = resolveSource(target);
   const adapters = adaptersFor(source);
 
@@ -113,6 +117,44 @@ export function context(target: string, loaded: LoadedConfig): void {
     console.log('              filters at high severity and will not surface it.');
   }
 
+  const contractPath = join(source.root, CONTRACT);
+  const hasContract = existsSync(contractPath);
+
+  if (opts.writeContract) {
+    if (hasContract) {
+      // Never merge, never clobber. What is there is prose someone wrote, and no
+      // measurement is worth overwriting an argument.
+      console.log(`\n  contract    ${CONTRACT} already exists — left untouched`);
+      console.log('              delete it first if you want a fresh measurement pass');
+    } else if (adapters.length === 0) {
+      console.log(`\n  contract    not written — no adapter reads this tree, so there is`);
+      console.log('              nothing measured to write down');
+    } else {
+      const values = adapters.flatMap((a) => a.extract(source, loaded.config));
+      writeFileSync(
+        contractPath,
+        renderContract({
+          label: meta.label,
+          fixtureSha: meta.fixtureSha,
+          config: loaded.config,
+          adapters,
+          values,
+          coverage: buildCoverage(source.root, adapters, values, []),
+          generatedAt: new Date().toISOString().slice(0, 10),
+        }),
+      );
+      console.log(`\n  contract    wrote ${CONTRACT} — measured counts, plus the questions`);
+      console.log('              ds-loop cannot answer. Fill the TODO lines; they are the');
+      console.log('              ones every rule is currently guessing at.');
+    }
+  }
+
   console.log('\n  next        ds-loop audit .        every deterministic rule, severity-ranked');
-  console.log('              ds-loop sweep .        the ΔE cutoff curve for this palette\n');
+  console.log('              ds-loop sweep .        the ΔE cutoff curve for this palette');
+  if (!hasContract && !opts.writeContract && adapters.length > 0) {
+    // Two rules tell a reader to record a sanctioned deviation in this file. Until
+    // it exists, that instruction names a filename nobody has.
+    console.log(`              ds-loop context --write-contract   start ${CONTRACT}`);
+  }
+  console.log('');
 }
