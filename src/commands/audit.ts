@@ -92,9 +92,11 @@ export function audit(
 
   const rules = rulesForTarget(ruleTarget);
   const minRank = opts.minSeverity ? SEVERITY_ORDER[opts.minSeverity] : Number.POSITIVE_INFINITY;
+  const impactOf = new Map(rules.map((r) => [r.id, r.impact]));
   const allFindings = rules
     .flatMap((r) => r.run(ctx))
-    .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f));
+    .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f))
+    .map((f) => ({ ...f, impact: impactOf.get(f.ruleId) }));
 
   const findings = allFindings
     .filter((f) => SEVERITY_ORDER[f.severity] <= minRank)
@@ -279,6 +281,7 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
       console.log(`  [${f.severity.toUpperCase()}] ${f.ruleId}`);
       console.log(`    ${f.summary}`);
       console.log(`    where: ${f.where}`);
+      if (f.impact) console.log(`    risk:  ${f.impact}`);
       console.log(`    fix:   ${f.fix}\n`);
     }
     const bySev = r.findings.reduce<Record<string, number>>((acc, f) => {

@@ -24,6 +24,8 @@ function normRaw(raw: string): string {
 export const semanticLiteralRule: Rule = {
   id: 'color/semantic-holds-literal',
   title: 'Semantic token holds a literal colour, not a var() reference',
+  impact:
+    'Renaming or retuning a palette entry stops propagating — the same colour now lives in two places and drifts apart on the next edit.',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const offenders = ctx.colors.filter(
@@ -69,6 +71,8 @@ export const semanticLiteralRule: Rule = {
 export const literalDuplicateRule: Rule = {
   id: 'color/literal-duplicate-tokens',
   title: 'Multiple tokens declare the same literal colour value',
+  impact:
+    'The next person to change this colour changes one of the names and not the others, and the system carries two values for one decision.',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const byValue = new Map<string, string[]>();
@@ -105,6 +109,8 @@ export const literalDuplicateRule: Rule = {
 export const nearDuplicatePaletteRule: Rule = {
   id: 'color/near-duplicate-primitives',
   title: 'Palette primitives are perceptually indistinguishable',
+  impact:
+    'Nobody can tell these steps apart on screen, so authors pick between them at random and the ramp stops meaning anything.',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const prims = dedupe(
@@ -149,6 +155,8 @@ export const nearDuplicatePaletteRule: Rule = {
 export const mixedColorFormRule: Rule = {
   id: 'color/mixed-storage-forms',
   title: 'Colour values use inconsistent storage forms',
+  impact:
+    'Every consumer has to parse three notations, and a diff between two forms of the same colour reads as a change when it is not.',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const forms = new Map<string, number>();
@@ -180,6 +188,8 @@ export const mixedColorFormRule: Rule = {
 export const colorKneeRule: Rule = {
   id: 'color/no-intent-plateau',
   title: 'Palette has no ΔE plateau at the shipped primitive count',
+  impact:
+    'The palette has no natural cluster count, so any threshold this tool picks for it is arbitrary — read the sweep curve before trusting a cluster number here.',
   targets: ['color'],
   run(ctx: RuleContext): Finding[] {
     const shipped = ctx.meta.shippedPrimitiveCount;

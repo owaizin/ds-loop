@@ -12,6 +12,8 @@ import type { Finding, Rule, RuleContext } from './types.ts';
 export const rawDimensionRule: Rule = {
   id: 'token/raw-dimension-in-semantic',
   title: 'Semantic or component token holds a raw length instead of a primitive',
+  impact:
+    'A spacing or type change edits these tokens by hand instead of moving one scale step; the value drifts from the scale the moment anyone touches it.',
   targets: ['tokens', 'spacing', 'typography', 'elevation'],
   run(ctx: RuleContext): Finding[] {
     const offenders = ctx.values.filter((v) => {

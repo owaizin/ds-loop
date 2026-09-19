@@ -17,6 +17,8 @@ import type { Finding, Rule, RuleContext } from './types.ts';
 export const rawValueInMarkupRule: Rule = {
   id: 'token/raw-value-in-markup',
   title: 'Component hardcodes a colour or length instead of referencing a token',
+  impact:
+    'The value is invisible to every theme, rebrand and audit that reads the token files — a rebrand ships and these sites keep the old colour.',
   targets: ['tokens', 'color', 'spacing', 'typography'],
   run(ctx: RuleContext): Finding[] {
     const offenders = ctx.values.filter(

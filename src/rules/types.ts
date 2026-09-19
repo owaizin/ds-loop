@@ -17,6 +17,8 @@ export type Finding = {
   where: string;
   /** what to do about it */
   fix: string;
+  /** what breaks if it is left alone — copied from the rule when the finding is built */
+  impact?: string;
   /** machine-readable payload for scorecards and diffs */
   data?: Record<string, unknown>;
 };
@@ -34,6 +36,16 @@ export type RuleContext = {
 export type Rule = {
   id: string;
   title: string;
+  /**
+   * What breaks if this finding is ignored — one line, in domain vocabulary.
+   *
+   * A severity label ranks findings against each other; it does not tell a
+   * reader what it costs to leave one alone, and "I don't know the risk and
+   * impact" was the first thing a real user said to a nine-finding audit. This
+   * is the answer, and it belongs on the rule because the cost is a property of
+   * the defect, not of the run.
+   */
+  impact: string;
   targets: RuleTarget[];
   /** deterministic — no LLM, no network. returns zero findings when the system is clean. */
   run(ctx: RuleContext): Finding[];

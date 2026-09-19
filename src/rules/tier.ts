@@ -64,6 +64,8 @@ function isAllowedReference(from: Tier, to: Tier): boolean {
 export const tierLeakageRule: Rule = {
   id: 'token/tier-leakage',
   title: 'Token references across tiers in the wrong direction',
+  impact:
+    'Theme propagation is already broken: the value is right today and a theme swap or rebrand will not reach it.',
   targets: ['tokens', 'color', 'spacing', 'typography', 'elevation', 'motion'],
   run(ctx: RuleContext): Finding[] {
     const refs = ctx.values.filter((v) => v.provenance.classification === 'reference' && v.refs);
@@ -112,6 +114,8 @@ export const tierLeakageRule: Rule = {
 export const tierModelUndetectableRule: Rule = {
   id: 'token/tier-model-undetectable',
   title: 'Tier model cannot be detected from token names, so the tier check did not run',
+  impact:
+    'A clean `token/tier-leakage` result in this source means nothing was checked, not that nothing is wrong — the strongest silent-pass this tool can produce.',
   targets: ['tokens'],
   run(ctx: RuleContext): Finding[] {
     const refs = ctx.values.filter((v) => v.provenance.classification === 'reference');
@@ -151,6 +155,8 @@ const round = (n: number) => Math.round(n * 100) / 100;
 export const semanticAppearanceNameRule: Rule = {
   id: 'token/semantic-name-describes-appearance',
   title: 'Semantic token name encodes appearance, not intent',
+  impact:
+    "The name locks in today's colour: when the brand changes, either the token lies about its value or every consumer is renamed.",
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const reserved = ctx.config.taxonomy.reservedSemanticTerms.map((t) => t.toLowerCase());
@@ -203,6 +209,8 @@ const VAR_NO_FALLBACK = /var\(\s*(--[\w-]+)\s*\)/g;
 export const varMissingFallbackRule: Rule = {
   id: 'token/var-missing-fallback',
   title: 'var() reference has no fallback value',
+  impact:
+    'If the token is ever undefined — wrong import order, a consumer that never loaded the token file — the property resolves to nothing and the element renders unstyled.',
   targets: ['tokens', 'color', 'spacing', 'typography', 'elevation', 'motion'],
   run(ctx: RuleContext): Finding[] {
     const hits: { token: string; ref: string; where: string }[] = [];
