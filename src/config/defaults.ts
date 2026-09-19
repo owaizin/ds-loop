@@ -182,4 +182,6 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
     max: 12,
     step: 0.25,
   },
+  // exceptions are recorded per project, never shipped as defaults
+  ignore: [],
 };

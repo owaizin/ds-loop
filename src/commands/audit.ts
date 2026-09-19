@@ -8,6 +8,7 @@ import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.t
 import { surveyTree } from '../core/files.ts';
 import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
+import { type Suppression, applyIgnores } from '../core/suppress.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
 
@@ -26,6 +27,8 @@ export type AuditReport = {
   findings: Finding[];
   /** what this audit could not read — a clean verdict is only as wide as its coverage */
   coverage: Coverage;
+  /** exceptions the config recorded, and how many values each one removed */
+  suppressions: { rule: string; value: string; matched: number; reason: string; createdAt?: string }[];
   /** ratios, not counts — a scorecard row that survives codebase growth */
   ratios: Record<string, number>;
   /**
@@ -92,9 +95,24 @@ export function audit(
 
   const rules = rulesForTarget(ruleTarget);
   const minRank = opts.minSeverity ? SEVERITY_ORDER[opts.minSeverity] : Number.POSITIVE_INFINITY;
+
+  // Recorded exceptions are applied to each rule's INPUT, not to its findings, so
+  // the counts a surviving finding reports stay true. Every match is collected:
+  // an exception that is never printed is a silent pass, which is the failure
+  // this whole tool exists to avoid.
+  const suppressions: Suppression[] = [];
   const impactOf = new Map(rules.map((r) => [r.id, r.impact]));
   const allFindings = rules
-    .flatMap((r) => r.run(ctx))
+    .flatMap((r) => {
+      const { values: seen, suppressions: hits } = applyIgnores(r.id, values, config.ignore);
+      suppressions.push(...hits);
+      if (seen.length === values.length) return r.run(ctx);
+      return r.run({
+        ...ctx,
+        values: seen,
+        colors: seen.filter((v) => v.provenance.classification === 'color'),
+      });
+    })
     .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f))
     .map((f) => ({ ...f, impact: impactOf.get(f.ruleId) }));
 
@@ -171,6 +189,13 @@ export function audit(
     rulesRun: rules.map((r) => r.id),
     findings,
     coverage,
+    suppressions: suppressions.map((s) => ({
+      rule: s.entry.rule,
+      value: s.entry.value ?? '*',
+      matched: s.matched,
+      reason: s.entry.reason,
+      ...(s.entry.createdAt !== undefined ? { createdAt: s.entry.createdAt } : {}),
+    })),
     ratios,
     next: [],
     verdict: findings.length === 0 ? 'clean' : 'issues',
@@ -222,6 +247,8 @@ function noAdapterReport(
     rulesRun: [],
     findings: [],
     coverage,
+    // nothing ran, so nothing was suppressed — an empty list, never an absent one
+    suppressions: [],
     ratios: {},
     next: [],
     verdict: 'not-checked',
@@ -292,6 +319,16 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
       `  ${r.findings.length} findings — ` +
         `${bySev.blocking ?? 0} blocking · ${bySev.high ?? 0} high · ${bySev.medium ?? 0} medium · ${bySev.low ?? 0} low`,
     );
+  }
+
+  if (r.suppressions.length > 0) {
+    console.log('\n  suppressed — exceptions recorded in your config, applied to this run');
+    for (const s of r.suppressions) {
+      console.log(
+        `    ${s.rule} · ${s.value} — ${s.matched} value(s)${s.createdAt ? ` · ${s.createdAt}` : ''}`,
+      );
+      console.log(`      ${s.reason}`);
+    }
   }
 
   console.log('\n  scope — what this audit read');

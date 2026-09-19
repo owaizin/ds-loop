@@ -43,6 +43,33 @@ For a project whose actual contract uses `--foundation-*` primitives and `--inte
 
 Use patterns from your own contract. These settings configure existing rules; they do not create new checks. The engine's palette → semantic → component model is an assumption, not a required architecture. If your model cannot be represented faithfully, report the limitation.
 
+### Recording an exception
+
+A rule that is wrong about one token does not need a wider threshold. Widening one silences the whole
+class in every future run and records nothing anyone can disagree with. Record the case instead, with the
+argument attached:
+
+```json
+{
+  "ignore": [
+    {
+      "rule": "color/semantic-holds-literal",
+      "value": "--color-surface-raised",
+      "files": ["theme.css"],
+      "reason": "The palette layer lands next sprint and this token is the seed for it.",
+      "createdAt": "2026-09-19"
+    }
+  ]
+}
+```
+
+`reason` is required — a config with an entry that lacks one fails to load, because an entry dropped
+silently would look like the exception was honoured. `rule` takes a rule id or `*`; `value` matches a token
+name or a literal, and `*` with `files` is the whole-file exception. Entries remove values from that rule's
+*input*, so the counts a surviving finding reports stay true, and `audit` prints every entry that matched —
+a clean verdict still shows what was argued away to reach it. Exceptions are part of `configHash`, so a
+scorecard delta across a changed exception set reports that the instrument moved.
+
 The [configuration schema](https://github.com/owaizin/ds-loop/blob/main/src/config/schema.ts) and [defaults](https://github.com/owaizin/ds-loop/blob/main/src/config/defaults.ts) define clustering, taxonomy and sweep settings. Defaults are uncalibrated. Use `sweep` to investigate your source before choosing a clustering cutoff. The `.ds-ops-config.yml` compatibility path reads system context and maps supported severity settings from design-system-ops.
 
 ## Coverage

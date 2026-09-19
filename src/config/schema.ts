@@ -99,6 +99,27 @@ export type DsOpsConfig = {
     max: number;
     step: number;
   };
+  /**
+   * Recorded exceptions. Each one removes a value from ONE rule's input and says
+   * why in prose. This is the escape hatch for a false positive — never a widened
+   * threshold, which silences the class instead of the case and leaves no record
+   * of the decision. `audit` prints every entry that matched, so an exception
+   * cannot quietly become a clean verdict.
+   */
+  ignore: IgnoreEntry[];
+};
+
+export type IgnoreEntry = {
+  /** rule id this exception applies to, or `*` for every rule */
+  rule: string;
+  /** token name or literal value to exclude; `*` or absent means every value in `files` */
+  value?: string;
+  /** paths, relative to the source root; absent means everywhere */
+  files?: string[];
+  /** REQUIRED — the argument for the exception, in the reader's own words */
+  reason: string;
+  /** ISO date the exception was recorded, so a stale one is visible */
+  createdAt?: string;
 };
 
 /**

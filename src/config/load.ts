@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Severity } from '../rules/types.ts';
 import { DEFAULT_CONFIG } from './defaults.ts';
-import type { DsOpsConfig } from './schema.ts';
+import type { DsOpsConfig, IgnoreEntry } from './schema.ts';
 import { parseYamlLite } from './yaml-lite.ts';
 
 /**
@@ -76,7 +76,37 @@ function mergeConfig(user: Record<string, unknown>): DsOpsConfig {
     clustering: { ...DEFAULT_CONFIG.clustering, ...u.clustering },
     taxonomy: { ...DEFAULT_CONFIG.taxonomy, ...u.taxonomy },
     sweep: { ...DEFAULT_CONFIG.sweep, ...u.sweep },
+    ignore: readIgnores(u.ignore),
   };
+}
+
+/**
+ * An exception without an argument is a threshold in disguise: it silences a
+ * finding and records nothing a later reader can disagree with. A config that
+ * tries it fails to load rather than loading with the entry dropped, because a
+ * dropped entry would look like the exception was honoured.
+ */
+function readIgnores(raw: unknown): IgnoreEntry[] {
+  if (raw === undefined) return [];
+  if (!Array.isArray(raw)) throw new Error('config: `ignore` must be a list of exception entries');
+  return raw.map((e, i) => {
+    const entry = e as Partial<IgnoreEntry>;
+    if (typeof entry.rule !== 'string' || entry.rule === '') {
+      throw new Error(`config: ignore[${i}] needs a \`rule\` — a rule id, or \`*\` for every rule`);
+    }
+    if (typeof entry.reason !== 'string' || entry.reason.trim() === '') {
+      throw new Error(
+        `config: ignore[${i}] (${entry.rule}) needs a \`reason\` — say why this is not a finding, in your own words. An exception without an argument is a threshold in disguise.`,
+      );
+    }
+    return {
+      rule: entry.rule,
+      ...(entry.value !== undefined ? { value: entry.value } : {}),
+      ...(Array.isArray(entry.files) ? { files: entry.files } : {}),
+      reason: entry.reason,
+      ...(entry.createdAt !== undefined ? { createdAt: entry.createdAt } : {}),
+    };
+  });
 }
 
 function severityOverridesFrom(parsed: Record<string, unknown>): Record<string, Severity> {

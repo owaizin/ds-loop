@@ -23,8 +23,21 @@ test('hashConfig distinguishes configs that differ anywhere, at any depth', () =
   };
   assert.notEqual(hashConfig(base), hashConfig(listChanged));
 
+  // a recorded exception changes what was measured, so it changes the hash —
+  // otherwise two runs with different suppressions compare as the same instrument
+  const suppressed = {
+    ...base,
+    ignore: [{ rule: 'token/tier-leakage', value: '--panel-radius', reason: 'two-tier by design' }],
+  };
+  assert.notEqual(hashConfig(base), hashConfig(suppressed), 'an exception must change the hash');
+
   // and it must not depend on key order
-  const reordered = { sweep: base.sweep, taxonomy: base.taxonomy, clustering: base.clustering };
+  const reordered = {
+    sweep: base.sweep,
+    taxonomy: base.taxonomy,
+    clustering: base.clustering,
+    ignore: base.ignore,
+  };
   assert.equal(hashConfig(base), hashConfig(reordered as typeof base), 'key order must not matter');
   assert.equal(hashConfig(base), hashConfig(structuredClone(base)));
 });
