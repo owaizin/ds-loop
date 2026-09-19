@@ -21,7 +21,8 @@ comparing uncommitted changes.
 Always inspect `verdict`, `coverage` and findings together. `not-checked` is not
 clean, and `clean` is limited to the adapters' declared reads. The CSS adapter
 reads custom-property declarations, not ordinary rule bodies; the markup adapter
-reads arbitrary-value strings, not resolved named utilities or inline styles.
+reads arbitrary-value strings and named colour utilities off the framework palette,
+not resolved theme utilities or inline styles.
 `--require-coverage` fails on reported gaps; it does not expand those reads.
 
 ## The rule set (v0)
@@ -29,6 +30,7 @@ reads arbitrary-value strings, not resolved named utilities or inline styles.
 | Rule id | Severity | What it means |
 |---|---|---|
 | `token/raw-value-in-markup` | high | Arbitrary color/length values at markup use sites; investigate against the project's actual convention. |
+| `token/stock-palette-utility` | medium | A colour utility naming the framework's own palette (`bg-white`, `text-slate-900`) rather than a theme token. Structure only — confirm the swap renders in both modes. Silent when no theme colour tokens were read. |
 | `token/tier-model-undetectable` | low | Too few referencing tokens match configured tier patterns; a scanner limitation, not an absent system. Silent at zero references. |
 | `token/tier-leakage` | high | A token references across tiers the wrong way — component → primitive skips the semantic tier, or a reference points upward. Value is right, theme propagation is broken. |
 | `token/semantic-name-describes-appearance` | medium / low | A semantic token named for a colour or size word (`color.action.blue`). Low when every hit is a category / chart-series token (sanctioned — record it in `DESIGN-SYSTEM.md`). |

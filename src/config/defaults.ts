@@ -22,6 +22,57 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
     // spacing, type and radius come off a scale; width/height/inset/transform
     // are geometry and are excluded on purpose. Measured on a real design system:
     // 241 dimension hits, of which ~28 of 40 sampled were geometry, not drift.
+    // Tailwind's colour utilities. Only used to read the value half of a NAMED
+    // utility (bg-slate-900); arbitrary colour values are judged without it.
+    // `shadow` and `ring-offset` are left out on purpose: a shadow colour is part
+    // of an elevation recipe, the same carve-out shadowTokenHints makes in CSS.
+    colorUtilities: [
+      'bg',
+      'text',
+      'border',
+      'ring',
+      'fill',
+      'stroke',
+      'outline',
+      'divide',
+      'placeholder',
+      'caret',
+      'accent',
+      'decoration',
+      'from',
+      'via',
+      'to',
+    ],
+    // Tailwind's default palette families plus the two absolutes. These are the
+    // framework's colours, not the system's: `bg-white` is the same white in
+    // every theme, which is how a light-mode card survived into dark mode.
+    stockPaletteFamilies: [
+      'white',
+      'black',
+      'slate',
+      'gray',
+      'grey',
+      'zinc',
+      'neutral',
+      'stone',
+      'red',
+      'orange',
+      'amber',
+      'yellow',
+      'lime',
+      'green',
+      'emerald',
+      'teal',
+      'cyan',
+      'sky',
+      'blue',
+      'indigo',
+      'violet',
+      'purple',
+      'fuchsia',
+      'pink',
+      'rose',
+    ],
     scaleUtilities: [
       'p',
       'px',

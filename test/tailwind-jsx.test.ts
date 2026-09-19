@@ -4,12 +4,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { adaptersFor } from '../src/adapters/registry.ts';
-import { parseArbitrary, tailwindJsxAdapter } from '../src/adapters/tailwind-jsx.ts';
+import { parseArbitrary, parseNamed, tailwindJsxAdapter } from '../src/adapters/tailwind-jsx.ts';
 import type { SourceRef } from '../src/adapters/types.ts';
 import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import type { RawValue } from '../src/core/provenance.ts';
 import { semanticLiteralRule } from '../src/rules/color.ts';
-import { rawValueInMarkupRule } from '../src/rules/markup.ts';
+import { rawValueInMarkupRule, stockPaletteUtilityRule } from '../src/rules/markup.ts';
 import type { RuleContext } from '../src/rules/types.ts';
 
 const CARD = `
@@ -195,4 +195,71 @@ test('detect is false without arbitrary values, and both adapters run on a mixed
     (source) => adaptersFor(source).map((a) => a.id),
   );
   assert.deepEqual(ids, ['css-custom-props', 'tailwind-jsx']);
+});
+
+const T = DEFAULT_CONFIG.taxonomy;
+
+test('parseNamed picks colour utilities off the framework palette, nothing else', () => {
+  assert.deepEqual(parseNamed('bg-white', T), { variants: [], util: 'bg', value: 'white' });
+  assert.deepEqual(parseNamed('dark:bg-slate-900/50', T), {
+    variants: ['dark'],
+    util: 'bg',
+    value: 'slate-900',
+  });
+  // a utility reading THIS system's token is the thing we want people writing
+  assert.equal(parseNamed('bg-surface', T), null);
+  assert.equal(parseNamed('text-muted-foreground', T), null);
+  // scale steps and geometry are not colours
+  assert.equal(parseNamed('text-sm', T), null);
+  assert.equal(parseNamed('p-4', T), null);
+  assert.equal(parseNamed('border-2', T), null);
+  // a shadow colour is an elevation recipe, the carve-out CSS already makes
+  assert.equal(parseNamed('shadow-black', T), null);
+  // arbitrary values belong to parseArbitrary
+  assert.equal(parseNamed('bg-[#fff]', T), null);
+});
+
+test('stock-palette-utility fires only when a theme colour layer exists', () => {
+  // The bug this rule exists for: a file ds-loop had just called clean rendered
+  // light-on-light in dark mode, because bg-white / text-slate-900 are outside
+  // the theme and every rule at the time only looked for literals.
+  const files = {
+    'Card.tsx': '<div className="bg-white dark:bg-slate-900 p-4"><h2 className="text-slate-900">x</h2></div>',
+  };
+  const markup = extract(files);
+  assert.equal(markup.filter((v) => v.provenance.classification === 'palette-utility').length, 3);
+
+  // no token layer read — nothing is being bypassed, so the rule stays silent
+  assert.deepEqual(stockPaletteUtilityRule.run(ctx(markup)), []);
+
+  const themeToken: RawValue = {
+    raw: '#ffffff',
+    provenance: {
+      file: 'theme.css',
+      line: 2,
+      selector: ':root',
+      property: '--color-background',
+      tokenName: '--color-background',
+      classification: 'color',
+      reason: 'test',
+      fixtureSha: 'test',
+      adapterId: 'css-custom-props',
+      adapterVersion: '0',
+    },
+  };
+  const findings = stockPaletteUtilityRule.run(ctx([...markup, themeToken]));
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.data?.count, 3);
+  assert.equal(findings[0]?.data?.underDarkVariant, 1);
+  assert.match(findings[0]?.where ?? '', /bg-white/);
+});
+
+test('a named palette utility is not reported as a raw value in markup', () => {
+  // the two rules key on different classifications on purpose: bg-white is a
+  // valid class naming the wrong palette, not a literal pasted into a bracket.
+  const values = extract({ 'Card.tsx': '<div className="bg-white bg-[#1da1f2]" />' });
+  const findings = rawValueInMarkupRule.run(ctx(values));
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.data?.count, 1);
+  assert.match(findings[0]?.where ?? '', /bg-\[#1da1f2\]/);
 });

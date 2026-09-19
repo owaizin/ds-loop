@@ -17,6 +17,7 @@ export type ValueClassification =
   | 'shadow-internal' // a color that only exists as part of a shadow/elevation recipe
   | 'reference' // the value is one or more var() calls — kept so tier rules can check direction
   | 'ambiguous' // could be a color, could not be — surfaced for a human
+  | 'palette-utility' // a use site naming a stock framework palette entry (bg-slate-900), not a theme token
   | 'excluded'; // deliberately not a color (kept for auditability)
 
 export type Provenance = {

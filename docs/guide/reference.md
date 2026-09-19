@@ -50,7 +50,7 @@ The [configuration schema](https://github.com/owaizin/ds-loop/blob/main/src/conf
 | Adapter | Reads | Does not read |
 | --- | --- | --- |
 | CSS custom properties | Custom-property declarations in `.css` | Ordinary rule bodies and declarations inside at-rules |
-| Tailwind JSX | Arbitrary-value strings in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Resolved named utilities, inline style objects, CSS-in-JS |
+| Tailwind JSX | Arbitrary-value strings and framework-palette colour utilities in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Utilities naming your own theme tokens, inline style objects, CSS-in-JS |
 
 Sass maps, design-token JSON and other unsupported formats remain outside these adapters. Recognized colors that cannot be converted are reported as ambiguous. A file extension is not a promise of full syntax coverage.
 
@@ -59,7 +59,7 @@ Sass maps, design-token JSON and other unsupported formats remain outside these 
 ## Rules
 
 
-Eleven. Every one deterministic, and every one returns nothing when that slice of your system is clean.
+Twelve. Every one deterministic, and every one returns nothing when that slice of your system is clean.
 
 | rule | severity | catches |
 | --- | --- | --- |
@@ -68,6 +68,7 @@ Eleven. Every one deterministic, and every one returns nothing when that slice o
 | `token/raw-value-in-markup` | high | a component hardcoding a colour or length at the use site — `bg-[#1da1f2]`, `p-[13px]`. Names the token that already carries the value when one does. |
 | `token/raw-dimension-in-semantic` | high | a semantic or component token holding a raw `16px` / `1rem` instead of a spacing / type primitive |
 | `token/semantic-name-describes-appearance` | medium / low | a semantic token named for a colour or size (`color.action.blue`) — a primitive with extra steps. Low when only category / chart tokens. |
+| `token/stock-palette-utility` | medium | a use site naming the CSS framework's palette — `bg-white`, `text-slate-900` — instead of a theme token. Theme-blind: it renders the same value in every mode. Silent when the run read no theme colour tokens. |
 | `color/literal-duplicate-tokens` | medium | N tokens declaring byte-identical values — the semantic layer re-typing the palette |
 | `color/mixed-storage-forms` | medium | hex + hsl-channels + rgb in one source |
 | `color/near-duplicate-primitives` | low | two primitives within one just-noticeable ΔE |

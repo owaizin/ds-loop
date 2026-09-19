@@ -10,13 +10,15 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 ```
   ds-loop audit — Radix Colors  ·  target: all  ·  fixture
   version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.3.0   config 4cdd7f44
-  11 rules run
+  12 rules run
 
   [LOW] color/near-duplicate-primitives
     20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable
     just-noticeable difference
     where: --amber-1 ≈ --blue-1 (ΔE 2.252285); --amber-1 ≈ --green-1 (ΔE 1.956419);
            --amber-1 ≈ --red-1 (ΔE 1.652821); --amber-1 ≈ --slate-1 (ΔE 1.563758) …
+    risk:  Nobody can tell these steps apart on screen, so authors pick between them
+           at random and the ramp stops meaning anything.
     fix:   Confirm each pair is a deliberate ramp step. Collapse the ones that are not.
 
   [LOW] color/no-intent-plateau

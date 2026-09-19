@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
+import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { filesInScope } from '../core/files.ts';
 import { isLengthLiteral } from '../core/literals.ts';
@@ -11,18 +12,28 @@ const ID = 'tailwind-jsx';
 // 0.2.0: geometry utilities no longer count as scale bypasses, derived output
 // (dist/, storybook-static/, …) is no longer read, unconvertible colour
 // functions surface as ambiguous. Counts from 0.1.0 are not comparable.
-const VERSION = '0.2.0';
+// 0.3.0: named colour utilities off the framework's own palette (bg-white,
+// text-slate-900) are extracted too, as `palette-utility`. They add values a
+// 0.2.0 run never emitted, so every ratio with a values-total denominator moves.
+const VERSION = '0.3.0';
 const EXTS = ['.jsx', '.tsx', '.js', '.ts', '.mjs'];
 
 /**
  * Extracts Tailwind *arbitrary values* — `bg-[#1da1f2]`, `p-[13px]`,
  * `hover:text-[14px]` — from JS/TS sources.
  *
- * Arbitrary values are the whole point: a utility naming a scale step (`p-4`,
- * `bg-slate-900`) is inside the system by construction, while a bracket is the
- * author stepping outside it with a literal. That is the exact shape a coding
- * agent produces when it cannot find the right token, which makes this the
- * adapter the "AI slop" audit needs.
+ * Arbitrary values are the whole point: a utility naming a scale step (`p-4`)
+ * is inside the system by construction, while a bracket is the author stepping
+ * outside it with a literal. That is the exact shape a coding agent produces
+ * when it cannot find the right token, which makes this the adapter the "AI
+ * slop" audit needs.
+ *
+ * A named COLOUR utility is the exception, and this adapter used to claim
+ * otherwise. `bg-white` and `text-slate-900` are inside *Tailwind's* system and
+ * outside the project's: they resolve to one value in every mode, so a card
+ * written that way renders light-on-light in dark mode. Measured: a file this
+ * tool had just called clean, rendering visibly broken. Those come out as
+ * `palette-utility` for `token/stock-palette-utility` to judge.
  *
  * Reads STRING LITERALS rather than JSX attributes, so `className="..."`,
  * `cn("...", "...")`, `clsx`, `cva` and tagged templates all work without a
@@ -39,11 +50,16 @@ export const tailwindJsxAdapter: Adapter = {
   id: ID,
   version: VERSION,
   extensions: EXTS,
-  reads: 'Tailwind arbitrary values inside string literals — not inline style objects, not CSS-in-JS',
+  reads:
+    'Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS',
 
   detect(source: SourceRef): boolean {
     return filesInScope(source.root, EXTS, source.only).some((f) =>
-      classTokens(readFileSync(f, 'utf8')).some((t) => parseArbitrary(t.token) !== null),
+      // detection is not a judgment, so it reads the default taxonomy rather
+      // than the loaded one — `detect` has no config by contract.
+      classTokens(readFileSync(f, 'utf8')).some(
+        (t) => parseArbitrary(t.token) !== null || parseNamed(t.token, DEFAULT_CONFIG.taxonomy) !== null,
+      ),
     );
   },
 
@@ -53,11 +69,17 @@ export const tailwindJsxAdapter: Adapter = {
       const rel = relative(source.root, file) || file;
       for (const { token, line } of classTokens(readFileSync(file, 'utf8'))) {
         const parsed = parseArbitrary(token);
-        if (!parsed) continue;
-        const { variants, util, value } = parsed;
+        const named = parsed === null ? parseNamed(token, config.taxonomy) : null;
+        if (!parsed && !named) continue;
+        const { variants, util, value } = (parsed ?? named)!;
 
-        const refs = [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1]!);
-        const { classification, reason } = classify(util, value, refs, config.taxonomy);
+        const refs = parsed ? [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1]!) : [];
+        const { classification, reason } = named
+          ? {
+              classification: 'palette-utility' as const,
+              reason: `utility ${util} names the framework palette entry ${value}, not a theme token`,
+            }
+          : classify(util, value, refs, config.taxonomy);
         if (classification === 'excluded') continue;
 
         out.push({
@@ -105,11 +127,42 @@ function classTokens(text: string): { token: string; line: number }[] {
     // biome-ignore lint/suspicious/noAssignInExpressions: standard regex-exec loop
     while ((m = STRING_LITERAL.exec(lines[li]!)) !== null) {
       for (const token of m[2]!.split(/\s+/)) {
-        if (token.includes('-[')) out.push({ token, line: li + 1 });
+        if (token.includes('-[') || NAMED_UTILITY.test(token)) out.push({ token, line: li + 1 });
       }
     }
   }
   return out;
+}
+
+// a plain utility class: optional variants, a utility name, no brackets. Loose on
+// purpose — parseNamed does the real filtering against the configured lists.
+const NAMED_UTILITY = /^[a-z][a-z0-9:-]*$/;
+
+/**
+ * `dark:bg-slate-900/50` -> variants [dark], util `bg`, value `slate-900`, when
+ * `bg` is a colour utility and `slate` a stock palette family. Null otherwise —
+ * including for every utility that names one of this system's own tokens.
+ *
+ * ponytail: prefix match against a family list, no Tailwind config resolution.
+ * A project that renames `slate` in its own theme reads as stock here; point
+ * `taxonomy.stockPaletteFamilies` at the families it actually inherits.
+ */
+export function parseNamed(
+  token: string,
+  taxonomy: Taxonomy,
+): { variants: string[]; util: string; value: string } | null {
+  if (token.includes('[')) return null;
+  const parts = token.split(':');
+  const body = parts.pop() ?? '';
+  const variants = parts;
+  // strip an opacity modifier (bg-white/50) — the family is what matters
+  const [base = ''] = body.split('/');
+  const util = taxonomy.colorUtilities.find((u) => base === u || base.startsWith(`${u}-`));
+  if (util === undefined) return null;
+  const value = base === util ? '' : base.slice(util.length + 1);
+  const family = value.split('-')[0] ?? '';
+  if (!taxonomy.stockPaletteFamilies.includes(family)) return null;
+  return { variants, util, value };
 }
 
 /**

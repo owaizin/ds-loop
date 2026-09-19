@@ -38,6 +38,21 @@ export type DsOpsConfig = {
      */
     scaleUtilities: string[];
     /**
+     * Utility prefixes that set a COLOUR (`bg`, `text`, `border`, `ring`). Used
+     * to spot a use site naming a stock palette entry — `bg-white`,
+     * `text-slate-900` — instead of the theme token that carries that role.
+     * UNCALIBRATED default — Tailwind's colour utilities, not tuned.
+     */
+    colorUtilities: string[];
+    /**
+     * Palette family names that ship with the CSS framework rather than with
+     * this design system. A colour utility naming one of these is theme-blind:
+     * it resolves to the same value in every mode, so a rebrand or a dark theme
+     * cannot reach it. Empty list disables `token/stock-palette-utility`.
+     * UNCALIBRATED default — Tailwind's default palette, not tuned.
+     */
+    stockPaletteFamilies: string[];
+    /**
      * Share of referencing tokens that must match SOME tier pattern before the
      * tier rules are treated as having run. Below it, `token/tier-leakage`
      * cannot judge anything, and reporting nothing would read as a pass — so
