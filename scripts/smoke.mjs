@@ -81,6 +81,11 @@ try {
     //
     // Names go in `.private-names` (gitignored, one pattern per line, `#` comments)
     // or DS_LOOP_PRIVATE_NAMES=a,b. No list means nothing to check, not a pass.
+    // The explicit opt-out takes precedence even when a local list exists.
+    if (process.env.DS_LOOP_PRIVATE_NAMES === 'none') {
+      process.stdout.write('    (skipped by DS_LOOP_PRIVATE_NAMES=none)\n');
+      return;
+    }
     const listFile = join(ROOT, '.private-names');
     const patterns = [
       ...(process.env.DS_LOOP_PRIVATE_NAMES ?? '').split(','),
@@ -98,11 +103,6 @@ try {
       'no deny list: create .private-names (one name or measurement per line) or set\n' +
         '      DS_LOOP_PRIVATE_NAMES. Pass DS_LOOP_PRIVATE_NAMES=none to skip deliberately.',
     );
-    if (patterns.length === 1 && patterns[0] === 'none') {
-      process.stdout.write('    (skipped by DS_LOOP_PRIVATE_NAMES=none)\n');
-      return;
-    }
-
     // a word-shaped name is matched on word boundaries, so a three-letter name does
     // not fire inside a longer word; anything carrying punctuation (a `--prefix-`) is
     // matched as a plain substring
