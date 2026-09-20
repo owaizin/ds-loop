@@ -16,6 +16,24 @@ Run commands from the target project so configuration resolves from its working 
 
 `fix` is not an automatic token migration. `scorecard` does not gate CI. `guard` cannot prevent an edit.
 
+### Preview a mechanical fix
+
+```sh
+ds-loop fix . --help
+ds-loop fix .
+ds-loop fix . --write
+ds-loop audit .
+```
+
+The first command explains eligibility; the second previews without writing.
+Review that preview against the permitted scope and exceptions before applying it.
+The fixer only inserts missing `var()` fallbacks in CSS custom-property declarations
+when the referenced token has a direct color or dimension literal in scope. It does
+not follow alias chains, migrate JSX utilities, or fix other rule classes. `--target`
+belongs to `audit`, not `fix`. A zero-edit result explains whether the scope yielded
+no declarations, no candidates, or references without eligible literal targets.
+It does not establish a clean audit. Use an unfiltered audit afterward.
+
 ### The contract file
 
 `ds-loop context --write-contract` creates an optional `DESIGN-SYSTEM.md` draft and
@@ -109,6 +127,12 @@ Use patterns from your own contract. These settings configure existing rules; th
 
 ### Recording an exception
 
+To suppress one verified case, edit the project's existing configuration; avoid
+creating a second competing config. The JSON example below belongs in
+`ds-loop.config.json`. If a YAML config already takes precedence, migrate its
+settings deliberately or pass `--config <file.json>` for the audit. The hook needs
+the configuration selected by automatic discovery.
+
 A rule that is wrong about one token does not need a wider threshold. Widening one silences the whole
 class in every future run and records nothing anyone can disagree with. Record the case instead, with the
 argument attached:
@@ -140,6 +164,12 @@ the audit source root. Thus `theme.css` also matches `legacy/theme.css`, while
 `legacy/*` limits the exception to that prefix. Interior wildcards are unsupported.
 Malformed selectors fail loading instead of silently widening an exception.
 Review the reported matches before relying on a suppression.
+
+Run `ds-loop audit . --json` before and after the edit. Check `suppressions` for
+the intended rule, value and matched count; compare finding locations with the
+configured file scope and confirm unrelated occurrences remain visible.
+A lower count caused by an exception is a policy change, not a product
+repair. Editing `DESIGN-SYSTEM.md` alone does not configure an exception.
 
 The [configuration schema](https://github.com/owaizin/ds-loop/blob/main/src/config/schema.ts) and [defaults](https://github.com/owaizin/ds-loop/blob/main/src/config/defaults.ts) define clustering, taxonomy and sweep settings. Defaults are uncalibrated. Use `sweep` to investigate your source before choosing a clustering cutoff. The `.ds-ops-config.yml` compatibility path reads system context and maps supported severity settings from design-system-ops.
 

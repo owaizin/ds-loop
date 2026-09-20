@@ -18,8 +18,21 @@ import type { RuleTarget, Severity } from './rules/types.ts';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(HERE, '..', 'package.json'), 'utf8'));
 
+const FIX_USAGE = `
+  ds-loop fix <path> [--write] [--config <file.json>]
+      Supports token/var-missing-fallback in CSS custom-property declarations.
+      Inserts a fallback only when the referenced token has a direct color or
+      dimension literal in scope. Skips missing definitions and alias chains.
+      Does not migrate JSX utilities or fix other rules. Zero edits is not a clean audit.
+      Dry run by default; --write applies eligible edits. No --target option.
+
+      ds-loop fix .                 preview eligible edits
+      ds-loop fix . --write         apply them
+      ds-loop audit .               re-check findings and coverage
+`;
+
 const USAGE = `
-ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from its code
+ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
 
   Start here:  ds-loop            verdict for this directory, and what to run next
                ds-loop start      the same, spelled out
@@ -55,10 +68,7 @@ ds-loop ${pkg.version} — audit, scaffold, and guardrail a design system from i
       since the last row. A delta is only called a delta when the adapters and the
       config match on both sides — otherwise the instrument moved, not the code.
 
-  ds-loop fix <path> [--write]
-      Apply the mechanical fixes only — where the correct edit is provable from
-      the code. v0: inserts a fallback into \`var(--x)\` using the literal value
-      of --x. Dry run unless --write.
+${FIX_USAGE}
 `;
 
 function flag(argv: string[], name: string): string | undefined {
@@ -80,9 +90,21 @@ function list(argv: string[], name: string): string[] {
 
 function main(argv: string[]): void {
   const [cmd, ...rest] = argv;
+  if (cmd === '--help' || cmd === '-h' || rest.includes('--help') || rest.includes('-h')) {
+    console.log(cmd === 'fix' ? FIX_USAGE : USAGE);
+    return;
+  }
+  if (cmd === 'fix') {
+    for (const arg of rest) {
+      if (arg.startsWith('--') && arg !== '--write' && arg !== '--config') {
+        throw new Error(`fix does not support ${arg}; run ds-loop fix --help`);
+      }
+    }
+  }
   const loaded = loadConfig(flag(rest, 'config'));
   const { config } = loaded;
-  const positional = rest.filter((a, i) => !a.startsWith('--') && !rest[i - 1]?.startsWith('--'));
+  const valueFlags = new Set(['--target', '--out', '--files', '--since', '--min-severity', '--config']);
+  const positional = rest.filter((a, i) => !a.startsWith('-') && !valueFlags.has(rest[i - 1] ?? ''));
 
   switch (cmd) {
     case 'audit': {
@@ -151,7 +173,7 @@ function main(argv: string[]): void {
       break;
     }
     case 'fix': {
-      if (!positional[0]) throw new Error('fix needs a path');
+      if (!positional[0]) throw new Error('fix needs a path: use ds-loop fix . or ds-loop fix --help');
       fix(positional[0], { write: has(rest, 'write'), config });
       break;
     }

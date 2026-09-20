@@ -153,3 +153,49 @@ test('the report carries the handover for an agent reading --json', () => {
     assert.match(fixRow.why, /1 mechanical edit/);
   });
 });
+
+test('the overview retains matched exceptions even when they produce a clean verdict', () => {
+  inTree(
+    {
+      'tokens.css': ':root{--color-surface-raised:#ffffff}',
+      'ds-loop.config.json': JSON.stringify({
+        ignore: [
+          {
+            rule: 'color/semantic-holds-literal',
+            value: '--color-surface-raised',
+            reason: 'Fixed export for a single-theme consumer.',
+          },
+        ],
+      }),
+    },
+    (dir) => {
+      const { out, status } = run([], dir);
+      assert.equal(status, 0);
+      assert.match(out, /suppressed/);
+      assert.match(out, /color\/semantic-holds-literal/);
+      assert.match(out, /Fixed export for a single-theme consumer/);
+    },
+  );
+});
+
+test('the overview names unread token files and color conversion gaps', () => {
+  inTree(
+    { 'tokens.css': ':root{--palette-blue-500:color(display-p3 0 0 1)}', 'tokens.json': '{}' },
+    (dir) => {
+      const { out } = run([], dir);
+      assert.match(out, /tokens.json/);
+      assert.match(out, /1 colour value\(s\) this version cannot convert/);
+      assert.doesNotMatch(out, /✓ clean/);
+    },
+  );
+});
+
+test('the overview provides a real skill entry and separates activation from installation', () => {
+  inTree({}, (dir) => {
+    const { out } = run([], dir);
+    assert.ok(out.includes(join(ROOT, 'skill', 'SKILL.md')));
+    assert.match(out, /coding agent/);
+    assert.match(out, /does not start/);
+    assert.match(out, /npx --no-install ds-loop/);
+  });
+});

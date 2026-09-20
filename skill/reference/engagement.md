@@ -4,6 +4,56 @@ Agent procedure. Use to present a diagnosis and plan, guide adoption, coordinate
 handoffs, and explain the result. Adapt these fields to the team's existing conversation,
 issue or document format. Do not create a new registry or require fixed headings.
 
+## Keep the user oriented
+
+For a multi-step engagement, use a compact text view at the start or when resuming,
+at a consequential decision, and at completion. Update only when scope, evidence,
+next action or a blocker changes. Keep it near the relevant explanation, not in a
+separate document the user must hunt for. The fields below are a presentation aid,
+not a fixed workflow or an approval gate. A small task can use one sentence.
+
+Starting or resuming (illustrative content):
+
+```text
+Design System Loop
+Goal    Make the shared form usable in account settings
+Scope   Account settings and its usage guide
+[done]  Identify the consumer
+[now]   Check the shared component's behavior
+[next]  Recommend the first change
+Finish  A verified consumer and a working discovery path
+```
+
+At a decision, show the recommendation with its basis and the unresolved choice:
+
+```text
+Recommend  Repair the usage guide first
+Evidence   Its import points to a removed export
+Uncertain  Whether the shared component fits the consumer
+Next       Check compatibility before migrating
+```
+
+At completion, distinguish delivered work from the checks supporting it:
+
+```text
+Result         Usage guide repaired; migration deferred
+[checked]      Documented import resolves
+[not checked]  Consumer behavior in the browser
+Continue       Verify the consumer before migration
+Record         Link to the team's existing task or decision
+```
+
+Use plain text or the host's normal Markdown. Keep lines short enough to wrap and
+pair any symbol/color with a word. No completion percentages, health scores,
+decorative banners, animation or repeated full panels. A completed audit is not a
+completed engagement, and an unrun check never gets a completion marker.
+
+Use an available visualization/artifact capability only when a dependency map,
+comparison or migration sequence would materially clarify a decision. Check its
+availability; the same explanation must remain usable as text. Do not install a
+visualization dependency, start a server or generate a dashboard for an ordinary
+status update. Never imply the npm engine created an agent-authored view.
+
 ## Plan template
 
 ```text

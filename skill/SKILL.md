@@ -2,7 +2,7 @@
 name: ds-loop
 description: Diagnose design-system problems and guide establishment, adoption, component contributions, and maintenance using repository evidence and the team's commitments. Use when starting a system, resolving inconsistent UI foundations, helping developers reuse a library, or reviewing a shared change. Includes deterministic token checks; not general product strategy or isolated screen styling.
 metadata:
-  version: 0.1.2
+  version: 0.2.0
 ---
 
 # Design System Loop
@@ -34,6 +34,9 @@ Resolve the skill path before running commands and keep cwd at the target projec
    investigate or deliver in one sentence. For a bare invocation, ask what brought
    them here while doing a small read-only orientation. Reuse a supplied goal;
    do not lead with a command menu or require a maturity label.
+   If asked to start fresh, set aside prior session diagnoses, backlog and inferred
+   priorities. Read current repository instructions and investigate again; do not
+   reintroduce old conclusions as evidence for the new engagement.
 2. Read applicable repository instructions before running project tooling. Locate
    the relevant product/package, existing components, consumers, intent records,
    and checks. Keep cwd at the target project. Run
@@ -47,11 +50,19 @@ Resolve the skill path before running commands and keep cwd at the target projec
    a route. For a specific authorized task, use [routing.md](reference/routing.md)
    to go directly to the relevant work. A returning task resumes from retained
    context after checking what changed; it does not repeat the initial interview.
+   "Guide me" is a request for you to lead discovery. Establish the outcome or
+   propose a bounded investigation before ranking repairs; audit severity does not
+   establish the team's priority. Load the relevant playbook yourself.
 4. Explain the first useful delivery and its finish line. Use
    [engagement.md](reference/engagement.md) when presenting a diagnosis and plan,
    coordinating adoption, handing off to a specialist, or closing/resuming work.
    A small settled edit needs only a short plan. Apply
    [scope.md](reference/scope.md) before editing.
+
+Use [engagement.md](reference/engagement.md#keep-the-user-oriented)'s compact views
+when a task has several steps or needs a decision. Show actual state, next action
+and finish line. A small repair needs only a short sentence; the engine does not
+generate or track the agent's engagement progress.
 
 ## Choose from intent and evidence
 

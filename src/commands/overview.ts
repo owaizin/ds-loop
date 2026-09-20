@@ -1,4 +1,6 @@
+import { fileURLToPath } from 'node:url';
 import type { LoadedConfig } from '../config/load.ts';
+import { formatCoverage } from '../core/coverage.ts';
 import { formatNext } from '../core/next.ts';
 import { audit } from './audit.ts';
 
@@ -12,9 +14,9 @@ import { audit } from './audit.ts';
  * layer is in trouble. The manual moved to `--help`, where a reference belongs.
  *
  * This runs the real audit — same rules, same coverage accounting — and prints
- * four things: the verdict, the single biggest finding, how wide the reading was,
- * and the next command. Nothing here is a new measurement or a softened rule
- * summary; the biggest finding is printed in the rule's own words.
+ * the verdict, the first severity-ranked finding, exceptions, coverage, and next
+ * commands. Rule text stays unchanged. The skill entry is a handoff to the user's
+ * agent, not an engine interview or an automatic activation.
  */
 export function overview(path: string, loaded: LoadedConfig): number {
   const report = audit(path, {
@@ -53,16 +55,16 @@ export function overview(path: string, loaded: LoadedConfig): number {
     console.log(`            ${top.where}`);
   }
 
-  const unread = Object.entries(coverage.unreadFormats);
-  console.log(`\n  read      ${report.manifest.adapter === 'none' ? 'nothing' : report.manifest.adapter}`);
-  if (unread.length > 0) {
-    console.log(
-      `  unread    ${unread.map(([ext, n]) => `${n}× ${ext}`).join(', ')} — no adapter reads these`,
-    );
+  if (report.suppressions.length > 0) {
+    console.log('\n  suppressed — exceptions applied to this run');
+    for (const s of report.suppressions) {
+      console.log(`    ${s.rule} · ${s.value} — ${s.matched} value(s)`);
+      console.log(`      ${s.reason}`);
+    }
   }
-  if (coverage.couldNotJudge.length > 0) {
-    console.log(`  unjudged  ${coverage.couldNotJudge.join(', ')}`);
-  }
+
+  console.log('\n  scope — what this audit read');
+  for (const line of formatCoverage(coverage)) console.log(line);
 
   const next = formatNext(report.next);
   if (next.length > 0) {
@@ -70,6 +72,13 @@ export function overview(path: string, loaded: LoadedConfig): number {
     for (const line of next) console.log(line);
   }
   console.log(`\n  ds-loop audit ${path} prints every finding · ds-loop --help lists every command\n`);
+  console.log('  For a local npm install, run commands as: npx --no-install ds-loop <command>');
+  console.log('\n  guided work');
+  console.log('    Ask your coding agent to read:');
+  console.log(`    ${fileURLToPath(new URL('../../skill/SKILL.md', import.meta.url))}`);
+  console.log(
+    '    Describe the problem you want to solve. Installing the package does not start the agent.\n',
+  );
 
   return findings.length > 0 ? 1 : 0;
 }

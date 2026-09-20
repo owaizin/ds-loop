@@ -73,6 +73,32 @@ try {
     assert(!existsSync(join(dir, 'node_modules', 'ds-loop', 'src')), 'src/ should not be published');
   });
 
+  check('the package, skill and CLI identify the same release', () => {
+    const installed = join(dir, 'node_modules', 'ds-loop');
+    const version = JSON.parse(readFileSync(join(installed, 'package.json'), 'utf8')).version;
+    const sourceVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
+    const skill = readFileSync(join(installed, 'skill', 'SKILL.md'), 'utf8');
+    assert(version === sourceVersion, 'installed package version differs from source');
+    assert(skill.match(/^\s+version:\s*(\S+)/m)?.[1] === version, 'skill version differs from package');
+    const help = run(['--help']);
+    assert(help.status === 0 && help.stdout.includes(`ds-loop ${version}`), 'CLI release differs');
+  });
+
+  check('installed fix help and zero-edit diagnostics explain the supported operation', () => {
+    const probe = join(dir, 'fix-help');
+    mkdirSync(probe);
+    const css = ':root{--a:var(--b);--b:var(--missing)}';
+    writeFileSync(join(probe, 'tokens.css'), css);
+    writeFileSync(join(probe, 'ds-loop.config.json'), '{ invalid');
+    const help = run(['fix', '--help', '--write'], probe);
+    assert(help.status === 0 && help.stdout.includes('alias chains'), 'fix help needs a valid config');
+    rmSync(join(probe, 'ds-loop.config.json'));
+    const noEdits = run(['fix', '.', '--write'], probe);
+    assert(noEdits.status === 0 && noEdits.stdout.includes('2 skipped'), 'skipped references unexplained');
+    assert(readFileSync(join(probe, 'tokens.css'), 'utf8') === css, 'ineligible references were changed');
+    rmSync(probe, { recursive: true });
+  });
+
   check('the packed artifact carries no private names', () => {
     // The narrow version of this check searched tracked source for two spellings and
     // declared it clean twice. The references were in `dist/` — where TypeScript
@@ -189,6 +215,44 @@ try {
     assert(/clean|findings|not checked/.test(r.stdout), `no verdict in:\n${r.stdout}`);
     assert(/\n {2}next\n/.test(r.stdout), `no handover block in:\n${r.stdout}`);
     assert(!/--require-coverage/.test(r.stdout), 'the flag manual belongs to --help');
+    assert(
+      r.stdout.includes(join(dir, 'node_modules', 'ds-loop', 'skill', 'SKILL.md')),
+      'no installed skill entry',
+    );
+    assert(r.stdout.includes('npx --no-install ds-loop'), 'no local command guidance');
+  });
+
+  check('the installed overview retains exceptions and coverage gaps', () => {
+    const probe = join(dir, 'overview-limits');
+    mkdirSync(probe);
+    try {
+      writeFileSync(
+        join(probe, 'tokens.css'),
+        ':root{--color-surface:#ffffff;--palette-blue-500:color(display-p3 0 0 1)}',
+      );
+      writeFileSync(join(probe, 'tokens.json'), '{}');
+      writeFileSync(
+        join(probe, 'ds-loop.config.json'),
+        JSON.stringify({
+          ignore: [
+            {
+              rule: 'color/semantic-holds-literal',
+              value: '--color-surface',
+              reason: 'Fixed export for a single-theme consumer.',
+            },
+          ],
+        }),
+      );
+      const r = run([], probe);
+      assert(
+        r.stdout.includes('suppressed') && r.stdout.includes('Fixed export for a single-theme consumer.'),
+        'exception hidden',
+      );
+      assert(r.stdout.includes('tokens.json') && r.stdout.includes('cannot convert'), 'coverage gaps hidden');
+      assert(!r.stdout.includes('✓ clean'), 'incomplete coverage was presented as clean');
+    } finally {
+      rmSync(probe, { recursive: true });
+    }
   });
 
   check('--help still prints the full reference', () => {

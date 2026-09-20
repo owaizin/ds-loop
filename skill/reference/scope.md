@@ -22,3 +22,9 @@ does not itself grant permission or impose a universal directory layout.
 
 Ask for a scope decision only when the required action exceeds existing
 authorization. Do not ask again for work the user already authorized.
+"Do what's best" or "continue" carries authorization through the agreed outcome
+and scope; choose the next useful action and report material changes. It does not
+authorize an unrelated dependency change, publication or a wider migration. When
+the user stops or defers an action, respect that boundary while continuing any
+independent work still authorized. If approval is genuinely required, explain the
+specific decision and its consequence rather than asking "shall I continue?".

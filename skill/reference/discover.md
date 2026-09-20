@@ -9,6 +9,12 @@ Reuse the user's stated goal. When absent, ask: “What brought you here, and wh
 would you like to be easier or work better?” A request for a specific authorized
 repair does not need this interview.
 
+When the user says "guide me" or cannot name a problem, take the lead: inspect one
+representative contributor or product task, explain the possible obstacle, and ask
+only what is needed to choose the next observation. Do not substitute a severity
+backlog for diagnosis or require the user to choose a token category. A discovery
+plan may finish by recommending no code change.
+
 Read applicable instructions and existing task/decision records. Inspect a relevant
 component or product flow before asking for technical facts. Select only questions
 whose answers could change the next action:
@@ -48,6 +54,10 @@ Counts support investigation, not maturity or ROI claims. Distinguish files,
 component concepts, imports and production usage. Sampled examples are not an
 exhaustive inventory. Explain benefits as expected until observed; do not turn
 code counts into invented cost savings or delivery-speed estimates.
+Avoid comparative ranks such as "top quartile" or "better than most" without a
+defined comparison and supporting evidence. Describe this project's demonstrated
+strengths and gaps instead. Agent readiness requires finding and applying a
+decision in a fresh task; a document's presence alone cannot establish it.
 
 ## Recommend the first delivery
 

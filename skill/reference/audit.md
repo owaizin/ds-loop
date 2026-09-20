@@ -65,6 +65,10 @@ entry skill's evidence and decision-state procedure first. For each:
    Documentation alone does not suppress a rule. Supported `config.ignore` entries
    require a reason and exclude matching inputs for the selected rule; check the
    match scope and the report's suppressions. Severity overrides affect whole rules.
+   Use the shipped [exception recipe](../../docs/guide/reference.md#recording-an-exception)
+   for the config file, selectors and verification steps before inspecting engine
+   internals. `tokenContexts` associates palette consumers with declarations; it
+   does not suppress vendor findings or replace `ignore`.
 4. For a scoped palette check, establish which theme the consumer uses from imports,
    build configuration or team guidance. Add the association through `tokenContexts`
    only when supported by that evidence. See [Scoped checks and token context](../../docs/guide/reference.md#scoped-checks-and-token-context). Context declarations are read only; they do not become
