@@ -1,121 +1,70 @@
-# review
+# Review a component or shared change
 
-Full component audit against **the target library's own bar**. Returns
-severity-ranked findings (BLOCKING / HIGH / MEDIUM / LOW), each self-contained:
-location, problem, fix. State scope and unverified areas with the verdict.
-A checklist item is not an automated check: name the actual checker or label it
-manual/unverified. Never count an unrun check as passing.
+Agent procedure, not an engine command. Review against the project's actual
+contracts and the requested outcome. State scope, evidence, and unverified areas.
+The npm engine checks supported token values; it does not check component API,
+Storybook structure, accessibility, or product behavior.
 
-**Apply only the project's adopted bar.** The API, story, accessibility and motion
-items below are review prompts; project/framework-specific prescriptions are not
-universal requirements. Reuse existing tests and stories before proposing additions.
-For visible/interactive changes, compare rendered behavior and distinguish existing
-defects from regressions. A binary merge verdict cannot hide missing evidence.
+## Establish the review
 
-**Read the bar before applying it.** The specific numbers and storage forms below
-are **reference defaults**, not universal thresholds — they were calibrated on a
-single component library and are not evidence about yours. Resolve them in this order:
+Recover the requested component/diff, base revision where relevant, affected
+consumers, intended behavior, and compatibility commitments. Read applicable
+instructions, contribution guidance, decisions, tests and examples. Conflicting
+requirements need a reasoned resolution; one filename has no automatic precedence.
 
-1. `DESIGN-SYSTEM.md` frontmatter, if the project has one (`discover` writes it).
-2. The project's own contribution guide or lint config.
-3. These defaults, stated as defaults, with the deviation recorded rather than
-   silently enforced.
+Scale work to the change. A narrow review checks the touched contract and relevant
+consumers. A new or substantially changed API may need [shape](shape.md), including
+on an existing component. An explicit source-only review is valid but cannot claim
+rendered or behavioral verification. A “full review” still has a named scope.
 
-Applying a cap the target never agreed to is how a review loses its authority. An
-absent agreement is not a violated one: if nothing states a limit, report the
-count and the trend, and let the team set the limit.
+## Inspect relevant obligations
 
-Scopes — pick one before starting:
+| Area | What to establish | Useful evidence |
+|---|---|---|
+| Consumer API | Props, defaults, events, refs and exports match supported usage and framework conventions. Breaking changes have a compatible path. | Component/types, public docs, consumer builds, focused tests. |
+| Reuse and complexity | The contract serves a demonstrated need; variants and extension points have clear behavior. | Real consumers, stated limits, relevant usage patterns. |
+| Styling and themes | Effective values and state combinations honor the applicable design decisions. Intentional geometry, chart colors or exceptions stay distinguishable. | Token sources, computed styles, rendered themes and supported contexts. |
+| Behavior | Loading, empty, error, disabled and other relevant states preserve data, permissions and interaction semantics. | Reproductions, interaction tests, representative consumer. |
+| Accessibility | Accessible name/semantics, keyboard behavior, focus, contrast, target sizing and motion meet applicable requirements. | Actual rendered checks, accessibility runner, manual checks where needed. |
+| Examples and guidance | A consumer can find, import and use the component; docs match its API and important states. | Source, documentation build, example use, discovery path. |
+| Packaging and ownership | Library dependencies and exports fit its boundary; ownership and adoption guidance exist for shared changes. | Package metadata, consumer integration, contribution/release process. |
 
-- `quick` — automated checks only (small PR: a prop default, a copy tweak).
-- `pr` (default) — all mechanical groups below, no Phase 0.
-- `full` — Phase 0 (`shape`) first, then all groups. New components / major API changes only.
+Apply local thresholds only when adopted and relevant. If no API cap is agreed,
+report complexity with specific evidence; do not fail an arbitrary prop count.
+A repository search with no hits does not establish that external consumers do not
+use a public prop. Required/optional props and event names follow the contract, not
+a generic house style. Ref handling follows the installed framework, not a mandatory
+`forwardRef` pattern across all projects.
 
-## Mechanical groups
+Stories should demonstrate meaningful supported states and combinations. A full
+Cartesian matrix or prescribed `Default`/`Playground` filenames is not universally
+necessary. Test keyboard behavior in the existing appropriate harness. Story tags,
+MDX structure and autodocs follow the project's working documentation setup; preserve
+valid arrangements. Run its build rather than inventing syntax rules.
 
-### A — Component API
+For accessibility, state the actual criterion and test conditions. All overlays do
+not share a modal focus trap; use the interaction's semantic contract. Do not equate
+44px with every target-size requirement: WCAG 2.2 AA's target-size criterion has a
+24 CSS pixel minimum and exceptions, while teams can adopt stronger requirements.
+See [W3C target-size guidance](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
+Automated accessibility checks alone do not establish conformance. Resolve contrast
+from rendered foreground/background pairs and relevant states, not token names.
 
-- **A1 forwardRef** — typed `forwardRef<El, Props>` for non-generic (default);
-  `forwardRef<any, any>` + cast only for polymorphic. `displayName` always set.
-- **A2 prop naming** — booleans `is<Condition>` or clear adjectives; `onClick` not
-  `onPress`; `@deprecated` JSDoc on deprecated props; discriminated unions for
-  mutually exclusive prop sets.
-- **A3 token-only styling** — no raw hex / px / rem / ms / cubic-bezier. The
-  *storage form* is the project's choice. One convention is `hsl(var(--…))` for
-  colour, `var(--…)` for shadow, `--…-duration-*` for motion. A project storing `oklch()`
-  or bare channel triples is not violating anything — check
-  `color/mixed-storage-forms` for whether it is *consistent*, which is the part
-  that matters.
-- **A5 import isolation** — no imports from app code. The library is standalone.
-- **A6 export completeness** — component, props type, every public union type
-  exported from the barrel.
-- **A7 restraint** — count the *added* public API. Soft cap = WARN + written
-  justification; hard cap = FAIL. **Reference defaults, override per project:** props
-  12/18, variant 4/6, size 4/5, tone 6/8, boolean 5/8. These are calibrated on
-  one library; on an unfamiliar one, report the counts and say which are
-  outliers against that library's own distribution. Name the cut concretely: "remove `isCompact`, fold into `size='sm'`".
-  "Just in case" prop with zero usages → FAIL next review. `<X primary />` sugar
-  for `variant="primary"` → FAIL. Optional prop passed in 100% of call sites →
-  make it required.
+## Report actionable results
 
-### B / C — Stories
+Each finding names the location, observed behavior, violated obligation or affected
+user task, evidence/confidence, and a feasible repair or next diagnostic step.
+Separate **confirmed defect**, **proposal**, and **not checked**. Severity describes
+impact within scope; it does not grant this agent merge authority or change engine
+rule severities.
 
-- Main story: `Default` + `Playground` always; `UsageMap` for compound/form
-  components; JSDoc on `meta` with description, Import line, When to use / not / Composition.
-  **No `tags: ['autodocs']`** if a guidelines MDX exists.
-- Features story: title ends `/Features`, `tags: ['!autodocs']`. `VariantMatrix`
-  shows every permutation (group only if > 24, comment the rationale). `States`
-  covers default / hover / focus / disabled (+ loading / error when they exist).
-  `play()` story for any keyboard contract.
+Lead with the requested review outcome and the most consequential results. Link
+supporting detail rather than fabricating a pass count for unrun checks. Preserve
+pre-existing issues separately from introduced regressions. Repair only within
+existing authorization, then repeat checks that could detect the failure.
 
-### D — Guidelines MDX
-
-- `<Meta of={Stories} />` only. Import path is the fixed depth for the repo.
-- MDX-v3 parse safety: no bare `*` in `<code>`, no backticks in headings, no HTML
-  `<table>` in JSX, no bare `<` / `>` in prose.
-- Sections tiered: primitive = Overview / When / When not / A11y / Token alignment
-  / canvases. Compound = the full set incl. Anatomy, Behavior, Governance.
-
-### E — Accessibility contract
-
-Focus ring token; keyboard contract; colour is not the sole state signal; ARIA
-completeness; form-control association; contrast (4.5 / 3:1 — a failing token
-*pair* is a token bug, flag and defer); touch target ≥ 44×44; motion respects
-`prefers-reduced-motion`; overlays trap and return focus.
-
-### F — Design engineering
-
-These are one library's motion conventions, resolved like every other number here
-(project frontmatter → contribution guide/lint config → these, stated as defaults).
-Report a deviation against the project's own motion tokens; do not convert a house
-style into a finding.
-
-Observable regardless of house style: `transition: all` (names properties the
-component does not control), a duration written as a literal where the project has
-motion tokens, and a transition with no `prefers-reduced-motion` path.
-
-Conventions, as proposals: no animation on interactions used dozens of times a day;
-entering `ease-out`, exiting `ease-in`; duration ≤ 300ms via tokens; scale from
-`0.95` rather than `0`; press feedback (`active:scale-[0.97]`) on tactile
-components only, never form controls.
-
-## Output
-
-```
-━━━ <Component> — Design System Review ━━━
-  VERDICT   CHANGES REQUIRED
-  Blocking 2 · High 3 · Medium 1 · Low 1
-━━━ BLOCKING ━━━
-  ✗ [A5] widget.tsx:19 imports from app/common — move the shared type into the library.
-  ...
-━━━ PASSING ━━━
-  ✓ 22/27 checks passed
-  ⊘ N/A: F1 (display-only) · C6 (no keyboard contract)
-```
-
-## NEVER
-
-- Present an unverified check as passing.
-- Report a finding without a concrete fix.
-- Run `full` scope on an existing component — Phase 0 is wasted there.
-- Flag typed `forwardRef` on a non-generic component as a violation.
+Done when the requested review has been delivered with evidence and limitations,
+or the authorized repair meets its acceptance criteria. Use
+[engagement](engagement.md)'s receipt for decisions and continuation. A finding can
+remain open at the end of a review; a failed required check cannot be labeled a
+verified implementation.

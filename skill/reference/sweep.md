@@ -1,29 +1,43 @@
-# sweep
+# Interpret a palette sweep
 
-The CIEDE2000 ΔE cutoff sweep. Cluster the extracted colours at every ΔE across a
-range; emit the full curve — including where it does not stabilise, because that
-is what tells you whether ΔE is a sane merge metric for this palette.
+Implemented CLI. Use when the task needs to understand how extracted color
+clusters change with the configured CIEDE2000 cutoff. It is not required for every
+design-system engagement and does not decide which colors the product needs.
 
 ```bash
-<skill-base-dir>/bin/ds-loop sweep <fixture> --out <dir>
+<skill-base-dir>/bin/ds-loop sweep <source> --out <directory>
 ```
 
-`--out` writes `<label>.sweep.json` + `.md` — a calibration row.
+The output directory receives the source-label `.sweep.json` and `.sweep.md`.
+Inspect the command's supported options in the installed version. Keep the source,
+configuration and extraction limitations attributable.
 
-## Reading the curve
+## Interpret the measurement
 
-- **Monotone non-increasing** — necessary. If the curve rises anywhere, clustering
-  is unstable and ΔE is the wrong metric (or the extractor is double-counting).
-- **Intent plateau** — a band where the cluster count holds within ~15% of the
-  shipped primitive count. Its presence means the palette was hand-tuned to a
-  deliberate set of "these are the same" decisions. Its absence means a generated
-  even scale, or a ramp finer than one just-noticeable-difference.
-- **There is no global cutoff.** Radix's light scales want ΔE ≤ 0.75; a hand-built
-  product palette wants ≈ 1.1. Run the sweep per source, always. ΔE 2.3 (the JND
-  default) is a documented neutral, never a recommendation.
+The cutoff determines which colors count as separate clusters. Increasing it can
+merge clusters without changing a single source color; lowering it can separate
+them. Compare the curve before interpreting a count as a property of the palette.
 
-## Publishing a number
+- The curve shows cluster counts across the configured cutoff range. Clusters can
+  merge as the cutoff increases; a rising curve warrants investigation of the
+  measurement implementation/input, not a product redesign.
+- A plateau means a stable cluster count over that range. The current engine's
+  `intentPlateau` field selects a plateau near a supplied primitive count when that
+  fixture metadata exists. The name does not prove a designer's intent, perceptual
+  interchangeability, or that the palette was hand-tuned.
+- With no reference count, explain what the curve shows without inventing a target.
+  Absence of a plateau does not prove a palette is defective or how it was produced.
+- Cutoffs are configuration choices. Do not transfer a number from another system
+  as a recommended standard. Similar distance does not establish equal contrast,
+  semantic role, theme behavior or safe substitution.
 
-Always with its curve and its failure mode. "Palette knee is ΔE 0.75–1.5" invites
-"my library is the exception"; the curve plus a contrasting example that has no
-knee does not.
+## Recommend only what the evidence supports
+
+If a merge is being considered, inspect the candidate colors in their actual
+roles and themes, check relevant rendered contrast/state distinctions, and locate
+consumers. Preserve intentional distinctions. Publish a measurement with its
+curve, scope and limitations; label any product recommendation as judgment with
+its own evidence. The engine does not perform palette redesign or consumer review.
+
+Done when the requested measurement is explained and the next decision is clear.
+A sweep with no actionable consolidation is a valid outcome.

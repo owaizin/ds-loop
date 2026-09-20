@@ -1,81 +1,104 @@
 ---
 name: ds-loop
-description: Audit token code and guide bounded design-system adoption, maintenance, and component governance using the project's own conventions. Use for establishing a system, repairing a partial one, or checking an existing library. Not for isolated screen styling or product strategy.
+description: Diagnose design-system problems and guide establishment, adoption, component contributions, and maintenance using repository evidence and the team's commitments. Use when starting a system, resolving inconsistent UI foundations, helping developers reuse a library, or reviewing a shared change. Includes deterministic token checks; not general product strategy or isolated screen styling.
 metadata:
   version: 0.1.2
 ---
 
-The engine measures token code. The skill uses those measurements and the
-project's commitments to decide what to establish, adopt, or preserve. Findings
-are candidates for investigation; they do not establish the team's policy.
+# Design System Loop
 
-## Start with the project
+Help a team solve the design-system problem that brought them here. Carry the work
+from understanding the problem through delivery, verification and handoff. The
+user should not have to choose an internal playbook or interpret a report alone.
 
-1. Keep cwd at the target project. Run `<skill-base-dir>/bin/ds-loop context .`
-   once at setup, then `<skill-base-dir>/bin/ds-loop audit . --json` unfiltered.
-   Retain the report, including coverage. `context` runs no rules; the hook filters
-   at high severity. Neither replaces this audit. The report's `next` array names
-   the follow-up command this run actually supports — including whether `fix` can
-   act at all, which is not the same as a rule's own count.
-2. Read applicable repository instructions and the actual sources of design intent:
-   contribution guides, foundation docs, component contracts, decisions, lint
-   configuration, and relevant tests/stories. `context` searches a short list of
-   paths; it does not discover or interpret all of these. Missing `DESIGN-SYSTEM.md`
-   is not evidence that a system or policy is absent — if the team wants one,
-   `ds-loop context . --write-contract` starts it from measurement and leaves every
-   judgment call as a TODO for them to answer. Check what a dependency
-   resolves separately from whether the project permits that choice.
-3. Resolve only the unknowns that affect this task. Source code establishes current
-   behavior; an applicable policy establishes an intended constraint. A conflict
-   between them is evidence to investigate, not grounds to automatically prefer
-   the code. If authority is unclear and the answer changes the intervention,
-   ask the team while continuing independent inspection.
-4. For an explicit or clearly implied task, use its playbook below. For a bare
-   `/ds-loop` invocation, present [routing.md](reference/routing.md)'s menu after
-   the read-only setup; do not start a migration. Apply
+## Who does what
+
+| Owner | Responsibility |
+|---|---|
+| npm engine | Deterministic extraction, rules, coverage, narrow mechanical fixes, measurement history, and optional edit feedback. No interview, design judgment, component inventory, or business-impact measurement. |
+| Agent following this skill | Diagnose with repository and runtime evidence; recommend and execute authorized work; explain tradeoffs; verify outcomes; retain decisions and continuation context. |
+| Team / existing owner | Product priorities, shared policy and compatibility decisions, acceptance where required, and release authority. Preserve existing delegation; do not invent an approval committee. |
+
+Installing the npm package provides the CLI and skill files. The guided journey
+starts when the coding agent loads this skill. Installation and the hook do not
+start an agent, schedule maintenance, or certify the UI.
+
+`<skill-base-dir>` in these instructions means the directory containing this
+`SKILL.md`, usually `node_modules/ds-loop/skill`. Its launcher is
+`<skill-base-dir>/bin/ds-loop`; the package root's launcher is `bin/ds-loop.mjs`.
+Resolve the skill path before running commands and keep cwd at the target project.
+
+## Start with the person's task
+
+1. Recover the user's goal and any prior task/decision record. Say what you will
+   investigate or deliver in one sentence. For a bare invocation, ask what brought
+   them here while doing a small read-only orientation. Reuse a supplied goal;
+   do not lead with a command menu or require a maturity label.
+2. Read applicable repository instructions before running project tooling. Locate
+   the relevant product/package, existing components, consumers, intent records,
+   and checks. Keep cwd at the target project. Run
+   `<skill-base-dir>/bin/ds-loop context .`, then
+   `<skill-base-dir>/bin/ds-loop audit . --json` without a severity filter. Retain
+   coverage and scope. `context` runs no rules; the high-severity hook does not
+   replace this audit. If no code exists, say there is no code baseline and work
+   from the product brief and a representative use case.
+3. Ask about unknowns that could change the next action. For broad pain, uncertain intent, or a
+   first system, read [discover.md](reference/discover.md): diagnose before choosing
+   a route. For a specific authorized task, use [routing.md](reference/routing.md)
+   to go directly to the relevant work. A returning task resumes from retained
+   context after checking what changed; it does not repeat the initial interview.
+4. Explain the first useful delivery and its finish line. Use
+   [engagement.md](reference/engagement.md) when presenting a diagnosis and plan,
+   coordinating adoption, handing off to a specialist, or closing/resuming work.
+   A small settled edit needs only a short plan. Apply
    [scope.md](reference/scope.md) before editing.
 
-## Choose a bounded next action
+## Choose from intent and evidence
 
-These are task states inferred from evidence, **not CLI verdicts or maturity scores**:
+These describe the relevant product area, not company maturity or CLI verdicts.
 
-| Evidence | Next action |
+| Situation | Intervention |
 |---|---|
-| Files or values are unread, or observations are insufficient | State the blind spot. Inspect relevant source manually or use a suitable existing checker; do not call the system clean. |
-| Token references exist but naming is unfamiliar | Read the naming contract. Configure existing taxonomy patterns only when they represent it faithfully; rerun and retain both reports. Do not rename the product to fit the scanner. |
-| The investigation establishes that no convention has been chosen for this scope | **Establish:** propose the smallest foundation for one concrete use case, with its tradeoff and acceptance check. Label it a new decision, not a repaired violation. |
-| A relevant commitment exists | **Adopt** it where evidence shows drift, or **Maintain** an intentional exception. Preserve working behavior and bound the affected consumers. |
+| No agreed convention for the needed behavior | **Establish:** propose and demonstrate a minimal foundation in a representative consumer; reuse suitable existing foundations. A new convention is a decision, not a repaired violation. |
+| Existing foundation with a demonstrated gap | **Improve / adopt:** distinguish drift, missing capability, discovery friction, intentional difference, or unsuitable policy. Repair the cause, which may be guidance or ownership rather than code. |
+| Established commitments serving the task | **Maintain:** use or review them; preserve valid exceptions. A recurring unmet need can become a separately scoped contribution. |
+| Evidence or scanner coverage is insufficient | Investigate the missing observation; use appropriate existing checks or manual inspection. Do not force an adoption route or report silence as a pass. |
 
-`token/tier-model-undetectable` describes coverage against configured naming
-patterns. It is silent at zero references. Neither its presence nor absence
-selects an adoption lane. A scanner's supported syntax is also narrower than a
-file extension: CSS rule bodies and resolved Tailwind named utilities are not
-checked by the current adapters.
+`token/tier-model-undetectable` measures coverage against configured naming
+patterns and is silent at zero references. It cannot choose a route. Configure
+patterns from actual naming commitments; do not rename the product to satisfy
+scanner assumptions. Missing `DESIGN-SYSTEM.md` does not mean missing intent.
+`context --write-contract` is an optional measured draft with unresolved decisions,
+not an authoritative policy or proof of retrieval.
 
-For an intervention, state the permitted files and the behavior that must survive.
-Read existing stories/tests before creating a harness. For visible or interactive
-changes, capture a rendered baseline and verify affected behavior before and after;
-separate pre-existing defects from regressions. A justified no-op is a valid result.
-For a small settled edit, reuse existing evidence and checks; do not require a
-system-wide interview or new documentation set.
+The CSS adapter reads custom-property declarations, not ordinary rule bodies.
+The Tailwind adapter reads selected arbitrary values and stock-palette utility
+names in strings, without resolving the framework's theme. Inspect effective
+values and project permission separately. For scoped palette checks, map the
+applicable CSS declarations using
+`tokenContexts`; see [audit](reference/audit.md). Missing context is reported as
+unjudged. These associations do not resolve imports, prove theme policy, or add
+context to other rules.
 
-## Close the loop
+## Deliver and close
 
-Before declaring a change complete, rerun the unfiltered audit and the checks that
-actually observe the changed behavior. Record source revision **and dirty diff**,
-configuration, coverage limits, and what changed. Changing config changes the
-instrument; it is not evidence that the product improved.
+State the permitted scope and behavior to preserve. Use existing stories/tests
+before creating a harness. For visible or interactive changes, capture a rendered
+baseline and check affected behavior after the change. Separate existing defects
+from regressions. If access prevents a needed check, report incomplete verification
+and the concrete next action; source inspection is not rendered evidence.
 
-Put any new system decision in the team's existing issue, ADR, component contract,
-or equivalent location. Create a small decision file only if there is no suitable
-home. Record the authority/evidence, chosen action (including no-op), affected
-scope, actual checks and limits, and what would justify revisiting it. Name the
-path and how the next task finds it; add a link from an existing entry point when
-needed. Writing a record does not suppress a rule or create a checker.
+Before claiming completion, rerun the unfiltered audit and appropriate behavior
+checks. Keep source revision and relevant dirty diff, config, coverage and result
+attributable. A changed configuration changes the instrument; fewer findings alone
+do not prove improvement. A review can finish with reported findings. A justified
+no-op can complete an investigation. Neither implies an implemented repair.
 
-For an adoption pilot, use a fresh-context continuation to check retrieval. For
-routine work, verify the discovery path without turning every edit into a pilot.
-Report measured results, design judgment, and unresolved questions separately.
+Use [engagement.md](reference/engagement.md)'s completion receipt to connect the
+original problem to the actual outcome, evidence, remaining limits, and next step.
+Retain meaningful decisions in the team's existing home and verify their discovery
+path. A fresh-context continuation is required for an adoption pilot's retrieval
+claim; an ordinary edit need not create a new pilot or document set.
 
 ## Token models are project decisions
 
@@ -102,19 +125,19 @@ Design System Loop does not ship those checks.
 | `guard [on\|off\|status]` | **CLI** | Guard | Install/remove the edit-time `PostToolUse` hook | [reference/guard.md](reference/guard.md) |
 | `fix [target] [--write]` | **CLI** | Guard | Apply the mechanical fixes only — where the edit is provable from the code, no LLM. v0: inserts a `var()` fallback from the target token's literal. Dry run unless `--write` | — |
 | `discover` | playbook | Discover | Read repository evidence, resolve consequential unknowns, record a bounded adoption decision | [reference/discover.md](reference/discover.md) |
-| `census [target]` | playbook | Discover | Component inventory: scan, cluster near-duplicates, rank by usage × blast radius | [reference/census.md](reference/census.md) |
+| `census [target]` | playbook | Discover | Scoped component and consumer inventory; validate duplication candidates and prioritize by impact | [reference/census.md](reference/census.md) |
 | `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
 | `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
-| `scaffold [target]` | playbook | Build | Generate the Storybook spine, foundations pages, the 5-file component contract, the validators | [reference/scaffold.md](reference/scaffold.md) |
+| `scaffold [target]` | playbook | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
 | `extract [target]` | playbook | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
-| `shape <component>` | playbook | Review | Phase 0 design-intent interrogation before a new component | [reference/shape.md](reference/shape.md) |
-| `review <component>` | playbook | Review | Full component audit — API caps, token hygiene, story structure, a11y, MDX | [reference/review.md](reference/review.md) |
+| `shape <component>` | playbook | Review | Resolve need, contract, consumers and accessibility for a new or substantially changed component | [reference/shape.md](reference/shape.md) |
+| `review <component>` | playbook | Review | Evidence-based component review against applicable contracts; distinguish failures, proposals and unchecked behavior | [reference/review.md](reference/review.md) |
 | `scorecard [path]` | **CLI** | Guard | Append ratios to `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews without writing; CI scheduling is separate | [reference/scorecard.md](reference/scorecard.md) |
 | `doctor` | playbook | Meta | Drift between `DESIGN-SYSTEM.md`, the token files, config, and the guard hook | [reference/doctor.md](reference/doctor.md) |
 
-**`CLI` means the engine implements it** — it is implemented. Exit behavior is command-specific: `audit` exits 1 on
-surviving findings, while `scorecard` records measurements and is not a CI gate. **`playbook` means this document is the whole implementation:**
-you are the executor, and anything you report from one is your reasoning, not engine
+`CLI` means the engine implements it. Exit behavior is command-specific: `audit` exits 1 on
+surviving findings, while `scorecard` records measurements and is not a CI gate. `playbook` means the agent follows written instructions.
+Attribute its conclusions to your investigation; keep them separate from engine
 output. Do not paraphrase a playbook result as if a rule produced it.
 
 
@@ -131,33 +154,22 @@ are agent procedures, not executable CLI commands.
 
 `guard` runs a file-scoped audit after supported Claude Code edits. It reports
 high-severity findings and project extraction-coverage changes; it cannot block
-an edit and does not execute design judgments. An optional CI command is
+an edit and does not execute design judgments. If the audit fails, the hook reports
+that the edit was not checked; resolve the error before relying on it. An optional CI command is
 `audit . --min-severity high --require-coverage`: a pass means no findings at
 that floor and no reported coverage gaps within the adapters' stated scope,
 not that all CSS or product behavior was checked. Use an unfiltered audit to
 see the lower-severity findings.
 
-## The restraint doctrine
+## Contribution judgment
 
-Default stance: skeptical of additions. API-surface caps, per component's *added*
-public API — soft cap = justify in writing, hard cap = fails review.
+Use the target project's adopted contract and compatibility obligations. When no
+API limit is agreed, report the relevant complexity and consumers rather than
+inventing a hard cap. A zero-use search inside one checkout does not prove that a
+published API has no consumers. [review.md](reference/review.md) defines the review
+procedure; [shape.md](reference/shape.md) covers new or materially changed contracts.
 
-**The numbers are engagement-derived examples, not universal thresholds.** They come from
-one engagement and one library. Resolve them from `DESIGN-SYSTEM.md` frontmatter or
-the project's own contribution guide first; fall back to these and say you are
-falling back. [reference/review.md](reference/review.md) is the single source —
-it carries the table and the resolution order.
-
-Where a project has stated no limit, report the count and which components are
-outliers against that project's own distribution. Do not enforce a cap the target
-never agreed to.
-
-Many booleans = a missing variant. A prop with no known usage is a review question; check external consumers
-and compatibility commitments before proposing removal.
-
-## NEVER
-
-- Expand a scoped task into a production migration. Findings do not grant scope.
-- Add `tags: ['autodocs']` to a story that has a guidelines MDX.
-- Ship an interactive component without the accessibility contract from day one.
-- Let a reuse or slop check block a merge. Comment only.
+Keep findings, proposals and authority distinct. A reproducible defect deserves a
+clear disposition; a stylistic preference is a recommendation with rationale.
+Existing team gates remain in force. This skill and its post-edit hook do not gain
+merge authority by assigning a severity label.

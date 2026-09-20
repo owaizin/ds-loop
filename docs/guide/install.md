@@ -8,26 +8,30 @@ Use Node 22.6 or later. Install the complete package in the project you want to 
 npm install --save-dev ds-loop@0.1.2
 ```
 
-Before the first npm release, use [source installation](#install-from-source) instead. Both paths install the same CLI and companion skill.
+To test local changes, use [source installation](#install-from-source). Both paths install the CLI and companion skill.
 
-## Inspect your project
+## Start with your agent
 
-From your project directory:
+Ask your agent to read `node_modules/ds-loop/skill/SKILL.md`. Keep the complete package installed: its launcher requires the adjacent `bin/` and `dist/` directories. Copying just the skill folder is not a standalone installation. Your agent's automatic skill discovery depends on its own setup; direct loading makes the entry point explicit.
+
+Describe the problem or outcome in your own words; you do not need to choose an internal command. For example:
+
+> Read node_modules/ds-loop/skill/SKILL.md. Help me understand why developers keep creating local alternatives to our shared components. Investigate the cause and recommend a first delivery with clear completion criteria. Start read-only.
+
+The agent should explain the evidence, recommended intervention, and scope. For a concrete task, say what it may implement. The [workflow guide](workflow.md) gives examples for starting, improving, and maintaining a system. Installing the package alone does not activate an agent or arrange ongoing maintenance.
+
+## Run the checks yourself
+
+You can also use the engine directly, without an agent. From your project directory:
 
 ```sh
 ./node_modules/.bin/ds-loop context .
 ./node_modules/.bin/ds-loop audit . --json
 ```
 
-`context` reports configuration, conventional intent-source paths and extraction scope. It runs no rules. The unfiltered audit reports findings and checks that could not judge. Inspect both `verdict` and `coverage`; exit 0 alone does not establish a clean result.
+`context` reports configuration, conventional intent-source paths and extraction scope. It runs no rules. The unfiltered audit reports findings and checks that could not judge. Inspect both `verdict` and `coverage`; exit 0 alone does not establish a clean result. These commands provide measurements; they do not conduct the interview or recommend an engagement plan.
 
-## Load the companion skill
-
-Ask your agent to read `node_modules/ds-loop/skill/SKILL.md`. Keep the complete package installed: its launcher requires the adjacent `bin/` and `dist/` directories. Copying just the skill folder is not a standalone installation. Your agent's automatic skill discovery depends on its own setup; direct loading makes the entry point explicit.
-
-Choose a task from the [workflow guide](workflow.md): establish a first foundation, investigate an inconsistency, or review new work. Give the agent the relevant files, intended behavior, and scope it may change. The guide includes prompts you can adapt.
-
-## Add edit feedback
+## Optional: add edit feedback
 
 From the target project, run:
 
@@ -38,7 +42,10 @@ From the target project, run:
 
 This installs a Claude Code PostToolUse hook in `.claude/settings.json`. It reports high-severity findings after supported edits and announces project extraction-coverage changes. It never blocks an edit. It does not deliver lower-severity judgment limits; run an unfiltered audit at setup and completion. `guard off` removes its entry while preserving other settings.
 
-## Choose a CI policy
+If the audit fails or times out, the hook says the edit was not checked and reports
+the error. Correct the problem and rerun the audit before relying on its result.
+
+## Optional: choose a CI policy
 
 ```sh
 ./node_modules/.bin/ds-loop audit . --min-severity high --require-coverage
@@ -52,7 +59,7 @@ You should receive a report containing a verdict, adapter coverage and findings 
 
 ## Install from source
 
-Use this path before the npm release, or to test a local change. In a directory outside the project you want to inspect:
+Use this path to test a local change. In a directory outside the project you want to inspect:
 
 ```sh
 git clone https://github.com/owaizin/ds-loop.git
@@ -67,7 +74,7 @@ This builds `ds-loop-0.1.2.tgz` without publishing it. From your target project,
 npm install --save-dev /absolute/path/to/ds-loop-0.1.2.tgz
 ```
 
-Continue with [Inspect your project](#inspect-your-project). The launcher uses the compiled JavaScript included in the package.
+Continue with [Start with your agent](#start-with-your-agent), or [run the checks yourself](#run-the-checks-yourself). The launcher uses the compiled JavaScript included in the package.
 
 To try the public Radix Colors fixture from the source checkout:
 

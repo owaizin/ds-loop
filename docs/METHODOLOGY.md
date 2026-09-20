@@ -1,5 +1,12 @@
 # The methodology ds-loop automates
 
+> **Historical design rationale.** For current agent behavior, use the
+> [skill entry](../skill/SKILL.md) and its linked procedures. The consulting
+> workflow now starts from the user's problem and the project's commitments;
+> the fixed component layout, thresholds and universal ordering below are not
+> operational requirements. They must not override the current skill or a
+> project's adopted contract.
+
 > **This is a proposal, not a description of the shipped tool.** It records the
 > engagement methodology `ds-loop` is aimed at, distilled from one code-first
 > design system for a dense multi-product SaaS and cross-checked against Polaris,

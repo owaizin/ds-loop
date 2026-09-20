@@ -4,18 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A **deterministic** design-system linter. It reads a design system's token/CSS/JSX code and reports what
-drifted, with exact `file:line`. **No LLM, no API key, no network, no runtime dependencies** — math, not AI.
-If a change to this repo would introduce a model call or a package dependency in `src/`, that is the wrong
-change.
+Design System Loop ships a **deterministic engine** and a **companion agent skill**.
+The engine reads supported token/CSS/JSX code and reports rule findings with exact
+`file:line` and coverage limits. **No LLM, no API key, no network, no runtime dependencies**
+in the engine. Do not introduce a model call or a package dependency in `src/`.
 
-This repo is the **open engine** (MIT): policy-free mechanism. The tuned thresholds and the corpus of
+The agent following `skill/SKILL.md` diagnoses the team's problem, recommends a
+plan, delivers authorized work, verifies it and retains decisions. The CLI does
+not conduct that conversation. Installing the package does not activate an agent.
+The team retains priorities and shared-policy authority; the skill respects existing
+delegation. Diagnose from product behavior, team context and repository evidence,
+not finding counts alone. Keep the engine and skill responsibilities distinct.
+
+This repo ships the **open engine and skill** (MIT). The tuned thresholds and the corpus of
 before/after engagement runs live in a separate private repo (`ds-loop-calibration`) and are passed in at
 run time. See `docs/guide/reference.md` for configuration and coverage boundaries.
 
 Positioning that has been settled and should not be relitigated: ds-loop **complements** Murphy Trueman's
 LLM-based `design-system-ops` skill pack (it reads his `.ds-ops-config.yml` verbatim for interop) and
-operates on *the system behind the screens*, not on individual screens.
+operates on *the system behind the screens*. A representative screen or product flow
+is used to diagnose and verify a shared-system change; this is not a general screen-design skill.
 
 ## Commands
 
@@ -66,7 +74,7 @@ target path → resolveSource → adapter(s).extract → RawValue[] + provenance
 file — is a *live scan*, and `fixtureSha` becomes `git:<HEAD>`. Calibration rows are only comparable when
 this distinction is preserved, so don't collapse it.
 
-**`adapters/` — one per storage format.** Interface is `detect(source)` + `extract(source, config)`
+**`adapters/` — one per storage format.** Interface is `detect(source, config?)` + `extract(source, config)`
 (`adapters/types.ts`). Adapters extract and classify **one value at a time**; they never cluster, dedupe or
 judge intent. `adapters/registry.ts` runs **every** adapter whose `detect` passes, not the first — a React
 app declares tokens in `.css` and then uses or bypasses them in `.tsx`, and half that picture is not an
@@ -103,7 +111,7 @@ source must stay distinguishable in output; a linter whose silence is ambiguous 
 `coverage.complete` requires at least one adapter, so "every rule could judge" can never print inside
 a not-checked report.
 
-**The guard's coverage policy has regression tests** (`test/guard-hook.test.ts`, eight cases). Both
+**The guard's coverage policy has regression tests** (`test/guard-hook.test.ts`). Both
 failures it covers shipped and were found by a reviewer, not by this suite — writing the policy without
 moving the test count gave it no protection. The cases that matter: a notice must fire when *no finding
 survives the severity floor* (the hook passed `--quiet`, which suppressed the whole report in exactly
@@ -126,6 +134,11 @@ hook filters that list — `token/tier-model-undetectable` is low severity. The 
 requires an unfiltered audit at session start **and** before calling a change complete, and
 `test/guard-hook.test.ts` pins the fact that the hook does *not* deliver it. If that test starts
 failing, the hook policy widened and every one of these documents has to change with it.
+
+**An audit execution failure is separate from rule findings.** The hook reports a
+failed, timed-out or unusable audit as not checked, exits 2 for feedback and leaves
+the last coverage state unchanged. It cannot turn a config error into an ordinary
+silent save. This does not widen the high-severity filter or make the hook block edits.
 
 **A severity floor filters findings, never coverage.** `couldNotJudge` is built from the *unfiltered*
 finding set. The guard hook runs at `--min-severity high`, which is exactly where hiding a

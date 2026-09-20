@@ -1,16 +1,30 @@
-# Choose your first task
+# Work with Design System Loop
 
-Design System Loop combines an agent skill for design-system work with an engine that checks supported code. Choose a task based on your team's situation. Scanner silence does not tell you whether a design system exists.
+Design System Loop combines an agent skill for design-system work with an engine that checks supported code. Start with the problem or outcome you need help with. The agent investigates and recommends a route; you do not need to classify your company or select a playbook. Scanner silence does not tell you whether a design system exists.
+
+## If you do not know where to start
+
+Tell the agent what brought you here. It should inspect existing evidence, ask only
+questions that affect the work, and explain a diagnosis before proposing changes.
+The plan should say what to change first, where it will be used, what must stay
+the same, who needs to decide anything, and how to check the result. It distinguishes
+what is known from what still needs investigation.
+
+> Read node_modules/ds-loop/skill/SKILL.md. Our teams keep building similar components and I do not know why. Investigate a representative example, explain likely causes and alternatives, and recommend what to do first. Do not begin a migration yet.
+
+A precise task needs a shorter plan. Investigate further when the problem or the
+right response is unclear. An appropriate intervention
+may improve documentation or contribution practices instead of adding code.
 
 ## Start a design system
 
 **Bring:** a real screen or flow, product constraints, and any visual direction.
 
-**Your agent does:** inspect the UI, look for conventions already in use, and propose a small foundation with a rendered example. No documented convention does not mean no convention exists; resolve the unknowns from the code or team.
+**Your agent does:** inspect the product needs and existing assets, then propose or implement the authorized foundation in a representative consumer. Check code and team practice as well as written conventions.
 
-**You receive:** proposed conventions, a product example, and the decisions your team needs to make.
+**You receive:** a recommendation or usable first foundation, according to the requested scope, with usage guidance, evidence and unresolved decisions.
 
-**Review:** whether these choices fit the screen and should be reused. Then authorize applying them where useful.
+**Review:** whether the foundation serves its consumer and is ready for wider adoption. Existing authorization carries forward; broader rollout needs its own scope.
 
 > Read node_modules/ds-loop/skill/SKILL.md. Help establish shared form styles for our settings screen in src/settings/. Read existing UI, product notes, and any team conventions first. Propose the smallest useful set of spacing, type, color, and field patterns, with a rendered example. Keep the first proposal within this screen; do not migrate other screens. State what needs a team decision and where the chosen conventions will live.
 
@@ -40,13 +54,13 @@ Design System Loop combines an agent skill for design-system work with an engine
 
 ## Three connected loops
 
-The adoption loop sets the direction: gather measurements, understand coverage and existing commitments, choose an action for this scope, verify the real flow, and save the decision. Start, Improve, and Maintain change the action and deliverable; they are not scanner-derived maturity grades.
+The adoption loop sets the direction: understand the problem, investigate evidence and coverage, recommend a bounded intervention, verify the real flow, and retain the decision. Expand, revise or stop according to what the result demonstrates. Start, Improve, and Maintain change the action and deliverable; they are not scanner-derived maturity grades.
 
 The audit loop supports a particular change: run context and an unfiltered audit, interpret the findings against intended behavior, change or preserve the code, rerun the audit, and review the real experience. Revise when evidence calls for it. A remaining finding can represent a justified exception or a checker limitation.
 
-The optional guard loop runs during supported Claude Code edits: enable the hook, edit, audit the edited file, report high-severity findings and newly detected project extraction gaps, then review and revise if needed. It runs after the edit and cannot block it. Lower-severity judgment limits still require an unfiltered audit; CI gating is separate.
+The optional guard loop runs during supported Claude Code edits: enable the hook, edit, audit the edited file, report high-severity findings and newly detected project extraction gaps, then review and revise if needed. A failed audit is reported as not checked. The hook runs after the edit and cannot block it. Lower-severity judgment limits still require an unfiltered audit; CI gating is separate.
 
-The loops share your existing project conventions and the decisions you retain. Design System Loop does not maintain a central knowledge service or independently approve and ship changes. The website's guide provides an interactive version at `docs.html#loops`.
+The loops share your existing project conventions and the decisions you retain. Design System Loop does not maintain a central knowledge service or independently approve and ship changes.
 
 ## Work with your agent
 
@@ -58,7 +72,7 @@ For visible changes, compare rendered before and after states. Rerun the unfilte
 
 ## Review the handoff
 
-The handoff links to changed files, actual checks and their limits, open questions, and a saved decision. The record explains what was chosen, why, the affected scope, and when to reconsider. Use an existing issue, component document, or decision directory; a new registry is not required. Name where the next task finds it.
+The handoff states what was delivered, what was deliberately left unchanged, and what remains blocked. It links to changed files, actual checks and their limits, open questions, and relevant decisions. The record explains what was chosen, why, the affected scope, and when to reconsider. Use an existing issue, component document, or decision directory; a new registry is not required. Name where the next task finds it.
 
 For an adoption pilot, ask a separate agent session to retrieve and apply that decision. Writing a record alone does not prove retrieval, suppress a finding, or create a checker.
 

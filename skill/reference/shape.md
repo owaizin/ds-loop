@@ -1,60 +1,35 @@
-# shape
+# Shape a component contract
 
-Design intent, settled before a single file of a new component is written. A
-thin answer is a signal to look harder at the evidence — not to accept it and
-build.
+Agent procedure for a new component or a material change to an existing contract.
+Read existing components, consumers, contribution rules and decisions first. Reuse
+answers already supplied; investigate before asking the user technical questions.
 
-**Read before asking.** Existing components, the contribution guide, the
-foundation docs and recent component PRs already answer several of these for
-most repositories. Ask only the questions that are still open *and* whose answer
-changes what gets built; carry the rest as findings with their source. A
-numbered interrogation the author has to complete before anything proceeds is
-not a quality gate — an unanswered question only blocks when proceeding would
-commit the project to a decision it has not made.
+Resolve the questions that change what gets built:
 
-## Questions
+- **Need:** what user/contributor task is difficult, and why do existing components
+  or compositions not serve it? A local pattern can stay local until sharing helps.
+- **Consumers:** which concrete flow will demonstrate the contract? Distinguish
+  located consumers from hypothetical future uses; one pilot can be enough to
+  validate a new need without proving broad reuse.
+- **API and compatibility:** what must vary, what can remain internal, and what
+  existing callers must continue to do? Resolve external-consumer uncertainty before
+  removing published behavior. Complexity is a design question, not a universal cap.
+- **Composition and state:** how does this behave with realistic content, loading,
+  error, permissions, responsive layout, themes and surrounding components? Select
+  the states that apply; explain unsupported combinations.
+- **Accessibility:** define semantic element/role, accessible name, relevant keyboard
+  and focus behavior, non-color state signals and applicable target/contrast/motion
+  requirements. Use the adopted standard and actual context; [review](review.md)
+  explains verification limits.
+- **Ownership:** who owns shared decisions and future maintenance? What can consumers
+  configure safely, and what requires an extension or a contribution?
 
-1. **Need & gap** — what problem does this solve that no existing component
-   handles? Which existing components did you evaluate and rule out? Why are they
-   insufficient?
-2. **Usage context** — name 2–3 specific screens or features where this appears.
-   Is the consumer a product engineer, or design-system internals only?
-3. **API** — variants / sizes / tones on day one vs. deferred to v2. The minimal
-   prop surface. Where does this sit against the project's own limits, or against
-   the distribution of its existing components? [review.md](review.md) carries the
-   caps and their resolution order; they are proposals to measure against, not a
-   number this component has to clear.
-4. **Composition** — what wraps this (Card, Table row, Drawer)? What does it wrap?
-   Behaviour on a dark surface, inside a compact density?
-5. **Edge cases** — empty / null content, long text (truncate, wrap, overflow?),
-   loading, error, RTL. Who owns each?
-6. **Accessibility** — which HTML element or ARIA role does it map to? Interactive?
-   Then: keyboard contract (Tab, Enter/Space, Escape). Does colour convey state —
-   if so, the non-colour signal? Form control — label association, `aria-describedby`,
-   `aria-invalid` from day one? Touch target ≥ 44×44? Contrast for every token pair?
-7. **Governance** — what can a product team override without design review
-   (className? a token?). What needs a design-system PR + sign-off?
+If evidence disproves the requested new abstraction, explain the existing path or
+propose an extension with reasons. Respect an explicit user choice after clarifying
+material tradeoffs. Do not invent unrelated requirements to block progress.
 
-## Evaluating answers
-
-| Signal | Action |
-|---|---|
-| "Nothing does X" but an existing component does X | Name the file and line. The overlap is the finding; the team decides whether to extend or add. |
-| Surface over the project's stated limit | Quote the limit and the count. Over a *proposed* cap with no project limit: report the count and the existing outliers, and leave the call with the team. |
-| No specific screens named, and none found in the repository | Say so. A component with no located consumer is built on a guess about its shape. |
-| "It'll be used everywhere" | Ask for one concrete file. |
-| Interactive, with no keyboard contract or accessible name | Blocks — the missing contract is observable in the code, not a matter of taste. |
-| Touch target < 44×44 with no hit-area plan | Report the measured box. Pad it, or record the density exception where the project records exceptions. |
-| Polymorphic (`as` prop) with no semantic reason given | Default to a fixed element. |
-
-Every row above is either a located piece of evidence or a question for the
-team. None of them is merge authority this playbook holds on its own.
-
-Once the open questions are settled → hand off to `scaffold <component>` (or the
-project's own new-component flow).
-
-## NEVER
-
-- Skip a question because the component "looks simple".
-- Accept a vague answer silently.
-- Start file creation before question 6 is answered.
+Done when the pilot contract, preserved behavior, consequential choices and
+acceptance checks are sufficient to build responsibly. Unresolved questions block
+only dependent work. State assumptions and deferred decisions explicitly, then use
+the project's component workflow or [scaffold](scaffold.md); review the result with
+[review](review.md). No mandatory interview length or fixed number of consumers.

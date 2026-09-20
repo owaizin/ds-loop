@@ -6,11 +6,15 @@ Install in your project with Node 22.6 or later:
 
 ```sh
 npm install --save-dev ds-loop@0.1.2
-./node_modules/.bin/ds-loop context .
-./node_modules/.bin/ds-loop audit . --json
 ```
 
-Before the first npm release, use the [source installation](docs/guide/install.md#install-from-source) instead. An audit exits 1 when it reports findings.
+Then ask your coding agent to load the skill and describe the problem you want solved:
+
+> Read node_modules/ds-loop/skill/SKILL.md. Our developers keep rebuilding similar components. Investigate a recent example, explain the cause, and recommend a first improvement with a clear finish line. Start read-only.
+
+Replace that example with your own task. Installing the package provides the engine
+and skill files; loading the skill starts the guided work. To test local package
+changes, use [source installation](docs/guide/install.md#install-from-source).
 
 [Installation guide](docs/guide/install.md) · [Design-system workflows](docs/guide/workflow.md) · [CLI reference](docs/guide/reference.md)
 
@@ -27,6 +31,13 @@ The package includes an **agent skill** that guides this work and a **command-li
 The skill's broader reviews require an agent to inspect the code and rendered UI. They are not automated engine checks. See the [workflow guide](docs/guide/workflow.md) for examples and expected results.
 
 ## Use it in your project
+
+For a direct engine check, run:
+
+```sh
+./node_modules/.bin/ds-loop context .
+./node_modules/.bin/ds-loop audit . --json
+```
 
 `context` lists configuration, likely sources of design conventions, and supported formats. `audit` runs the code checks. Read the report's `verdict` and `coverage`: exit code 0 can mean nothing was checked. Use `--require-coverage` when CI should fail on reported coverage gaps.
 
@@ -61,7 +72,7 @@ Before replacing the color, check that the token serves the same purpose in ever
 ## Current limits
 
 - The CSS adapter reads custom-property declarations. It does not check ordinary CSS rule bodies or at-rules.
-- The Tailwind adapter reads arbitrary values in JavaScript and TypeScript strings. It does not resolve named utilities or check inline styles, CSS-in-JS, Sass maps, or token JSON.
+- The Tailwind adapter reads selected arbitrary values and stock-palette utility names in JavaScript and TypeScript strings. It does not resolve their theme values or check inline styles, CSS-in-JS, Sass maps, or token JSON.
 - The engine does not review layouts, interactions, accessibility, or whether a design choice is appropriate. Check the rendered UI separately.
 - Token naming patterns and color-clustering thresholds are configurable. Adjust them to your system before relying on those checks.
 

@@ -1,9 +1,6 @@
 # scope
 
-The branch-scope policy. Born from a real incident: a design-system-scoped branch
-accumulated 26 production file changes because an agent read a legitimate
-accessibility audit, saw "P0", and implemented the recommendations across
-production without recognising the branch's scope.
+Apply before changes. Findings identify possible work; they do not expand the task.
 
 ## Bound the intervention
 
@@ -19,7 +16,9 @@ does not itself grant permission or impose a universal directory layout.
 - Preserve existing stories and tests. Add a focused harness when needed rather
   than replacing the existing evidence.
 - Record intentional exceptions. Documentation alone does not silence `guard`;
-  current severity configuration applies to whole rules, not per-finding waivers.
+  a supported `config.ignore` entry with a reason can exclude matching inputs for
+  a rule. Verify its scope and reported suppressions; a broad wildcard can hide more
+  than the intended exception. Severity overrides apply to whole rules.
 
 Ask for a scope decision only when the required action exceeds existing
 authorization. Do not ask again for work the user already authorized.

@@ -1,46 +1,73 @@
-# discover
+# Diagnose the design-system problem
 
-Agent procedure; no `ds-loop discover` CLI exists. Determine the next useful
-system decision from repository evidence and the user's task, then retain it
-where the next task can find it.
+Agent procedure; no `ds-loop discover` CLI exists. Finish with a recommended first action, its supporting evidence and a finish line.
+If evidence is missing, name the investigation that will resolve it.
 
-## Investigate before interviewing
+## Understand why this matters
 
-Read the entry skill's setup and decision states. Inspect relevant instructions,
-contribution/foundation docs, decisions, token sources, components, consumers,
-and existing checks. Distinguish declared policy, observed behavior, and unknowns.
-An absent canonical filename is not an absent system; a named utility resolving
-successfully is not permission to use it.
+Reuse the user's stated goal. When absent, ask: “What brought you here, and what
+would you like to be easier or work better?” A request for a specific authorized
+repair does not need this interview.
 
-Record only what affects the intervention: storage/naming, theme mechanism,
-consumers, source of authority, available verification, and unread surfaces.
-Do not generate a framework inventory unless the task needs one.
+Read applicable instructions and existing task/decision records. Inspect a relevant
+component or product flow before asking for technical facts. Select only questions
+whose answers could change the next action:
 
-Ask only for consequential information the repository cannot supply. A human
-policy and contradictory implementation may describe intended and current states;
-do not automatically let either erase the other. Resolve the conflict explicitly.
+| Missing context | Useful question | Decision it informs |
+|---|---|---|
+| Problem and urgency | What happened recently that made this worth addressing? | Defect repair, contributor friction, growth, or a planned capability. |
+| Concrete incident | Show me a recent task where this caused trouble. What happened? | A representative reproduction rather than an abstract quality complaint. |
+| Affected people | Who gets stuck, and what do they do to recover? | Product-user harm versus contributor effort or aesthetic preference. |
+| Desired outcome | What should become possible or easier after this work? | Acceptance independent of tools installed or finding counts. |
+| Existing solution | What should developers use today, and what prevents that? | Missing capability versus adoption, compatibility, or discovery. |
+| Constraints | What must stay compatible, and who owns shared decisions? | Scope, rollout, and material decisions needing an owner. |
+| First demonstration | Which flow would be useful to prove this in? | Pilot consumer, states, and access needed for verification. |
 
-## Choose the first deliverable
+Ask related questions in small groups; investigate between them. Offer a
+provisional recommendation when the user does not know. An unknown blocks only
+work that depends on it. Keep the interview proportional to the next decision.
 
-- No established convention in scope: propose one small foundation for a real
-  repeated need, its consumer and acceptance check. Avoid inventing a four-tier
-  model, JSON mirror or component registry without a use case.
-- Partial system: choose one bounded adoption gap against a documented commitment.
-- Existing system: preserve it, configure the scanner where faithful, or state the
-  unsupported model. An intentional exception may need only a retained rationale.
-- Insufficient evidence: state the missing evidence and the next observation;
-  do not force a maturity label or a migration plan.
+## Investigate the cause
 
-A component-level task does not require a whole-company discovery exercise.
+Follow the entry skill's setup. Inspect actual sources of intent, implementation,
+consumer imports, docs/examples, contribution paths, and available checks. For a
+blank project, use a brief/reference or prototype; do not invent an audit baseline.
 
-## Retain the decision
+Present the chain: **reported problem → observed behavior → plausible cause →
+consequence → intervention**. Label repository observations, runtime observations,
+team reports and hypotheses. Cite scope and sources. A static rule `risk:` sentence
+is not evidence that this product suffers that consequence.
 
-Use the team's existing record format. Include the evidence/authority, chosen
-scope, alternatives or no-op considered, actual checks and their limits, and a
-condition for revisiting. Name its path and retrieval route in the handoff.
-`DESIGN-SYSTEM.md` is an optional home if none exists, not a prerequisite for work.
-Its frontmatter is documentation for agents; the engine does not read it as policy.
-Engine configuration belongs in a supported ds-loop config file.
+Check a competing explanation before a consequential recommendation. Duplicate
+implementations may reflect different contracts. An existing component may be
+usable but hard to discover. A named utility resolving successfully does not prove
+permission; a missing conventional document does not prove absent policy. Resolve
+contradictory commitments with the relevant owner when they affect the intervention.
 
-Done when the next bounded action is justified and its record is discoverable,
-not when every possible context field is filled in.
+Counts support investigation, not maturity or ROI claims. Distinguish files,
+component concepts, imports and production usage. Sampled examples are not an
+exhaustive inventory. Explain benefits as expected until observed; do not turn
+code counts into invented cost savings or delivery-speed estimates.
+
+## Recommend the first delivery
+
+Connect the intervention to the user's problem, using [engagement](engagement.md)'s
+plan template. Consider appropriate alternatives: guidance, a contribution/ownership
+change, local repair, shared capability, or preserving the current implementation.
+Recommend a route for this area:
+
+- **Establish:** no agreed foundation for the needed use case. Compare reuse and a
+  minimal new foundation, with a real consumer and a checkable contract.
+- **Improve / adopt:** an existing foundation has a demonstrated gap. Fix the
+  underlying cause; documentation or an exception can be the right output.
+- **Maintain:** current commitments support the work. Use/review them and retain
+  justified exceptions; no strategic redesign is required.
+- **Investigate further:** name the missing observation, bounded work to obtain it,
+  and the decision it will unlock. Scanner silence cannot choose another route.
+
+Done when the user can see why you recommend the first action, what it covers, and
+how to tell whether it worked. Identify any decision needed before proceeding. Present the diagnosis for
+correction; reuse authorization instead of adding a mandatory approval ceremony.
+Retain consequential choices and a retrieval path as described in
+[engagement](engagement.md). A whole-system implementation is not required to finish
+a discovery request.

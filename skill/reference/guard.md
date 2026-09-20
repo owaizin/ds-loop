@@ -17,7 +17,9 @@ hook (`skill/hooks/ds-loop-guard.mjs`):
 1. reads the payload, pulls the file path
 2. if it is not a `.css`, `.scss`, `.sass`, `.jsx`, or `.tsx` file — exits silently
 3. runs `ds-loop audit <cwd> --files <that file> --min-severity high --json`
-4. if there are `high`+ findings — prints them to stderr and exits 2, so the
+4. if the audit fails, times out or returns no usable report — states that the edit
+   was not checked, reports the error and exits 2; it does not update the coverage cache
+5. if there are `high`+ findings — prints them to stderr and exits 2, so the
    agent gets them as feedback; a new project extraction gap also exits 2;
    otherwise exits 0 silently
 
@@ -29,8 +31,8 @@ source could not be read or judged. The delivery channels are:
 |---|---|---|
 | `ds-loop context` | Project shape: config, declared intent, **extraction** limits | once per session |
 | **`ds-loop audit .` unfiltered** | **The only channel for rule-judgement limits** — which checks could not judge this source | at session setup, and again before calling a change complete |
-| this hook | Project **format** changes, and **high-severity** findings on the edited file | per edit; the format notice only on change |
-| `audit --require-coverage` | A CI gate: green means checked *and* clean | every CI run, opt-in |
+| this hook | Project **format** changes, **high-severity** findings on the edited file, or an audit execution failure | per edit; the format notice only on change |
+| `audit --require-coverage` | Fails on reported coverage gaps and findings at the chosen severity; pass applies only to the stated scope | every CI run, opt-in |
 
 **The hook does not deliver judgement limits, and neither does `context`.**
 `token/tier-model-undetectable` is low severity, so the hook's `--min-severity high`
@@ -43,14 +45,30 @@ The hook keeps a signature at `node_modules/.cache/ds-loop/guard-coverage.json`,
 keyed on **project-scoped** facts only. Repeating a limitation after every save would
 train the agent to ignore this channel, which is worse than saying it once.
 
-It **never blocks** the edit — a PostToolUse hook fires after the write already
-landed. It nags; it does not stop.
+The hook runs after the write has landed. It provides feedback and cannot block
+the edit.
 
 ## Rules that surface
 
-Only `high` and `blocking`. `medium` / `low` on every save is noise. To see
-everything, run `ds-loop audit` by hand. To promote a rule for a project, set its
-severity in `.ds-loop-config.yml` (`tier_leakage: critical`).
+The default policy delivers only `high` and `blocking`. Medium and low findings
+remain available in an unfiltered audit. This policy does not establish that a
+lower-severity finding is unimportant to this product. For example, this supported
+mapping in `.ds-loop-config.yml` promotes the tier-leakage rule to blocking:
+
+```yaml
+severity:
+  tier_leakage: critical
+```
+
+`token/stock-palette-utility` needs an explicit `tokenContexts` association for the
+edited consumer. It remains medium by default, so the hook filters it even with
+context available. If the project deliberately promotes this rule, configure both
+the mapping and `severityOverrides` in `ds-loop.config.json`. Run a known failing
+example through the actual hook before relying on the feedback. See
+[audit](audit.md) for context and scope limits.
+
+The hook reports findings in the edited file; without a before-edit comparison it
+cannot establish that the edit introduced them.
 
 ## Merging
 

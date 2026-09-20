@@ -1,38 +1,54 @@
-# scaffold
+# Set up a usable reference
 
-Generate the structural skeleton: the Storybook spine, the foundations pages, the
-5-file component contract, the validators.
+Agent procedure; no `ds-loop scaffold` CLI or bundled component generator exists.
+Use after a concrete setup or component task is established. Inspect the target
+framework/version, scripts, existing examples and contribution requirements first.
 
-Status: **agent procedure; no generator CLI is shipped**. The structure below is
-an example for a React/Storybook project that has adopted this contract. Inspect
-existing stories, framework and contributor requirements first. Preserve another
-valid structure; do not add five files or Storybook merely to satisfy this example.
+## Minimal Storybook setup
 
-## `scaffold storybook`
+Storybook is optional. Preserve a useful existing component documentation/test
+environment. If Storybook is appropriate and setup is authorized:
 
-- The sidebar spine, pinned in `storySort`: Overview → Foundations → Content
-  Guidelines → Primitives → Components (by category) → Patterns → Pages.
-- Foundations pages generated *from the tokens*, not hand-maintained tables.
-- The three migration lanes with their coloured banners (canonical / preview / legacy).
-- Theme toggle in the toolbar; `.dark` class + `data-theme` hoisted to `<html>`.
+1. Identify the component library and its actual framework/build configuration.
+   Use official instructions for that installed version; explain required dependency
+   changes before making them. Avoid scaffolding another application or replacing
+   the existing toolchain just to host examples.
+2. Connect only the providers, styles and theme controls the representative component
+   requires. Use the project's actual theme mechanism; do not assume a `.dark` class
+   or a `data-theme` attribute.
+3. Add one useful component example with representative content, supported states,
+   import guidance, usage constraints and relevant behavior checks. Preserve existing
+   stories and tests. A static preview is not a production consumer test.
+4. Run the actual start/build path and applicable checks. Verify the example renders
+   and interacts as intended when browser access exists; otherwise state that gap.
+5. Link the entry point from the existing contributor documentation. Name what is
+   ready to use, what was checked, and who maintains the reference.
 
-## `scaffold component <Name> <category>`
+For deeper organization, lifecycle conventions, documentation maintenance or agent
+retrieval, follow the optional `storybook-architect` handoff in
+[engagement](engagement.md). Check availability; no automatic installation or repeated
+intake. DS Loop remains responsible for integrating the result.
 
-The 5 files, in order, with the accessibility baseline and token-only styling
-already wired:
+## Component setup
 
-1. `lib/<name>.tsx` — typed `forwardRef`, `displayName`, tokens only.
-2. `lib/index.ts` — export component + props type + every public union type.
-3. `stories/<Name>.stories.tsx` — `Default`, `Playground`, `UsageMap`; JSDoc on meta; no `autodocs`.
-4. `stories/<Name>.features.stories.tsx` — `VariantMatrix`, `States`, `play()`; `tags: ['!autodocs']`.
-5. `stories/components/<category>/<Name>-guidelines.mdx` — the tiered section set.
+Use [shape](shape.md) for a new or substantially changed contract. Follow the local
+file layout, framework's ref conventions, exports and story format. Add the
+implementation, necessary exports, focused examples/tests, and usage guidance
+where they belong; a fixed file count is not an acceptance criterion.
 
-Run `shape <Name>` first. Then `review <Name>` before the PR.
+Foundations, components and composed patterns can be useful browsing categories.
+Keep an existing organization unless a demonstrated consumer problem justifies
+changing it. Generate token documentation from the canonical source where practical
+rather than introducing a second hand-maintained table. Documentation visibility,
+release status and test selection are separate decisions.
 
-## `scaffold validators`
+## Project checks
 
-If the project adopts these contracts, implement its own validators for the
-chosen file structure, MDX syntax/story references or token parity. Run each
-checker against a known violation before calling it enforced, then wire it into
-CI if requested. None of these validators is supplied by DS Loop. Reuse suitability
-remains review judgment.
+If a project needs file-contract, token-format parity, or MDX/reference validation,
+reuse its checker or implement one for the agreed requirement. DS Loop does not
+supply these validators. Demonstrate a controlled violation failing before claiming
+that a new checker enforces the contract; CI wiring is a separate authorized step.
+
+Done when the requested reference or component can be used through the documented
+entry point, the applicable checks have run, and any unverified behavior is named.
+Do not call the entire library documented because one example works.
