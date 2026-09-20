@@ -61,7 +61,8 @@ Outcome: Who needs what to become possible, and why now?
 Current state: Useful assets and commitments; observations, sources and limits.
 Diagnosis: What is going wrong, likely cause, competing explanation and missing evidence.
 Recommendation: First intervention, why it helps, and relevant alternative considered.
-First delivery: What will change, where it will be used, and what must stay the same.
+Delivery scope: What the full requested outcome includes and what must stay the same.
+First checkpoint: What will be demonstrated first; what remains after it.
 Ownership: Who performs work; who resolves shared decisions; access/dependencies.
 Done when: Behavior to demonstrate; engine checks, runtime/tests and human review.
 Next use: Where the plan and decisions live, how to find them, and when to revisit.
@@ -79,7 +80,9 @@ and audit evidence instead of making the audience interpret raw findings. Mark
 planned work separately from delivered work; update the same brief as evidence changes.
 
 Name the next useful checkpoint and what it will demonstrate.
-Later phases remain conditional on what the pilot shows. Proceed within existing
+Adapt later work to what the checkpoint shows; continue the authorized scope.
+A broad system setup uses [establish](establish.md) and does not finish at the first
+successful consumer. Proceed within existing
 authorization; ask only about decisions that materially change scope or shared
 commitments. A review-only request ends in recommendations unless repairs are
 also requested.

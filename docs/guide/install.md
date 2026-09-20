@@ -5,7 +5,7 @@ Use Node 22.6 or later. Install the complete package in the project you want to 
 ## Install from npm
 
 ```sh
-npm install --save-dev ds-loop@0.2.0
+npm install --save-dev ds-loop@0.2.1
 ```
 
 To test local changes, use [source installation](#install-from-source). Both paths install the CLI and companion skill.
@@ -68,10 +68,10 @@ npm ci
 npm pack
 ```
 
-This builds `ds-loop-0.2.0.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
+This builds `ds-loop-0.2.1.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
 
 ```sh
-npm install --save-dev /absolute/path/to/ds-loop-0.2.0.tgz
+npm install --save-dev /absolute/path/to/ds-loop-0.2.1.tgz
 ```
 
 Continue with [Start with your agent](#start-with-your-agent), or [run the checks yourself](#run-the-checks-yourself). The launcher uses the compiled JavaScript included in the package.

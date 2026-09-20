@@ -20,13 +20,13 @@ may improve documentation or contribution practices instead of adding code.
 
 **Bring:** a real screen or flow, product constraints, and any visual direction.
 
-**Your agent does:** inspect the product needs and existing assets, then propose or implement the authorized foundation in a representative consumer. Check code and team practice as well as written conventions.
+**Your agent does:** agree the product scope, inspect existing assets, and choose a compatible implementation base. For a setup request, it builds shared foundations, the primitives and patterns your workflows need, and a guide for using and changing them. A suitable existing library may provide the base.
 
-**You receive:** a recommendation or usable first foundation, according to the requested scope, with usage guidance, evidence and unresolved decisions.
+**You receive:** editable sources connected to your product, working usage examples, customization and contribution instructions, and evidence of what was checked. A component gallery alone is not the finish line. A proposal or pilot request stays within that narrower scope.
 
-**Review:** whether the foundation serves its consumer and is ready for wider adoption. Existing authorization carries forward; broader rollout needs its own scope.
+**Review:** use the documented components in a new task, change a shared style, and extend a pattern. Check that the product and reference stay consistent. Automated checks and agent trials do not replace feedback from your developers.
 
-> Read node_modules/ds-loop/skill/SKILL.md. Help establish shared form styles for our settings screen in src/settings/. Read existing UI, product notes, and any team conventions first. Propose the smallest useful set of spacing, type, color, and field patterns, with a rendered example. Keep the first proposal within this screen; do not migrate other screens. State what needs a team decision and where the chosen conventions will live.
+> Read node_modules/ds-loop/skill/SKILL.md. Set up a design system for this product so our developers can keep building it. Use our product notes and current workflows to recommend the scope, then implement it. Preserve working behavior and use an appropriate existing foundation where it fits. Make it clear how we use, customize and extend the result.
 
 ## Improve a partial system
 

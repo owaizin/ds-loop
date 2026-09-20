@@ -3,6 +3,8 @@
 Agent procedure; no token generator CLI is shipped. Implement a token decision
 supported by discovery or an explicit design handoff. Preserve the project's
 storage, naming, layers, units and theming unless changing them is the task.
+For a whole-system setup, [establish](establish.md) defines the broader deliverables;
+completing a token edit does not complete that assignment.
 
 1. Name the consumer and the value/role that needs reuse. Confirm that an existing
    token does not already serve it. A literal is not automatically a new token.

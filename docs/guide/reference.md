@@ -50,7 +50,7 @@ unsupported model as a limitation rather than redesigning it to obtain a clean a
 
 ## Agent procedures
 
-The skill includes `discover`, `census`, `drift`, `tokenize`, `scaffold`, `extract`, `shape`, `review` and `doctor`. They instruct an agent to investigate or perform a task. They are not CLI commands and their conclusions are not engine findings. See the [skill entry](../../skill/SKILL.md).
+The skill includes `discover`, `census`, `drift`, `establish`, `tokenize`, `scaffold`, `extract`, `shape`, `review` and `doctor`. They instruct an agent to investigate or perform a task. They are not CLI commands and their conclusions are not engine findings. See the [skill entry](../../skill/SKILL.md).
 
 ## Audit options
 

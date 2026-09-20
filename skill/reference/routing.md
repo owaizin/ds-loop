@@ -7,7 +7,7 @@ what is available. These playbook names are not terminal commands.
 | Request | First action | Relevant procedure |
 |---|---|---|
 | Bare invocation or “help us with our system” | Recover the goal, investigate a concrete example, explain a recommended next step. | [discover](discover.md), then [engagement](engagement.md) |
-| “Build us a design system” | Establish product needs and a representative consumer; compare reuse and a minimal foundation. | [discover](discover.md), then [tokenize](tokenize.md) / [scaffold](scaffold.md) as needed |
+| “Build us a design system” | Recover product scope and existing assets; choose a compatible base and deliver a usable, editable system across the agreed workflows. | [discover](discover.md) for unresolved intent, then [establish](establish.md) |
 | “Our UI is inconsistent” / “people keep rebuilding components” | Diagnose whether the cause is missing capability, drift, poor discovery, or a deliberate difference. | [discover](discover.md); [census](census.md) only when an inventory answers the question |
 | “Audit our tokens” | Run the requested measurement, explain relevant findings and limits. A review request does not authorize all repairs. | [audit](audit.md) |
 | “Build or extend this shared component” | Check existing contracts, consumers and the actual gap; implement within scope. | [shape](shape.md), project build flow, [review](review.md) |

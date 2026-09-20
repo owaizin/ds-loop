@@ -3,6 +3,8 @@
 Agent procedure; no `ds-loop scaffold` CLI or bundled component generator exists.
 Use after a concrete setup or component task is established. Inspect the target
 framework/version, scripts, existing examples and contribution requirements first.
+For a whole-system setup, use [establish](establish.md); this procedure covers its
+reference environment, not the full implementation.
 
 ## Minimal Storybook setup
 

@@ -67,7 +67,9 @@ change, local repair, shared capability, or preserving the current implementatio
 Recommend a route for this area:
 
 - **Establish:** no agreed foundation for the needed use case. Compare reuse and a
-  minimal new foundation, with a real consumer and a checkable contract.
+  new foundation sized to the requested outcome. For implementation, follow
+  [establish](establish.md); a first consumer proves a checkpoint, not completion of
+  a broader setup.
 - **Improve / adopt:** an existing foundation has a demonstrated gap. Fix the
   underlying cause; documentation or an exception can be the right output.
 - **Maintain:** current commitments support the work. Use/review them and retain

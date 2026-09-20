@@ -2,7 +2,7 @@
 name: ds-loop
 description: Diagnose design-system problems and guide establishment, adoption, component contributions, and maintenance using repository evidence and the team's commitments. Use when starting a system, resolving inconsistent UI foundations, helping developers reuse a library, or reviewing a shared change. Includes deterministic token checks; not general product strategy or isolated screen styling.
 metadata:
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Design System Loop
@@ -70,7 +70,7 @@ These describe the relevant product area, not company maturity or CLI verdicts.
 
 | Situation | Intervention |
 |---|---|
-| No agreed convention for the needed behavior | **Establish:** propose and demonstrate a minimal foundation in a representative consumer; reuse suitable existing foundations. A new convention is a decision, not a repaired violation. |
+| No agreed convention for the needed behavior | **Establish:** follow [establish](reference/establish.md) to build the authorized foundation, primitives, product patterns, usage guide and maintenance paths. Reuse suitable existing foundations. A pilot is a checkpoint unless it is the requested outcome. |
 | Existing foundation with a demonstrated gap | **Improve / adopt:** distinguish drift, missing capability, discovery friction, intentional difference, or unsuitable policy. Repair the cause, which may be guidance or ownership rather than code. |
 | Established commitments serving the task | **Maintain:** use or review them; preserve valid exceptions. A recurring unmet need can become a separately scoped contribution. |
 | Evidence or scanner coverage is insufficient | Investigate the missing observation; use appropriate existing checks or manual inspection. Do not force an adoption route or report silence as a pass. |
@@ -138,6 +138,7 @@ Design System Loop does not ship those checks.
 | `discover` | playbook | Discover | Read repository evidence, resolve consequential unknowns, record a bounded adoption decision | [reference/discover.md](reference/discover.md) |
 | `census [target]` | playbook | Discover | Scoped component and consumer inventory; validate duplication candidates and prioritize by impact | [reference/census.md](reference/census.md) |
 | `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
+| `establish` | playbook | Build | Set up a usable, editable system for the agreed product scope; verify use, customization and extension | [reference/establish.md](reference/establish.md) |
 | `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
 | `scaffold [target]` | playbook | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
 | `extract [target]` | playbook | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
@@ -160,7 +161,7 @@ A component name or category is a scope for an agent playbook, not a CLI target.
 
 `audit` runs the registered token/color rules over supported extracted values;
 `sweep` measures the configured color-clustering curve. `drift`, `census`,
-`shape`, `review`, `discover`, `tokenize`, `scaffold`, `extract`, and `doctor`
+`shape`, `review`, `discover`, `establish`, `tokenize`, `scaffold`, `extract`, and `doctor`
 are agent procedures, not executable CLI commands.
 
 `guard` runs a file-scoped audit after supported Claude Code edits. It reports
