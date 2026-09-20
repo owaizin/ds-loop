@@ -26,3 +26,6 @@ docs/PILOT-BRIEF-*.md
 
 # private engagement names used by the smoke leak check
 .private-names
+
+# npm pack artifacts from local distribution tests
+*.tgz

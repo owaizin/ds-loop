@@ -36,6 +36,6 @@ export type Adapter = {
   extensions: string[];
   reads: string;
   /** cheap check: does this adapter recognise the source? */
-  detect(source: SourceRef): boolean;
+  detect(source: SourceRef, config?: DsOpsConfig): boolean;
   extract(source: SourceRef, config: DsOpsConfig): RawValue[];
 };

@@ -93,61 +93,86 @@ function dedupePairs(pairs: { value: string; token: string }[]): { value: string
 }
 
 /**
- * A use site names the CSS framework's own palette — `bg-white`,
- * `text-slate-900`, `border-zinc-200` — instead of the theme token that carries
- * that role. Distinct from `token/raw-value-in-markup`: nothing here is
- * hardcoded in the literal sense, and the class is valid Tailwind. It is still
- * outside the system, because a stock palette entry resolves to one value in
- * every mode: the theme cannot reach it, so dark mode and a rebrand both miss it.
+ * Stock-palette utilities are candidates for review against a project's token
+ * contract. This check does not resolve Tailwind configuration, CSS overrides,
+ * or dark-mode variants, so it cannot prove the rendered color or a policy breach.
  *
- * shadcn/ui states the contract this encodes: semantic theme tokens exist so you
- * "override those tokens in your CSS to change the look of your app without
- * rewriting component classes". A stock palette class is the case where you have
- * to rewrite the class. https://ui.shadcn.com/docs/theming
- *
- * Fires only when the run also read theme colour tokens. Without a token layer
- * there is no system being bypassed, and the finding would be noise on every
- * plain Tailwind app.
+ * Scoped checks use explicitly associated CSS declarations as read-only context.
+ * Missing context produces a not-judged finding. Unscoped checks without mappings
+ * retain the original gate: at least one color declaration in the selected tree.
  */
 export const stockPaletteUtilityRule: Rule = {
   id: 'token/stock-palette-utility',
   title: 'Use site names the framework palette instead of a theme token',
   impact:
-    'A theme switch cannot reach these classes: they resolve to the same value in every mode, so a light card stays light in dark mode and a rebrand misses them entirely.',
+    'Bypassing theme roles can leave surfaces in the wrong mode or text with insufficient contrast when the theme changes.',
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const offenders = ctx.values.filter((v) => v.provenance.classification === 'palette-utility');
     if (offenders.length === 0) return [];
 
-    // the token layer, read by the CSS adapter — the thing being bypassed
-    const themeTokens = ctx.colors.filter((v) => v.provenance.tokenName !== null);
-    if (themeTokens.length === 0) return [];
+    const unresolved: { file: string; reason: string }[] = [];
+    const judged = offenders.filter((v) => {
+      if (!ctx.tokenContext?.required) {
+        return ctx.colors.some((color) => color.provenance.tokenName !== null);
+      }
+      const file = v.provenance.file;
+      const context = ctx.tokenContext.byFile.get(file);
+      const reason = !context
+        ? 'no tokenContexts mapping for this use site'
+        : context.errors.length > 0
+          ? context.errors.join('; ')
+          : !context.values.some((value) => value.provenance.classification === 'color')
+            ? 'configured context contains no readable color declarations'
+            : null;
+      if (reason) {
+        if (!unresolved.some((item) => item.file === file)) unresolved.push({ file, reason });
+        return false;
+      }
+      return true;
+    });
+    const limits: Finding[] =
+      unresolved.length > 0
+        ? [
+            {
+              ruleId: this.id,
+              severity: 'low',
+              summary: `stock-palette judgment unavailable for ${unresolved.length} file(s): token context unresolved`,
+              where: unresolved.map((item) => `${item.file}: ${item.reason}`).join('; '),
+              impact:
+                'The palette check could not establish token context; absence of a violation is not a passing judgment.',
+              fix: 'Map the applicable CSS declarations with tokenContexts in a JSON config. Consult only the theme this consumer uses; do not infer it from unrelated files. For a deliberately unthemed scope, record the rule exception with its reason.',
+              data: { notJudged: true, files: unresolved },
+            },
+          ]
+        : [];
+    if (judged.length === 0) return limits;
 
-    const distinct = new Set(offenders.map((v) => `${v.provenance.property}-${v.raw}`));
-    const files = new Set(offenders.map((v) => v.provenance.file));
-    // a stock colour under a `dark:` variant is the author hand-rolling the
-    // theme switch the token layer already does — worth naming separately.
-    const themed = offenders.filter((v) => (v.provenance.selector ?? '').includes('dark'));
+    const distinct = new Set(judged.map((v) => `${v.provenance.property}-${v.raw}`));
+    const files = new Set(judged.map((v) => v.provenance.file));
+    // Report explicit mode variants so a reviewer preserves their intended behavior.
+    const themed = judged.filter((v) => (v.provenance.selector ?? '').includes('dark'));
 
     return [
+      ...limits,
       {
         ruleId: this.id,
         severity: 'medium',
-        summary: `${offenders.length} use site(s) name the framework palette instead of a theme token (${distinct.size} distinct across ${files.size} file(s)${themed.length > 0 ? `, ${themed.length} under a dark: variant` : ''})`,
-        where: offenders
+        summary: `${judged.length} use site(s) name the framework palette instead of a theme token (${distinct.size} distinct across ${files.size} file(s)${themed.length > 0 ? `, ${themed.length} under a dark: variant` : ''})`,
+        where: judged
           .slice(0, 8)
           .map(
             (v) =>
               `${v.provenance.property}-${v.raw}${v.provenance.selector ? ` (${v.provenance.selector})` : ''} at ${v.provenance.file}:${v.provenance.line}`,
           )
           .join('; '),
-        fix: `Replace each with the semantic utility that reads the token (bg-surface, text-muted-foreground). A stock palette class is theme-blind: it renders the same value in every mode, so a light card stays light in dark mode. ${themed.length > 0 ? 'The dark: variants are the token layer being re-implemented by hand — delete the variant, not just the class. ' : ''}This audit checks structure, not rendering: confirm the swap in the browser in both modes.`,
+        fix: `Check the resolved framework theme and project contract. Where a semantic role applies, use its utility (for example bg-surface or text-muted-foreground). ${themed.length > 0 ? 'Inspect the dark: variants and preserve their intended behavior when migrating. ' : ''}This audit checks structure, not rendering: confirm the swap in the browser in both modes.`,
         data: {
-          count: offenders.length,
+          count: judged.length,
           distinct: distinct.size,
           files: files.size,
           underDarkVariant: themed.length,
-          hits: offenders.slice(0, 40).map((v) => ({
+          hits: judged.slice(0, 40).map((v) => ({
             utility: v.provenance.property,
             value: v.raw,
             variants: v.provenance.selector,

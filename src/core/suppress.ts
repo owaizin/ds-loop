@@ -14,8 +14,8 @@ import type { RawValue } from './provenance.ts';
  * Suppression is never silent: `audit` prints every entry that matched, so a
  * clean verdict still shows what was argued away to reach it.
  *
- * ponytail: substring / trailing-`*` file matching, no glob library. Named
- * ceiling — path patterns with an interior `*` do not work; add a matcher when
+ * ponytail: exact/suffix path and trailing-`*` prefix matching, no glob library.
+ * Config loading rejects interior `*`; add a matcher when
  * an engagement needs one.
  */
 export type Suppression = {
@@ -27,7 +27,7 @@ export type Suppression = {
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
 
 function fileMatches(file: string, patterns: string[] | undefined): boolean {
-  if (patterns === undefined || patterns.length === 0) return true;
+  if (patterns === undefined) return true;
   return patterns.some((p) => {
     if (p.endsWith('*')) return file.startsWith(p.slice(0, -1));
     return file === p || file.endsWith(`/${p}`);

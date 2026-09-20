@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, statSync } from 'node:fs';
-import { basename, isAbsolute, join, resolve } from 'node:path';
+import { existsSync, realpathSync, statSync } from 'node:fs';
+import { basename, isAbsolute, join, relative, resolve } from 'node:path';
 import type { SourceRef } from '../adapters/types.ts';
 import { type FixtureMeta, loadFixture } from './fixture.ts';
 
@@ -44,26 +44,40 @@ export function resolveSource(
 }
 
 function withOnly(source: SourceRef, only: string[] | undefined): SourceRef {
-  if (!only || only.length === 0) return source;
-  return { ...source, only: only.map((f) => (isAbsolute(f) ? f : resolve(process.cwd(), f))) };
+  if (only === undefined) return source;
+  const rootIsFile = statSync(source.root).isFile();
+  const realRoot = realpathSync(source.root);
+  const selected = [...new Set(only.map((f) => resolve(process.cwd(), f)))].flatMap((file) => {
+    if (!existsSync(file) || !statSync(file).isFile()) return [];
+    const rel = relative(realRoot, realpathSync(file));
+    const inside = rootIsFile ? rel === '' : rel !== '..' && !rel.startsWith('../') && !isAbsolute(rel);
+    return inside ? [resolve(source.root, rel)] : [];
+  });
+  return { ...source, only: selected };
 }
 
-/** files changed vs a git ref, filtered to what an adapter can read */
+/** Committed paths changed since the merge base with ref; adapters filter formats. */
 export function changedFiles(ref: string, cwd = process.cwd()): string[] {
   const root = gitRoot(cwd);
-  if (!root) return [];
+  if (!root) throw new Error('--since needs a target inside a Git repository');
   try {
-    const out = execFileSync('git', ['diff', '--name-only', `${ref}...HEAD`], {
-      cwd: root,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
+    const out = execFileSync(
+      'git',
+      ['diff', '--name-only', '-z', '--diff-filter=ACMRT', `${ref}...HEAD`, '--'],
+      {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      },
+    );
     return out
-      .split('\n')
+      .split('\0')
       .filter(Boolean)
       .map((f) => join(root, f));
   } catch {
-    return [];
+    throw new Error(
+      `cannot compare --since ${ref} with HEAD; check that both revisions exist and share a history`,
+    );
   }
 }
 

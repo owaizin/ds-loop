@@ -1,3 +1,5 @@
+import { DEFAULT_CONFIG } from '../config/defaults.ts';
+import type { DsOpsConfig } from '../config/schema.ts';
 import { cssCustomPropsAdapter } from './css-custom-props.ts';
 import { tailwindJsxAdapter } from './tailwind-jsx.ts';
 import type { Adapter, SourceRef } from './types.ts';
@@ -13,8 +15,8 @@ import type { Adapter, SourceRef } from './types.ts';
  */
 export const ADAPTERS: Adapter[] = [cssCustomPropsAdapter, tailwindJsxAdapter];
 
-export function adaptersFor(source: SourceRef): Adapter[] {
-  return ADAPTERS.filter((a) => a.detect(source));
+export function adaptersFor(source: SourceRef, config: DsOpsConfig = DEFAULT_CONFIG): Adapter[] {
+  return ADAPTERS.filter((a) => a.detect(source, config));
 }
 
 /** manifest label: `css-custom-props@0.1.0 + tailwind-jsx@0.1.0` */

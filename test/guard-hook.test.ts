@@ -54,6 +54,33 @@ const PARTLY_UNREADABLE = {
   'other.css': ':root{--palette-blue-600:#1b95db;}\n',
 };
 
+test('guard: mapped palette context is available but medium findings still need an explicit promotion', () => {
+  inProject(
+    {
+      'Card.tsx': '<div className="bg-white" />',
+      'theme.css': ':root{--ds-color-panel:#ffffff}',
+    },
+    (dir) => {
+      const config = { tokenContexts: [{ files: ['Card.tsx'], tokens: ['theme.css'] }] };
+      writeFileSync(join(dir, 'ds-loop.config.json'), JSON.stringify(config));
+      const ordinary = edit(dir, 'Card.tsx');
+      assert.equal(ordinary.status, 0, ordinary.stderr);
+      assert.equal(ordinary.stderr, '');
+      writeFileSync(
+        join(dir, 'ds-loop.config.json'),
+        JSON.stringify({
+          ...config,
+          severityOverrides: { 'token/stock-palette-utility': 'high' },
+        }),
+      );
+      const promoted = edit(dir, 'Card.tsx');
+      assert.equal(promoted.status, 2, promoted.stderr);
+      assert.match(promoted.stderr, /framework palette/);
+      assert.doesNotMatch(promoted.stderr, /semantic-holds-literal/);
+    },
+  );
+});
+
 test('guard: incomplete coverage is announced even when no finding survives the floor', () => {
   inProject(PARTLY_UNREADABLE, (dir) => {
     const first = edit(dir, 'tokens.css');
@@ -169,10 +196,31 @@ test('guard: a fully readable project never mentions coverage', () => {
   });
 });
 
+test('guard: an audit failure is visible and does not record a successful coverage state', () => {
+  inProject({ 'tokens.css': ':root{--palette-blue-500:#1da1f2;}\n' }, (dir) => {
+    writeFileSync(
+      join(dir, 'ds-loop.config.json'),
+      JSON.stringify({ ignore: [{ rule: '*', files: 'legacy/*', reason: 'Legacy only' }] }),
+    );
+    const failed = edit(dir, 'tokens.css');
+    assert.equal(failed.status, 2, failed.stderr);
+    assert.match(failed.stderr, /not checked/);
+    assert.match(failed.stderr, /ignore\[0\].files/);
+    assert.doesNotMatch(failed.stderr, /design-system finding\(s\)/);
+    assert.equal(existsSync(join(dir, STATE)), false);
+
+    writeFileSync(join(dir, 'ds-loop.config.json'), '{}');
+    const recovered = edit(dir, 'tokens.css');
+    assert.equal(recovered.status, 0, recovered.stderr);
+    assert.equal(recovered.stderr, '');
+    assert.equal(existsSync(join(dir, STATE)), true);
+  });
+});
+
 test('guard: findings still reach the agent, with the notice alongside', () => {
   inProject({ ...PARTLY_UNREADABLE, 'drift.css': ':root{--brand:#1da1f2;}\n' }, (dir) => {
     const r = edit(dir, 'drift.css');
-    assert.match(r.stderr, /design-system issue\(s\)/, 'the finding must be reported');
+    assert.match(r.stderr, /\[HIGH\].*semantic token declaration/, 'the finding must be reported');
     assert.ok(r.noticed, 'and the first coverage notice rides along with it');
     assert.equal(r.status, 2);
   });

@@ -14,8 +14,8 @@
 export type DsOpsConfig = {
   clustering: {
     /**
-     * CIEDE2000 ΔE below which two colors are treated as the same design intent.
-     * This single number decides whether a palette has 7 greys or 11.
+     * CIEDE2000 ΔE threshold for clustering color values. Proximity does not
+     * establish shared design intent; interpret clusters against project use.
      * UNCALIBRATED default — see ds-loop-calibration for tuned values per source.
      */
     deltaE: number;
@@ -46,9 +46,9 @@ export type DsOpsConfig = {
     colorUtilities: string[];
     /**
      * Palette family names that ship with the CSS framework rather than with
-     * this design system. A colour utility naming one of these is theme-blind:
-     * it resolves to the same value in every mode, so a rebrand or a dark theme
-     * cannot reach it. Empty list disables `token/stock-palette-utility`.
+     * this design system. Matching utility names are review candidates; the
+     * engine does not resolve theme overrides or prove mode behavior.
+     * An empty list produces no palette-name candidates.
      * UNCALIBRATED default — Tailwind's default palette, not tuned.
      */
     stockPaletteFamilies: string[];
@@ -107,6 +107,15 @@ export type DsOpsConfig = {
    * cannot quietly become a clean verdict.
    */
   ignore: IgnoreEntry[];
+  /** Explicit use-site -> read-only CSS token context, relative to the audit root. */
+  tokenContexts?: TokenContextMapping[];
+};
+
+export type TokenContextMapping = {
+  /** Exact relative file names or prefixes ending in `*`; no interior globs. */
+  files: string[];
+  /** Exact CSS file paths, consulted but not added to the set of judged values. */
+  tokens: string[];
 };
 
 export type IgnoreEntry = {
@@ -114,7 +123,7 @@ export type IgnoreEntry = {
   rule: string;
   /** token name or literal value to exclude; `*` or absent means every value in `files` */
   value?: string;
-  /** paths, relative to the source root; absent means everywhere */
+  /** Paths/prefixes relative to the source root; absent means everywhere, [] means nowhere. */
   files?: string[];
   /** REQUIRED — the argument for the exception, in the reader's own words */
   reason: string;

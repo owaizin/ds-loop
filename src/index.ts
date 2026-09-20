@@ -1,7 +1,7 @@
 export type { RawValue, Provenance, ValueClassification, RunManifest } from './core/provenance.ts';
 export type { FixtureMeta } from './core/fixture.ts';
 export { loadFixture } from './core/fixture.ts';
-export type { DsOpsConfig } from './config/schema.ts';
+export type { DsOpsConfig, TokenContextMapping } from './config/schema.ts';
 export { hashConfig } from './config/schema.ts';
 export { DEFAULT_CONFIG } from './config/defaults.ts';
 export type { Adapter, SourceRef } from './adapters/types.ts';

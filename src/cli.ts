@@ -102,7 +102,7 @@ function main(argv: string[]): void {
         outDir: flag(rest, 'out'),
         config,
         severityOverrides: loaded.severityOverrides,
-        files: list(rest, 'files'),
+        files: has(rest, 'files') ? list(rest, 'files') : undefined,
         since: flag(rest, 'since'),
         minSeverity: flag(rest, 'min-severity') as Severity | undefined,
         quiet: has(rest, 'quiet'),

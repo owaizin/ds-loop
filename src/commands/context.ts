@@ -21,7 +21,7 @@ const CONTRACT = 'DESIGN-SYSTEM.md';
  */
 export function context(target: string, loaded: LoadedConfig, opts: { writeContract?: boolean } = {}): void {
   const { meta, source, live } = resolveSource(target);
-  const adapters = adaptersFor(source);
+  const adapters = adaptersFor(source, loaded.config);
 
   console.log(`\n  ds-loop context — ${meta.label}`);
   console.log(`  ${live ? 'live scan' : 'fixture'} at ${source.root}`);

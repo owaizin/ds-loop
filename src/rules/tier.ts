@@ -35,8 +35,7 @@ export function classifyTier(tokenName: string | null, cfg: DsOpsConfig): Tier {
   // (--color-action-bg, Tailwind v4's own shape) or right after a brand prefix
   // (--ds-color-bg). It may not arrive at the end: --panel-radius names a panel,
   // not the radius namespace, and stripping the first segment unconditionally
-  // turned every --<widget>-<namespace> token into a semantic one. Measured on a
-  // real repo: 2 of 3 "high" tier findings were component tokens promoted this way.
+  // turned --<widget>-<namespace> tokens into semantic ones.
   const bare = name.replace(/^--/, '');
   const afterPrefix = bare.includes('-') ? bare.slice(bare.indexOf('-') + 1) : '';
   const opensWith = (s: string, ns: string) => s.startsWith(`${ns}-`);

@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
@@ -9,6 +9,7 @@ import { surveyTree } from '../core/files.ts';
 import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { type Suppression, applyIgnores } from '../core/suppress.ts';
+import { type TokenContextRead, readTokenContext } from '../core/token-context.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
 
@@ -22,6 +23,9 @@ export type AuditReport = {
     adapter: string;
     configHash: string;
     ranAt: string;
+    /** File filter and read-only dependencies; context is not included in ratios or judgment. */
+    judgedFiles?: string[];
+    tokenContext?: TokenContextRead[];
   };
   rulesRun: string[];
   findings: Finding[];
@@ -77,21 +81,28 @@ export function audit(
   const overrides = opts.severityOverrides ?? {};
   const ruleTarget = opts.target ?? 'all';
 
-  const only = [...(opts.files ?? []), ...(opts.since ? changedFiles(opts.since) : [])];
-  const { meta, source, live } = resolveSource(targetPath, { only: only.length ? only : undefined });
-  const adapters = adaptersFor(source);
+  const targetRoot = resolve(targetPath);
+  const changed =
+    opts.since !== undefined
+      ? changedFiles(opts.since, statSync(targetRoot).isDirectory() ? targetRoot : dirname(targetRoot))
+      : [];
+  const only =
+    opts.files !== undefined || opts.since !== undefined ? [...(opts.files ?? []), ...changed] : undefined;
+  const { meta, source, live } = resolveSource(targetPath, { only });
+  const adapters = adaptersFor(source, config);
   if (adapters.length === 0) {
     // No adapter recognised this tree. That is NOT a clean result, and it used to
     // return before printing the coverage report it most needed. Three outcomes
     // must stay distinguishable: an empty repository, styling in a format nothing
     // reads, and a source that was read but could not be judged. None of them may
     // masquerade as a checked system.
-    return noAdapterReport(ruleTarget, meta, source.root, targetPath, config, opts);
+    return noAdapterReport(ruleTarget, meta, source.root, targetPath, config, opts, source.only);
   }
 
   const values = adapters.flatMap((a) => a.extract(source, config));
   const colors = values.filter((v) => v.provenance.classification === 'color');
-  const ctx = { meta, source, config, values, colors };
+  const tokenContext = readTokenContext(source, config, values);
+  const ctx = { meta, source, config, values, colors, tokenContext };
 
   const rules = rulesForTarget(ruleTarget);
   const minRank = opts.minSeverity ? SEVERITY_ORDER[opts.minSeverity] : Number.POSITIVE_INFINITY;
@@ -114,7 +125,7 @@ export function audit(
       });
     })
     .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f))
-    .map((f) => ({ ...f, impact: impactOf.get(f.ruleId) }));
+    .map((f) => ({ ...f, impact: f.impact ?? impactOf.get(f.ruleId) }));
 
   const findings = allFindings
     .filter((f) => SEVERITY_ORDER[f.severity] <= minRank)
@@ -173,6 +184,7 @@ export function audit(
     // unfiltered on purpose: a severity floor may hide a finding, never the fact
     // that a check could not judge this source
     allFindings.map((f) => f.ruleId),
+    allFindings.filter((f) => f.data?.notJudged === true).map((f) => f.ruleId),
   );
 
   const report: AuditReport = {
@@ -185,6 +197,8 @@ export function audit(
       adapter: adapterLabel(adapters),
       configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
+      ...(source.only ? { judgedFiles: source.only } : {}),
+      ...(tokenContext.reads.length > 0 ? { tokenContext: tokenContext.reads } : {}),
     },
     rulesRun: rules.map((r) => r.id),
     findings,
@@ -226,6 +240,7 @@ function noAdapterReport(
   path: string,
   config: DsOpsConfig,
   opts: { json?: boolean; quiet?: boolean; silent?: boolean; outDir?: string },
+  only?: string[],
 ): AuditReport {
   const coverage = buildCoverage(root, [], [], []);
   const present = surveyTree(root);
@@ -243,6 +258,7 @@ function noAdapterReport(
       // specific configuration, and a report that lies about which is not evidence
       configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
+      ...(only !== undefined ? { judgedFiles: only } : {}),
     },
     rulesRun: [],
     findings: [],
@@ -266,9 +282,11 @@ function noAdapterReport(
     } else {
       console.log(`\n  ds-loop audit — ${meta.label}`);
       console.log(
-        anyFiles
-          ? '\n  ✗ not checked — no adapter reads any styling format found here.\n'
-          : '\n  ✗ not checked — nothing to read: no files in scope.\n',
+        only !== undefined
+          ? '\n  ✗ not checked — no adapter read a selected file. The file filter was preserved.\n'
+          : anyFiles
+            ? '\n  ✗ not checked — no adapter reads any styling format found here.\n'
+            : '\n  ✗ not checked — nothing to read: no files in scope.\n',
       );
       console.log('  scope — what this audit read');
       for (const line of formatCoverage(coverage)) console.log(line);
@@ -332,7 +350,15 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
   }
 
   console.log('\n  scope — what this audit read');
+  if (m.judgedFiles)
+    console.log(`    selected files: ${m.judgedFiles.length} — see manifest.judgedFiles in --json`);
   for (const line of formatCoverage(r.coverage)) console.log(line);
+  if (m.tokenContext) {
+    console.log('    token context (read only; excluded from findings and ratios):');
+    for (const read of m.tokenContext) {
+      console.log(`      ${read.file} → ${read.forFiles.join(', ')} · ${read.error ?? read.adapter}`);
+    }
+  }
 
   // Ratios are the instrument for comparing two runs, so they used to be the last
   // thing on screen — where a first-time reader has nothing to compare them to.

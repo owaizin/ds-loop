@@ -2,6 +2,7 @@ import type { SourceRef } from '../adapters/types.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import type { FixtureMeta } from '../core/fixture.ts';
 import type { RawValue } from '../core/provenance.ts';
+import type { TokenContext } from '../core/token-context.ts';
 
 export type Severity = 'blocking' | 'high' | 'medium' | 'low';
 
@@ -31,6 +32,8 @@ export type RuleContext = {
   values: RawValue[];
   /** just the ones classified `color` */
   colors: RawValue[];
+  /** Read-only dependencies, separate from the values this rule may judge. */
+  tokenContext?: TokenContext;
 };
 
 export type Rule = {

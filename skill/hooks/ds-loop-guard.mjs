@@ -5,8 +5,8 @@
  * Reads the Claude Code hook payload from stdin, and if the edited file is a
  * style file, runs `ds-loop audit` scoped to that one file. High-severity
  * findings are printed to stderr with exit code 2 so the agent sees them as
- * feedback. Anything below `high`, or a clean result, exits 0 silently — the
- * hook must be quiet on every ordinary save.
+ * feedback. Lower findings are filtered. Audit failures and new project coverage
+ * gaps are reported separately; an ordinary checked save exits 0 silently.
  *
  * It never blocks: a PostToolUse hook fires after the edit already landed.
  */
@@ -45,13 +45,33 @@ const res = spawnSync(
 );
 
 const out = (res.stdout || '').trim();
-if (!out) process.exit(0);
+
+function reportUnavailable(reason) {
+  process.stderr.write(
+    `ds-loop guard — this edit was not checked: ${reason}\nResolve the error, then run an unfiltered ds-loop audit before relying on the result.\n`,
+  );
+  process.exit(2);
+}
+
+if (res.error || res.signal) {
+  reportUnavailable(res.error?.message ?? `audit terminated by ${res.signal}`);
+}
+if (!out) reportUnavailable(res.stderr?.trim() || `audit returned no report (exit ${res.status})`);
 
 let report;
 try {
   report = JSON.parse(out);
 } catch {
-  process.exit(0);
+  reportUnavailable('audit returned invalid JSON');
+}
+
+if (
+  !report ||
+  !Array.isArray(report.findings) ||
+  !report.coverage ||
+  !['clean', 'issues', 'not-checked'].includes(report.verdict)
+) {
+  reportUnavailable('audit returned an incomplete report');
 }
 
 const findings = report.findings ?? [];
@@ -146,6 +166,6 @@ const lines = findings.map(
   (f) => `  • [${String(f.severity).toUpperCase()}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
 );
 process.stderr.write(
-  `ds-loop guard — the edit to ${filePath.split('/').pop()} introduced ${findings.length} design-system issue(s):\n\n${lines.join('\n\n')}\n${notes.length > 0 ? `\n${notes.join('\n\n')}\n` : ''}`,
+  `ds-loop guard — the edit to ${filePath.split('/').pop()} has ${findings.length} design-system finding(s):\n\n${lines.join('\n\n')}\n${notes.length > 0 ? `\n${notes.join('\n\n')}\n` : ''}`,
 );
 process.exit(2);

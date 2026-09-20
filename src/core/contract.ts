@@ -4,15 +4,15 @@ import { hashConfig } from '../config/schema.ts';
 import { classifyForm } from '../rules/color.ts';
 import { type Tier, classifyTier } from '../rules/tier.ts';
 import type { Coverage } from './coverage.ts';
+import { formatCoverage } from './coverage.ts';
 import type { RawValue } from './provenance.ts';
 
 /**
  * `DESIGN-SYSTEM.md` — the contract the rules are already arguing with.
  *
- * Two rules tell a reader to record a sanctioned deviation in this file, and
- * `context` reads it as an intent source, and nothing in the tool ever created
- * it. So the instruction pointed at a filename that did not exist, and the
- * deviation went unrecorded and got re-flagged every run.
+ * An optional starting document for teams without an existing decision home.
+ * `context` locates it as an intent source; it does not interpret the prose or
+ * apply exceptions from it. Rule configuration remains separate.
  *
  * What this writes is MEASURED, never inferred: the namespaces, tiers, storage
  * forms and counts the adapters actually saw, each one a fact with a number
@@ -108,11 +108,9 @@ export function renderContract(f: ContractFacts): string {
   L.push('');
   L.push('# Design system contract');
   L.push('');
-  L.push('Half measured, half unanswered. Everything under **Measured** is a count ds-loop took from this');
-  L.push(
-    'source. Everything marked TODO is a decision the tool cannot read off the code — answer it here and',
-  );
-  L.push('the rules stop guessing. `ds-loop context` reads this file back on every session.');
+  L.push('The measurements below describe the values the adapters read. TODO marks decisions still needed.');
+  L.push('`ds-loop context` can locate this file; an agent must read and apply its decisions.');
+  L.push('Editing this document does not configure rules or suppress findings.');
   L.push('');
 
   L.push('## Measured');
@@ -145,9 +143,8 @@ export function renderContract(f: ContractFacts): string {
         .join(', ')}${flat.length > 8 ? ', …' : ''}.`,
     );
     L.push('');
-    L.push('That is a measurement, not a defect. A flat set is a legitimate choice for a small');
-    L.push('system; it does mean the tier rules have nothing to read, so say below whether the');
-    L.push('flatness is the design.');
+    L.push('A flat name is not a defect. Configured patterns may still classify it; see the tier');
+    L.push('counts below. Record the naming contract before interpreting a tier finding.');
     L.push('');
   }
 
@@ -164,9 +161,8 @@ export function renderContract(f: ContractFacts): string {
     L.push(
       `\`unknown\` is not a verdict about those ${tiers.get('unknown')} tokens — it means the configured`,
     );
-    L.push('patterns did not recognise their names. Either the names are inconsistent, or');
-    L.push('`taxonomy.primitivePattern` / `semanticNamespaces` / `componentPattern` do not describe this');
-    L.push('system yet. Decide which, below.');
+    L.push('patterns did not recognise their names. Check the naming contract and configuration.');
+    L.push('A valid model may also fall outside these tier checks; do not rename it just to obtain a match.');
     L.push('');
   }
 
@@ -184,33 +180,49 @@ export function renderContract(f: ContractFacts): string {
 
   L.push('## Contract — TODO');
   L.push('');
-  L.push('Unanswered. ds-loop cannot read intent off code, and a generated sentence claiming a');
-  L.push('convention nobody stated would be worse than a blank.');
+  L.push('Resolve relevant questions from existing decisions or with the owner. Mark inapplicable');
+  L.push('questions as such; these prompts do not require a three-tier model or a new architecture.');
   L.push('');
-  L.push('- **Primitive tier** — how is a palette/scale token named here? TODO');
-  L.push('- **Semantic tier** — which namespaces are semantic, and what does each one mean? TODO');
-  L.push('- **Component tier** — do component-owned tokens exist, and how are they named? TODO');
+  L.push('- **Model and source** — what structure is adopted, and where is its source of truth? TODO');
+  L.push('- **Primitive tier** — if used, how are palette/scale tokens named? TODO');
+  L.push('- **Semantic tier** — if used, which names express roles and what do they mean? TODO');
+  L.push('- **Component tier** — if used, how are component-owned tokens named? TODO');
+  L.push('- **References** — which relationships are permitted by the adopted model? TODO');
   L.push(
-    '- **Tier depth** — does every namespace have all three tiers? Name the ones designed with two. TODO',
+    '- **Storage form** — which formats do the consumers require, and how are copies synchronized? TODO',
   );
-  L.push('- **Storage form** — which colour notation is canonical, and why? TODO');
-  L.push('- **Scales** — which spacing / type / radius scale is a token allowed to reference? TODO');
+  L.push('- **Scales** — which values are shared conventions, and where are local values intentional? TODO');
   L.push('');
-  L.push('When these are answered, put the matching patterns in your ds-loop config so the rules read');
-  L.push('this system instead of a default: `taxonomy.primitivePattern`, `taxonomy.semanticNamespaces`,');
-  L.push('`taxonomy.componentPattern`.');
+  L.push('Where the model fits the engine, configure its naming patterns: `taxonomy.primitivePattern`,');
+  L.push('`taxonomy.semanticNamespaces`, and `taxonomy.componentPattern`. Naming configuration does not');
+  L.push('change permitted tier relationships. Record unsupported checks separately from passing checks.');
   L.push('');
 
   L.push('## Sanctioned deviations');
   L.push('');
   if (f.config.ignore.length === 0) {
-    L.push('None recorded. A rule that is wrong about one token belongs here, as a config `ignore`');
-    L.push('entry with a `reason` — not as a widened threshold, which silences the whole class.');
+    L.push(
+      'None recorded in config. Check model applicability and configuration before adding an exception.',
+    );
+    L.push(
+      'A justified exception uses a config `ignore` entry with a reason and the intended file/value scope.',
+    );
+    L.push('An exception excludes inputs from a check; it does not prove the excluded values are correct.');
   } else {
     L.push(
       ...table(
-        f.config.ignore.map((e) => [`\`${e.rule}\``, `\`${e.value ?? '*'}\``, e.reason, e.createdAt ?? '—']),
-        ['rule', 'value', 'why it is not drift', 'recorded'],
+        f.config.ignore.map((e) => [
+          `\`${e.rule}\``,
+          `\`${e.value ?? '*'}\``,
+          e.files === undefined
+            ? 'all files'
+            : e.files.length === 0
+              ? 'no files'
+              : e.files.map((file) => `\`${file}\``).join(', '),
+          e.reason,
+          e.createdAt ?? '—',
+        ]),
+        ['rule', 'value', 'files', 'reason', 'recorded'],
       ),
     );
     L.push('');
@@ -221,21 +233,12 @@ export function renderContract(f: ContractFacts): string {
 
   L.push('## Not checked');
   L.push('');
-  const unread = Object.entries(f.coverage.unreadFormats);
-  if (unread.length > 0) {
-    L.push(
-      `Formats no adapter reads: ${unread.map(([ext, n]) => `${n}× \`${ext}\``).join(', ')}. Styling in`,
-    );
-    L.push('those files is outside every finding below, clean or not.');
-  } else {
-    L.push('Every format present in this tree was read by some adapter.');
-  }
+  // This command extracts values but runs no rules. Keep extraction limits while
+  // preventing formatCoverage's all-rules-complete summary from claiming a rule run.
+  L.push('```text');
+  L.push(...formatCoverage({ ...f.coverage, complete: false }));
+  L.push('```');
   L.push('');
-  if (f.coverage.unreadTokenFiles.length > 0) {
-    L.push(`Files whose name claims to hold tokens, in a format nothing reads:`);
-    for (const p of f.coverage.unreadTokenFiles.slice(0, 8)) L.push(`- \`${p}\``);
-    L.push('');
-  }
   L.push('Which *rules* could not judge this source needs a rule run: `ds-loop audit . --json`,');
   L.push('unfiltered. The guard hook filters at high severity and will not surface it.');
   L.push('');

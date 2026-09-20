@@ -219,7 +219,33 @@ test('parseNamed picks colour utilities off the framework palette, nothing else'
   assert.equal(parseNamed('bg-[#fff]', T), null);
 });
 
-test('stock-palette-utility fires only when a theme colour layer exists', () => {
+test('adapter discovery and extraction both retain palette opacity modifiers', () => {
+  inSource({ 'Card.tsx': '<div className="bg-black/50 dark:text-white/80" />' }, (source) => {
+    assert.ok(adaptersFor(source).some((adapter) => adapter.id === 'tailwind-jsx'));
+    const values = tailwindJsxAdapter.extract(source, DEFAULT_CONFIG);
+    assert.deepEqual(
+      values.map((value) => [value.raw, value.provenance.selector]),
+      [
+        ['black', null],
+        ['white', 'dark'],
+      ],
+    );
+  });
+});
+
+test('adapter selection respects configured palette families without a default-family trigger', () => {
+  inSource({ 'Card.tsx': '<div className="bg-brand-500" />' }, (source) => {
+    const config = {
+      ...DEFAULT_CONFIG,
+      taxonomy: { ...DEFAULT_CONFIG.taxonomy, stockPaletteFamilies: ['brand'] },
+    };
+    const adapters = adaptersFor(source, config);
+    assert.ok(adapters.some((adapter) => adapter.id === 'tailwind-jsx'));
+    assert.equal(adapters.flatMap((adapter) => adapter.extract(source, config))[0]?.raw, 'brand-500');
+  });
+});
+
+test('unscoped stock-palette check requires a read color declaration', () => {
   // The bug this rule exists for: a file ds-loop had just called clean rendered
   // light-on-light in dark mode, because bg-white / text-slate-900 are outside
   // the theme and every rule at the time only looked for literals.

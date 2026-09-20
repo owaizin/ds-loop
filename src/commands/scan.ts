@@ -14,7 +14,7 @@ import { resolveSource } from '../core/source.ts';
  */
 export function scan(fixtureDir: string, config: DsOpsConfig = DEFAULT_CONFIG): void {
   const { meta, source } = resolveSource(fixtureDir);
-  const adapters = adaptersFor(source);
+  const adapters = adaptersFor(source, config);
   if (adapters.length === 0) throw new Error(`no adapter recognises ${source.root}`);
 
   const values = adapters.flatMap((a) => a.extract(source, config));

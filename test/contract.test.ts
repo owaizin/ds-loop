@@ -94,3 +94,41 @@ test('nothing is written when no adapter reads the tree', () => {
   });
   assert.equal(exists, false);
 });
+
+test('a saved contract retains conversion and adapter limits alongside measured counts', () => {
+  const md = inTree({ 'tokens.css': ':root { --surface: lab(40% 0 0); --radius: 18px; }' }, (root) => {
+    context(root, loaded(), { writeContract: true });
+    return readFileSync(join(root, 'DESIGN-SYSTEM.md'), 'utf8');
+  });
+  assert.match(md, /1 colour value\(s\).*cannot convert/);
+  assert.ok(md.includes('lab(40% 0 0)'));
+  assert.match(md, /not rule bodies/);
+  assert.doesNotMatch(md, /tier rules have nothing to read/);
+  assert.doesNotMatch(md, /Every format present in this tree was read/);
+});
+
+test('a saved exception retains its file selector rather than becoming blanket permission', () => {
+  const md = inTree({ 'tokens.css': TOKENS }, (root) => {
+    context(
+      root,
+      loaded({
+        config: {
+          ...DEFAULT_CONFIG,
+          ignore: [
+            {
+              rule: 'color/semantic-holds-literal',
+              value: '--paper',
+              files: ['legacy/*'],
+              reason: 'Retain the old theme during migration.',
+            },
+            { rule: 'token/tier-leakage', value: '--radius', reason: 'Shared foundation is intentional.' },
+          ],
+        },
+      }),
+      { writeContract: true },
+    );
+    return readFileSync(join(root, 'DESIGN-SYSTEM.md'), 'utf8');
+  });
+  assert.match(md, /legacy\/\*/);
+  assert.match(md, /all files/);
+});

@@ -62,6 +62,37 @@ test('an exception matches on a literal value, and is scoped by file', () => {
   assert.equal(whole.values.length, 1);
 });
 
+test('an empty file selection suppresses nothing, while omitted files explicitly match all', () => {
+  const values = [value('--color-action-bg', '#245bdb', 'current/theme.css')];
+  const entry = { rule: 'color/semantic-holds-literal', reason };
+  assert.deepEqual(applyIgnores(entry.rule, values, [{ ...entry, files: [] }]), {
+    values,
+    suppressions: [],
+  });
+  assert.equal(applyIgnores(entry.rule, values, [entry]).values.length, 0);
+});
+
+test('malformed exception selectors fail loading rather than broadening or silently missing their scope', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ds-loop-ignore-scope-'));
+  const path = join(dir, 'ds-loop.config.json');
+  try {
+    for (const files of ['legacy/*', null, [7], [''], ['**/theme.css']]) {
+      writeFileSync(path, JSON.stringify({ ignore: [{ rule: '*', files, reason }] }));
+      assert.throws(() => loadConfig(undefined, dir), /config: ignore\[0\].*files/);
+    }
+    for (const value of [7, null, {}, '']) {
+      writeFileSync(path, JSON.stringify({ ignore: [{ rule: '*', value, reason }] }));
+      assert.throws(() => loadConfig(path), /config: ignore\[0\].*value/);
+    }
+    writeFileSync(path, JSON.stringify({ ignore: [null] }));
+    assert.throws(() => loadConfig(path), /config: ignore\[0\].*object/);
+    writeFileSync(path, JSON.stringify({ ignore: [{ rule: '*', files: [], reason }] }));
+    assert.deepEqual(loadConfig(path).config.ignore[0]?.files, []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('an exception without a reason fails the config load', () => {
   // The point of the feature: a false positive gets an argument, not a widened
   // threshold. A dropped entry would look like the exception was honoured, so

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
-import { filesInScope, listFiles } from '../core/files.ts';
+import { filesInScope } from '../core/files.ts';
 import { isLengthLiteral } from '../core/literals.ts';
 import type { RawValue, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
@@ -34,7 +34,9 @@ export const cssCustomPropsAdapter: Adapter = {
   reads: 'custom-property declarations (--token: value) — not rule bodies, not at-rules',
 
   detect(source: SourceRef): boolean {
-    return listFiles(source.root, EXTS).some((f) => /--[\w-]+\s*:/.test(readFileSync(f, 'utf8')));
+    return filesInScope(source.root, EXTS, source.only).some((f) =>
+      /--[\w-]+\s*:/.test(readFileSync(f, 'utf8')),
+    );
   },
 
   extract(source: SourceRef, config: DsOpsConfig): RawValue[] {

@@ -86,5 +86,5 @@ export function listFiles(root: string, exts: string[]): string[] {
 export function filesInScope(root: string, exts: string[], only?: string[]): string[] {
   if (!only) return listFiles(root, exts);
   const match = (f: string) => exts.includes(extname(f).toLowerCase());
-  return only.filter((f) => match(f) && existsSync(f));
+  return only.filter((f) => match(f) && existsSync(f) && statSync(f).isFile());
 }

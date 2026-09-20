@@ -15,7 +15,9 @@ const ID = 'tailwind-jsx';
 // 0.3.0: named colour utilities off the framework's own palette (bg-white,
 // text-slate-900) are extracted too, as `palette-utility`. They add values a
 // 0.2.0 run never emitted, so every ratio with a values-total denominator moves.
-const VERSION = '0.3.0';
+// 0.4.0: numeric opacity modifiers reach extraction; detection uses the loaded
+// taxonomy, so custom palette families no longer need a default-family trigger.
+const VERSION = '0.4.0';
 const EXTS = ['.jsx', '.tsx', '.js', '.ts', '.mjs'];
 
 /**
@@ -28,12 +30,9 @@ const EXTS = ['.jsx', '.tsx', '.js', '.ts', '.mjs'];
  * when it cannot find the right token, which makes this the adapter the "AI
  * slop" audit needs.
  *
- * A named COLOUR utility is the exception, and this adapter used to claim
- * otherwise. `bg-white` and `text-slate-900` are inside *Tailwind's* system and
- * outside the project's: they resolve to one value in every mode, so a card
- * written that way renders light-on-light in dark mode. Measured: a file this
- * tool had just called clean, rendering visibly broken. Those come out as
- * `palette-utility` for `token/stock-palette-utility` to judge.
+ * Named palette utilities such as `bg-white` and `text-slate-900/50` become
+ * `palette-utility` candidates. Extraction does not resolve the framework theme,
+ * determine policy, or prove rendering defects. The rule and agent interpret them.
  *
  * Reads STRING LITERALS rather than JSX attributes, so `className="..."`,
  * `cn("...", "...")`, `clsx`, `cva` and tagged templates all work without a
@@ -53,12 +52,10 @@ export const tailwindJsxAdapter: Adapter = {
   reads:
     'Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS',
 
-  detect(source: SourceRef): boolean {
+  detect(source: SourceRef, config: DsOpsConfig = DEFAULT_CONFIG): boolean {
     return filesInScope(source.root, EXTS, source.only).some((f) =>
-      // detection is not a judgment, so it reads the default taxonomy rather
-      // than the loaded one — `detect` has no config by contract.
       classTokens(readFileSync(f, 'utf8')).some(
-        (t) => parseArbitrary(t.token) !== null || parseNamed(t.token, DEFAULT_CONFIG.taxonomy) !== null,
+        (t) => parseArbitrary(t.token) !== null || parseNamed(t.token, config.taxonomy) !== null,
       ),
     );
   },
@@ -136,7 +133,9 @@ function classTokens(text: string): { token: string; line: number }[] {
 
 // a plain utility class: optional variants, a utility name, no brackets. Loose on
 // purpose — parseNamed does the real filtering against the configured lists.
-const NAMED_UTILITY = /^[a-z][a-z0-9:-]*$/;
+// ponytail: numeric opacity modifiers only; arbitrary variants and bracketed
+// opacity expressions need a Tailwind-aware parser rather than this lexical filter.
+const NAMED_UTILITY = /^[a-z][a-z0-9:-]*(?:\/[0-9]+(?:\.[0-9]+)?)?$/;
 
 /**
  * `dark:bg-slate-900/50` -> variants [dark], util `bg`, value `slate-900`, when

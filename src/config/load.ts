@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Severity } from '../rules/types.ts';
 import { DEFAULT_CONFIG } from './defaults.ts';
-import type { DsOpsConfig, IgnoreEntry } from './schema.ts';
+import type { DsOpsConfig, IgnoreEntry, TokenContextMapping } from './schema.ts';
 import { parseYamlLite } from './yaml-lite.ts';
 
 /**
@@ -77,6 +77,7 @@ function mergeConfig(user: Record<string, unknown>): DsOpsConfig {
     taxonomy: { ...DEFAULT_CONFIG.taxonomy, ...u.taxonomy },
     sweep: { ...DEFAULT_CONFIG.sweep, ...u.sweep },
     ignore: readIgnores(u.ignore),
+    ...(u.tokenContexts !== undefined ? { tokenContexts: readTokenContexts(u.tokenContexts) } : {}),
   };
 }
 
@@ -90,6 +91,9 @@ function readIgnores(raw: unknown): IgnoreEntry[] {
   if (raw === undefined) return [];
   if (!Array.isArray(raw)) throw new Error('config: `ignore` must be a list of exception entries');
   return raw.map((e, i) => {
+    if (e === null || typeof e !== 'object' || Array.isArray(e)) {
+      throw new Error(`config: ignore[${i}] must be an exception object`);
+    }
     const entry = e as Partial<IgnoreEntry>;
     if (typeof entry.rule !== 'string' || entry.rule === '') {
       throw new Error(`config: ignore[${i}] needs a \`rule\` — a rule id, or \`*\` for every rule`);
@@ -99,10 +103,22 @@ function readIgnores(raw: unknown): IgnoreEntry[] {
         `config: ignore[${i}] (${entry.rule}) needs a \`reason\` — say why this is not a finding, in your own words. An exception without an argument is a threshold in disguise.`,
       );
     }
+    if (entry.value !== undefined && (typeof entry.value !== 'string' || entry.value.trim() === '')) {
+      throw new Error(`config: ignore[${i}].value must be a nonempty token name, literal, or \`*\``);
+    }
+    if (
+      entry.files !== undefined &&
+      (!Array.isArray(entry.files) ||
+        entry.files.some(
+          (file) => typeof file !== 'string' || file.trim() === '' || file.replace(/\*$/, '').includes('*'),
+        ))
+    ) {
+      throw new Error(`config: ignore[${i}].files must be a list of paths or trailing-\`*\` prefixes`);
+    }
     return {
       rule: entry.rule,
       ...(entry.value !== undefined ? { value: entry.value } : {}),
-      ...(Array.isArray(entry.files) ? { files: entry.files } : {}),
+      ...(entry.files !== undefined ? { files: entry.files } : {}),
       reason: entry.reason,
       ...(entry.createdAt !== undefined ? { createdAt: entry.createdAt } : {}),
     };
@@ -120,4 +136,36 @@ function severityOverridesFrom(parsed: Record<string, unknown>): Record<string, 
     }
   }
   return out;
+}
+
+function readTokenContexts(raw: unknown): TokenContextMapping[] {
+  if (!Array.isArray(raw)) throw new Error('config: tokenContexts must be a list');
+  const paths = (value: unknown, label: string, allowPrefix: boolean): string[] => {
+    if (!Array.isArray(value) || value.length === 0)
+      throw new Error(`config: ${label} needs a nonempty path list`);
+    return value.map((path) => {
+      if (
+        typeof path !== 'string' ||
+        path.length === 0 ||
+        path.startsWith('/') ||
+        path.includes('\\') ||
+        path.includes(':') ||
+        path.split('/').some((part) => part === '..' || part === '.') ||
+        (allowPrefix ? path.replace(/\*$/, '').includes('*') : path.includes('*'))
+      )
+        throw new Error(
+          `config: ${label} needs relative paths${allowPrefix ? ' or trailing-* prefixes' : ''}`,
+        );
+      return path;
+    });
+  };
+  return raw.map((entry, i) => {
+    if (entry === null || typeof entry !== 'object')
+      throw new Error(`config: tokenContexts[${i}] needs files and tokens`);
+    const m = entry as Record<string, unknown>;
+    return {
+      files: paths(m.files, `tokenContexts[${i}].files`, true),
+      tokens: paths(m.tokens, `tokenContexts[${i}].tokens`, false),
+    };
+  });
 }

@@ -77,6 +77,7 @@ export function buildCoverage(
   adapters: Adapter[],
   values: RawValue[],
   firedRuleIds: string[],
+  unjudgedRuleIds: string[] = [],
 ): Coverage {
   const readable = new Set(adapters.flatMap((a) => a.extensions));
   const present = surveyTree(root);
@@ -101,7 +102,9 @@ export function buildCoverage(
 
   // a rule whose own finding says it could not judge — the tier rules do this
   // explicitly rather than returning nothing and looking like a pass
-  const couldNotJudge = firedRuleIds.filter((id) => id.endsWith('-undetectable'));
+  const couldNotJudge = [
+    ...new Set([...firedRuleIds.filter((id) => id.endsWith('-undetectable')), ...unjudgedRuleIds]),
+  ];
 
   return {
     unreadFormats,
@@ -163,7 +166,9 @@ export function formatCoverage(c: Coverage): string[] {
   }
 
   if (c.couldNotJudge.length > 0) {
-    lines.push(`    could not judge: ${c.couldNotJudge.join(', ')} — see the finding for why`);
+    lines.push(
+      `    could not judge: ${c.couldNotJudge.join(', ')} — run an unfiltered audit of the same scope for details`,
+    );
   }
 
   if (c.partialReads.length === 0) {

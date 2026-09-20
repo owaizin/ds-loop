@@ -43,7 +43,7 @@ export type SweepResult = {
 export function sweep(fixtureDir: string, opts: { outDir?: string; config?: DsOpsConfig } = {}): SweepResult {
   const config = opts.config ?? DEFAULT_CONFIG;
   const { meta, source } = resolveSource(fixtureDir);
-  const adapters = adaptersFor(source);
+  const adapters = adaptersFor(source, config);
   if (adapters.length === 0) throw new Error(`no adapter recognises ${source.root}`);
 
   // declared palette entries only — a hardcoded colour in a component is not a
