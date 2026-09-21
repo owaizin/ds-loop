@@ -5,10 +5,10 @@ Use Node 22.6 or later. Install the complete package in the project you want to 
 ## Install from npm
 
 ```sh
-npm install --save-dev ds-loop@0.2.1
+npm install --save-dev ds-loop@0.2.0
 ```
 
-To test local changes, use [source installation](#install-from-source). Both paths install the CLI and companion skill.
+npm currently serves 0.2.0. This checkout contains the expanded setup procedure for 0.2.1; use [source installation](#install-from-source) to try it before publication. Both paths install the CLI and companion skill. A local tarball path is specific to your machine; switch to the matching registry release before asking teammates to install it.
 
 ## Start with your agent
 

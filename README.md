@@ -1,11 +1,11 @@
 # Design System Loop
 
-As your product grows, teams build different versions of the same controls, tables, and forms. Updating them means finding every version and deciding which one to keep. Design System Loop helps designers and engineers establish shared components and tokens, fix inconsistencies, and maintain the system as new features are built.
+Your next feature should build on the components you already have. When teams keep rebuilding forms, controls and tables, Design System Loop helps you establish a shared foundation, resolve competing implementations and make the system easier to use and maintain.
 
 Install in your project with Node 22.6 or later:
 
 ```sh
-npm install --save-dev ds-loop@0.2.1
+npm install --save-dev ds-loop@0.2.0
 ```
 
 Then ask your coding agent to load the skill and describe the problem you want solved:
@@ -13,22 +13,44 @@ Then ask your coding agent to load the skill and describe the problem you want s
 > Read node_modules/ds-loop/skill/SKILL.md. Our developers keep rebuilding similar components. Investigate a recent example, explain the cause, and recommend a first improvement with a clear finish line. Start read-only.
 
 Replace that example with your own task. Installing the package provides the engine
-and skill files; loading the skill starts the guided work. To test local package
-changes, use [source installation](docs/guide/install.md#install-from-source).
+and skill files; loading the skill starts the guided work. The agent reads the
+repository, asks about unknowns that affect the plan, and carries out the work you
+authorize. You do not need to choose its internal commands.
+
+**Release note:** npm currently provides 0.2.0. This checkout contains the expanded
+setup procedure for 0.2.1, described below. Until that version is published, use
+[source installation](docs/guide/install.md#install-from-source) to try it.
 
 [Installation guide](docs/guide/install.md) · [Design-system workflows](docs/guide/workflow.md) · [CLI reference](docs/guide/reference.md)
 
 ## Work on your design system
 
-Start with one area of your product, such as settings or billing. Compare its screens, read the existing components and conventions, and agree on what should be shared before changing it.
+Describe the outcome you need and the product areas it should cover. A precise repair needs a short plan; a first system needs discovery and an agreed delivery scope.
 
-- **Starting a system:** identify repeated patterns and propose shared tokens and components. Try them in a real screen before adopting them elsewhere.
+- **Starting a system:** choose a suitable base, build shared foundations and components, and adopt them in the agreed product workflows. Deliver usage and maintenance guidance alongside the code. A first screen is a checkpoint unless you asked only for a pilot.
 - **Improving a partial system:** compare competing implementations with the team's conventions. Reuse the agreed pattern where it fits, and explain differences that need to stay.
 - **Maintaining a system:** review new components and changes against existing conventions. Check affected screens and update the documentation when the team makes a new decision.
 
 The package includes an **agent skill** that guides this work and a **command-line engine** that checks supported token and styling code. Your team chooses the design direction and reviews the result. The engine reports source locations and coverage limits; it runs locally without a model, API key, network access, or runtime dependencies.
 
 The skill's broader reviews require an agent to inspect the code and rendered UI. They are not automated engine checks. See the [workflow guide](docs/guide/workflow.md) for examples and expected results.
+
+## What a setup should leave behind
+
+The 0.2.1 setup procedure asks your agent to deliver:
+
+- Editable foundations for type, color, spacing and relevant interaction states.
+- Reusable controls and product patterns connected to real workflows.
+- A reference or style guide using the same components as the product.
+- Instructions for using, customizing, extending and checking the system.
+
+It should reuse a suitable existing library. Design System Loop does not ship a
+universal component kit or require shadcn/ui or Storybook. For deeper Storybook
+work, the agent can hand off to an available specialist; that skill is not bundled.
+
+Completion includes checking the affected product and demonstrating how a later
+contributor can find the guidance and make a change. The handoff distinguishes
+what was delivered, what was verified and what remains untested.
 
 ## Use it in your project
 
@@ -68,6 +90,13 @@ The engine checks for specific ways code can bypass tokens. In this synthetic ex
 Before replacing the color, check that the token serves the same purpose in every affected theme. A matching value alone does not establish that.
 
 [View more audit reports](docs/guide/output.md) or [follow a theme fix](docs/guide/example.md) from the original code through browser checks and a documented decision. The [State of AI in Design Systems survey](https://github.com/kaelig/state-of-ai-in-design-systems) provides further examples of how teams guide agents to use their systems.
+
+## Cost and code access
+
+The package and skill are MIT licensed. Your coding agent’s usage costs and data
+handling are separate. The engine runs locally, but the agent may send repository
+context to its provider according to your host’s settings. There is no automatic
+background maintenance.
 
 ## Current limits
 
