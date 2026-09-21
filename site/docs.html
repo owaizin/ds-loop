@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System Loop | Workflow guide</title>
+<meta name="description" content="Prompts and review steps for starting a design system, resolving competing UI patterns, and maintaining conventions.">
+<meta name="theme-color" content="#080512">
+<meta property="og:title" content="Design System Loop | Workflow guide">
+<meta property="og:description" content="Prompts and review steps for starting a design system, resolving competing UI patterns, and maintaining conventions.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/ds-circuit.svg" type="image/svg+xml">
+<link rel="preload" href="assets/manrope.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme.css">
+<script src="workflows.js" defer>
+</script>
+<script src="app.js" defer>
+</script>
+</head>
+<body class="guide-page">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header wrap">
+<a class="brand" href="index.html" aria-label="Design System Loop home"><img class="brand-emblem" src="assets/ds-circuit.svg" width="42" height="42" alt="">Design System Loop</a>
+<nav class="nav" aria-label="Main">
+<a href="docs.html" aria-current="page">Guide</a>
+<a href="system-example.html">SaaS example</a>
+<a class="github-link" href="https://github.com/owaizin/ds-loop">GitHub</a>
+<a class="nav-start" href="setup.html">Get started</a>
+</nav>
+</header>
+<main id="main" class="wrap docs-layout">
+<aside class="docs-nav" aria-label="Page sections">
+<div class="nav-group">
+<p>On this page</p>
+<a href="#start">Start a design system</a>
+<a href="#improve">Improve a partial system</a>
+<a href="#maintain">Maintain an existing system</a>
+<a href="#loops">Explore the loops</a>
+<a href="#workflow">Working with your agent</a>
+<a href="#engagement">Progress and handoff</a>
+<a href="setup.html">Get started</a>
+<a href="#skill">Load the skill</a>
+<a href="reference.html">Technical reference ↗</a>
+</div>
+</aside>
+<article>
+<div class="doc-title"><div class="guide-title-copy">
+<h1>Build and maintain<br>your design system</h1>
+<p>Describe the outcome your product needs. Your agent investigates, recommends a scope, and delivers the work you authorize. These examples cover a first system, an existing gap, and a new contribution.</p></div>
+<svg class="guide-blueprint" viewBox="0 0 320 250" fill="none" aria-hidden="true"><defs><pattern id="guide-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" stroke="#393047" stroke-width=".5"/></pattern></defs><rect width="320" height="250" fill="url(#guide-grid)"/><g stroke="#635578"><path d="M20 35h280M20 215h280M40 15v220m240-220v220"/><rect x="40" y="55" width="240" height="140" rx="2" fill="#100d1a"/><path d="M40 85h240M95 85v110"/></g><g stroke="#a78bc8"><rect x="114" y="106" width="146" height="16" rx="2"/><rect x="114" y="137" width="63" height="38" rx="2"/><rect x="193" y="137" width="67" height="38" rx="2"/><path d="M53 105h28m-28 16h19m-19 16h25M55 69h5m8 0h5m8 0h5"/></g><g fill="#100d1a" stroke="#d1bcff"><rect x="37" y="52" width="6" height="6"/><rect x="277" y="52" width="6" height="6"/><rect x="37" y="192" width="6" height="6"/><rect x="277" y="192" width="6" height="6"/></g><path d="M137 207v16m-8-8h16M270 26h16m-8-8v16" stroke="#a78bc8"/></svg>
+</div>
+<aside class="note"><p>This guide includes the expanded setup procedure in the <strong>0.2.1 source</strong>. npm currently provides 0.2.0. <a href="setup.html#source">Use source installation</a> to try the new procedure before publication. Installing either version does not activate your agent; ask it to read the skill.</p></aside>
+<section class="doc-section" id="start" aria-labelledby="start-title">
+<h2 id="start-title">Start a design system</h2>
+<p>Use this when your product needs a shared foundation. Agree which workflows it should serve, then build and adopt the system across that scope. If the product has no code yet, start from its brief and a representative use case.</p>
+<p>
+<strong>Bring:</strong> related screens and flows, product constraints, and any existing visual direction.</p>
+<p>
+<strong>Your agent does:</strong> inspect product needs, preserve suitable existing work, and choose a compatible foundation. Build the shared styles, controls, and compositions the agreed workflows need.</p>
+<p>
+<strong>You receive:</strong> editable foundations and components used in the product, a reference built from the same source, and instructions for use, customization, contributions, and checks.</p>
+<p>
+<strong>Review:</strong> whether the agreed workflows work, a shared style change reaches its consumers, and another contributor can find the guidance and extend a pattern. A first screen is a checkpoint unless the request was only for a pilot.</p>
+<div class="code-head">
+<span>Prompt · edit the paths to match your project</span>
+<button class="copy-button" type="button" data-copy="start-prompt" data-copy-kind="Prompt" hidden>Copy prompt</button>
+</div>
+<pre class="prompt">
+<code id="start-prompt">Read node_modules/ds-loop/skill/SKILL.md. Set up a design system for this product so our developers can keep building it. Inspect our product notes, existing components, and current workflows. Recommend the scope, then implement the agreed work. Preserve working behavior and reuse a suitable existing foundation. Deliver editable foundations, components and product patterns, a working reference, and guidance for using, customizing, and extending the result. Verify the agreed workflows and state what remains untested.</code>
+</pre>
+<div class="copy-status" id="start-prompt-status" role="status" aria-live="polite">
+</div>
+</section>
+<section class="doc-section" id="improve" aria-labelledby="improve-title">
+<h2 id="improve-title">Improve a partial system</h2>
+<p>Use this when teams or features have accumulated competing versions of the same patterns. Compare connected areas, identify the intended conventions, and improve their shared foundation without erasing useful differences.</p>
+<p>
+<strong>Bring:</strong> the affected product areas, shared components, known differences, and what your team expects.</p>
+<p>
+<strong>Your agent does:</strong> trace existing patterns and their consumers, compare behavior, and make an authorized repair or explain why the difference should stay.</p>
+<p>
+<strong>You receive:</strong> a checked change or a documented exception, with the reason and affected files.</p>
+<p>
+<strong>Review:</strong> the intended improvement and any behavior that must stay unchanged. A shared-token change may affect other components.</p>
+<div class="code-head">
+<span>Prompt · edit the paths to match your project</span>
+<button class="copy-button" type="button" data-copy="improve-prompt" data-copy-kind="Prompt" hidden>Copy prompt</button>
+</div>
+<pre class="prompt">
+<code id="improve-prompt">Read node_modules/ds-loop/skill/SKILL.md. Compare the tables, filters, forms, and status patterns in src/projects/ and src/requests/ against our shared components. Check their states, themes, and existing decisions. Resolve unintended drift within these two areas using the established conventions, then verify the affected screens. If the difference serves a real need, keep it and record why. Do not change the shared scale or other screens without resolving that wider scope. Link the before/after evidence and the saved decision.</code>
+</pre>
+<div class="copy-status" id="improve-prompt-status" role="status" aria-live="polite">
+</div>
+</section>
+<section class="doc-section" id="maintain" aria-labelledby="maintain-title">
+<h2 id="maintain-title">Maintain an existing system</h2>
+<p>Use this to keep new features and contributions aligned with a system your team already trusts. Review shared-component changes and their consumers, and keep conventions and exceptions current.</p>
+<p>
+<strong>Bring:</strong> upcoming changes, the affected component contracts and consumers, and previous decisions.</p>
+<p>
+<strong>Your agent does:</strong> review the change against those commitments, run applicable code and behavior checks, and separate regressions from existing issues.</p>
+<p>
+<strong>You receive:</strong> a review with source locations, results, and any decision needed before the change is ready.</p>
+<p>
+<strong>Review:</strong> whether the change honors the system across its affected states and themes. Add <a href="reference.html#automation">edit feedback or CI checks</a> after choosing the policy you want.</p>
+<div class="code-head">
+<span>Prompt · edit the paths to match your project</span>
+<button class="copy-button" type="button" data-copy="maintain-prompt" data-copy-kind="Prompt" hidden>Copy prompt</button>
+</div>
+<pre class="prompt">
+<code id="maintain-prompt">Read node_modules/ds-loop/skill/SKILL.md. Review my current diff against this project&#x27;s design-system conventions and previous decisions. Trace the changed components across their affected states and themes. Report regressions separately from pre-existing issues, with source locations and checks that could not run. Make no code changes in this review. Link the decisions future contributors need to follow.</code>
+</pre>
+<div class="copy-status" id="maintain-prompt-status" role="status" aria-live="polite">
+</div>
+</section>
+<section class="doc-section" id="loops" aria-labelledby="loops-title">
+<h2 id="loops-title">Explore the connected loops</h2>
+<p>Start with the product problem and existing commitments. Your agent uses the adoption loop to plan the work and the audit loop for code measurements. Enable the guard loop when you want feedback during edits.</p>
+<p>Each loop below shows who does the work and what to review. The adoption loop includes steps for starting, improving, or maintaining a system.</p>
+<details class="loop-detail" id="adoption-loop" open>
+<summary><h3>Establish & improve<span class="loop-status">Agent-guided · supervised alpha</span></h3></summary>
+<p>Choose improvements based on the product’s needs and existing conventions. Scanner coverage tells you which code was checked; it cannot tell you how mature your design system is.</p>
+<ol class="loop-steps">
+<li class="loop-step">
+<span class="loop-owner owner-engine">Engine</span>
+<strong>Gather measurements</strong>
+<p>Run <code>context .</code> and an unfiltered <code>audit . --json</code>. Keep the report’s coverage with its findings.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Understand coverage and commitments</strong>
+<p>Read relevant code, component contracts, and previous decisions. If the scanner cannot read a source or classify its naming, inspect it another way or state the limitation.</p>
+</li>
+<li class="loop-step scenario-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Choose the improvement</strong>
+<p>Your starting point changes this step. An established system can still need a new convention in one area.</p>
+<div class="loop-choices" role="group" aria-label="Choose a starting point" hidden>
+<button type="button" data-loop-choice="start" aria-controls="loop-start" aria-pressed="false">Start</button>
+<button type="button" data-loop-choice="improve" aria-controls="loop-improve" aria-pressed="false">Improve</button>
+<button type="button" data-loop-choice="maintain" aria-controls="loop-maintain" aria-pressed="false">Maintain</button>
+</div>
+<div class="loop-scenario" id="loop-start" data-loop-scene="start">
+<h4>Build and adopt the foundation</h4>
+<p>Choose a suitable implementation base. Build shared foundations, components, and product patterns, then adopt them within the agreed scope.</p>
+<p>
+<strong>You receive:</strong> Editable source serving the agreed workflows, a working reference, and usage and maintenance guidance. The expanded procedure is in 0.2.1 source.</p>
+<a href="#start">Use the start prompt</a>
+</div>
+<div class="loop-scenario" id="loop-improve" data-loop-scene="improve">
+<h4>Apply an existing convention</h4>
+<p>Trace the inconsistent UI to its intended pattern. Repair unintended drift, or preserve a difference that serves a real need.</p>
+<p>
+<strong>You receive:</strong> A verified change or a documented exception, with before/after evidence.</p>
+<a href="#improve">Use the improve prompt</a>
+</div>
+<div class="loop-scenario" id="loop-maintain" data-loop-scene="maintain">
+<h4>Review against existing decisions</h4>
+<p>Check new work against the component contracts and intentional exceptions already in use. Separate regressions from existing issues.</p>
+<p>
+<strong>You receive:</strong> A review with source locations, check results, and unresolved decisions.</p>
+<a href="#maintain">Use the maintain prompt</a>
+</div>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Verify the real flow</strong>
+<p>Use the audit loop below for code checks and inspect affected UI, behavior, and accessibility with suitable tools. Separate pre-existing defects from regressions.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Save and reuse the decision</strong>
+<p>Record the choice, evidence, limits, and when to revisit it. Link it from the project’s component documentation or contributor instructions. During an adoption pilot, check whether a fresh session can find and apply the decision from the normal repository entry point, without being given its path. A same-session reread does not establish retrieval.</p>
+</li>
+</ol>
+<p class="loop-return">
+<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+<path d="M20 18H8a5 5 0 0 1 0-10h9m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
+</svg>
+<span>Review these decisions when the same patterns change.</span>
+</p>
+</details>
+<details class="loop-detail" id="audit-loop" >
+<summary><h3>Audit a change<span class="loop-status">Engine + agent review</span></h3></summary>
+<p>Use this loop within adoption or maintenance whenever a code change needs investigation and verification.</p>
+<ol class="loop-steps">
+<li class="loop-step">
+<span class="loop-owner owner-engine">Engine</span>
+<strong>Orient and measure</strong>
+<p>Use <code>context</code> for configuration and extraction scope; it runs no rules. Run an unfiltered <code>audit</code> for findings and checks that could not judge.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Interpret the result</strong>
+<p>Check the project’s intended behavior and affected consumers. A scanner finding is a candidate for investigation, not permission to change code.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Change or preserve</strong>
+<p>Make the authorized change, or explain why the existing behavior should stay. <code>fix</code> previews supported <code>var()</code> fallback insertions; it is not a general migration tool.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-engine">Engine</span>
+<strong>Rerun the unfiltered audit</strong>
+<p>Compare findings and coverage under the same configuration. Changing the configuration changes the measurement.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Review the experience</strong>
+<p>Check the affected states, themes, and behavior. Revise if evidence shows a problem; remaining findings may represent an intentional exception or a checker limitation.</p>
+</li>
+</ol>
+<p class="loop-return">
+<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+<path d="M20 18H8a5 5 0 0 1 0-10h9m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
+</svg>
+<span>Return to the change only when the evidence calls for it.</span>
+</p>
+</details>
+<details class="loop-detail" id="guard-loop" >
+<summary><h3>Guard an edit<span class="loop-status">Optional · Claude Code</span></h3></summary>
+<p>This smaller loop runs during implementation. It supports the audit workflow; run an unfiltered audit at setup and before completion.</p>
+<ol class="loop-steps">
+<li class="loop-step">
+<span class="loop-owner owner-engine">Engine</span>
+<strong>Install edit feedback</strong>
+<p>Run <code>ds-loop guard on</code> in the target project. This installs a Claude Code PostToolUse hook.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Make a supported edit</strong>
+<p>The edit has already landed when the hook runs. It cannot prevent or undo the change.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-engine">Engine</span>
+<strong>Audit the edited file</strong>
+<p>Run a file-scoped audit at high severity. Also compare the project’s unread formats and unread token files with the previous observation.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-engine">Engine</span>
+<strong>Return feedback when needed</strong>
+<p>Report high-severity findings. Announce an incomplete project extraction state on first observation or when it changes; ordinary saves remain quiet. Lower-severity judgment limits require an unfiltered audit.</p>
+</li>
+<li class="loop-step">
+<span class="loop-owner owner-team">Agent + team</span>
+<strong>Interpret and revise</strong>
+<p>Review the result against the intended change and project conventions. If a further edit is needed, the hook checks again. CI gating is a separate policy.</p>
+</li>
+</ol>
+<p class="loop-return">
+<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+<path d="M20 18H8a5 5 0 0 1 0-10h9m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
+</svg>
+<span>The next supported edit starts this loop again.</span>
+</p>
+</details>
+<p class="loop-conclusion">
+Keep the decisions in your project’s documentation. Design System Loop has no central knowledge service; your team owns the records and the review and release process.</p>
+<p>
+<a href="example.html">See the audit and saved decision for a theme repair</a>.</p>
+</section>
+<section class="doc-section" id="workflow" aria-labelledby="workflow-title">
+<h2 id="workflow-title">How the work comes back to you</h2>
+<p>Give your agent a concrete outcome and the scope it may change. It reads the project’s conventions, runs context and an unfiltered audit, and explains gaps that affect the review. Missing documentation does not mean your team has no conventions.</p>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>You provide</th>
+<th>Your agent returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A screen, component, or proposed change</td>
+<td>The relevant code, existing patterns, and a baseline of current behavior</td>
+</tr>
+<tr>
+<td>The behavior you want and what must stay the same</td>
+<td>A reasoned choice: establish a convention, change the code, or preserve a difference</td>
+</tr>
+<tr>
+<td>The files it may edit and the team’s review requirements</td>
+<td>Changes within that scope, actual checks, and any unanswered questions</td>
+</tr>
+<tr>
+<td>Where your team keeps decisions, if you have a place</td>
+<td>A linked record of the choice, evidence, and when to reconsider it</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>If you ask for guidance, the agent starts by understanding the problem and existing commitments. The number or severity of scanner findings does not choose the engagement for you.</p>
+<p>The agent can carry out work you have already authorized. It asks when missing product intent or a wider change needs your decision. A scanner finding alone is not a reason to change the product.</p>
+<h3>Review the result</h3>
+<p>Check the behavior you asked for and the behavior that had to stay intact. For a visible change, compare the before and after in the browser. Read any remaining findings and coverage gaps. A lower finding count by itself does not establish a better product.</p>
+<p>The handoff should link to the changed files, checks, and saved decision. Use your existing issue, component documentation, or decision directory; a new registry is not required.</p>
+<p>
+<a href="example.html">See a complete handoff in the worked example</a>.</p>
+</section>
+<section class="doc-section" id="engagement" aria-labelledby="engagement-title">
+<h2 id="engagement-title">Progress and handoff</h2>
+<p>The skill keeps the goal, evidence, and next action visible in the conversation. These are illustrative agent-authored notes, not CLI output or required templates. A small change can use a sentence; longer work needs an update when the scope, evidence, or next action changes.</p>
+<details open><summary>While investigating</summary>
+<pre><code>Goal    Make the shared form usable in account settings
+Scope   Account settings and its usage guide
+[done]  Identify the consumer
+[now]   Check the shared component’s behavior
+[next]  Recommend the first change
+Finish  A verified consumer and a working discovery path</code></pre></details>
+<details><summary>When a decision changes the work</summary>
+<pre><code>Recommend  Repair the usage guide first
+Evidence   Its import points to a removed export
+Uncertain  Whether the component fits the consumer
+Next       Check compatibility before migrating</code></pre></details>
+<details><summary>At handoff</summary>
+<pre><code>Result         Usage guide repaired; migration deferred
+[checked]      Documented import resolves
+[not checked]  Consumer behavior in the browser
+Continue       Verify the consumer before migration
+Record         Link to the team’s existing decision</code></pre></details>
+<p>Implementation should prove a representative consumer, with working import and usage guidance. A token catalog or an isolated story does not prove adoption in the product. Keep failures and unrun checks visible, and link lasting decisions from the team’s existing documentation.</p>
+<p>After a pilot, use its evidence to decide whether to expand to named consumers, adjust the approach, preserve the current implementation, or wait for a dependency. An ordinary handoff does not schedule future maintenance.</p>
+</section>
+<section class="doc-section" id="install" aria-labelledby="install-title">
+<h2 id="install-title">Get started</h2>
+<p>Install the published npm package, inspect your project, and load the companion skill in your agent. The setup guide includes the commands and a first prompt to adapt to your product.</p>
+<a class="button" href="setup.html">Get started</a>
+</section>
+<section class="doc-section" id="skill" aria-labelledby="skill-title">
+<h2 id="skill-title">Load the skill</h2>
+<p>In your project, ask your agent to read <code>node_modules/ds-loop/skill/SKILL.md</code>. Keep the whole package installed: its launcher needs the adjacent <code>bin/</code> and <code>dist/</code> directories.</p>
+<p><a href="setup.html#task">Copy the review prompt</a>, or use one of the prompts above. The skill guides the work; its playbooks are agent instructions, not additional CLI commands.</p>
+</section>
+</article>
+</main>
+<footer class="site-footer wrap">
+<span>Design System Loop · Shared foundations and components</span>
+<div class="footer-links">
+<a href="reference.html">Technical reference</a>
+<a href="https://github.com/owaizin/ds-loop">Source on GitHub</a>
+<a href="https://github.com/owaizin/ds-loop/blob/main/LICENSE">MIT license</a>
+</div>
+</footer>
+</body>
+</html>

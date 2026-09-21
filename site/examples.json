@@ -1,0 +1,38 @@
+[
+  {
+    "id": "finding",
+    "engineVersion": "0.2.1",
+    "files": {
+      "tokens.css": ":root {\n  --palette-blue-500: #1da1f2;\n  --brand: var(--palette-blue-500, #1da1f2);\n}\n",
+      "Card.tsx": "export const Card = () => (\n  <div className=\"bg-[#1da1f2] p-[13px]\">\n    <span className=\"text-[14px]\" />\n  </div>\n);\n"
+    },
+    "output": "  [HIGH] token/raw-value-in-markup\n    3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct, 1 already declared as a token)\n    where: bg-[#1da1f2] at Card.tsx:2; p-[13px] at Card.tsx:2; text-[14px] at Card.tsx:3\n    risk:  The value is invisible to every theme, rebrand and audit that reads the token files — a rebrand ships and these sites keep the old colour.\n    fix:   #1da1f2 is already --palette-blue-500. Swap those first. Replace each with the scale step or token that covers it — a utility that names the scale (bg-surface, p-4) or var(--token) via an arbitrary value. If no token matches the value, add one to the system first; a bracket is the system being bypassed, not extended."
+  },
+  {
+    "id": "judgment",
+    "engineVersion": "0.2.1",
+    "files": {
+      "tokens.css": ":root {\n  --ocean: #1da1f2;\n  --link: var(--ocean, #1da1f2);\n}\n"
+    },
+    "output": "  [LOW] token/tier-model-undetectable\n    only 0 of 1 referencing token(s) match a tier pattern (0 < floor 0.5) — tier checks could not judge this source\n    where: --link\n    risk:  A clean `token/tier-leakage` result in this source means nothing was checked, not that nothing is wrong — the strongest silent-pass this tool can produce.\n    fix:   Set taxonomy.primitivePattern, semanticNamespaces and componentPattern to this source's naming convention, then re-run. Until then treat a clean token/tier-leakage result as \"not checked\", not \"passed\"."
+  },
+  {
+    "id": "palette",
+    "engineVersion": "0.2.1",
+    "files": {
+      "theme.css": ":root {\n  --palette-blue-500: #2456ab;\n}\n",
+      "Card.tsx": "export const Card = () => <div className=\"bg-white\">Account</div>;\n",
+      "ds-loop.config.json": "{\n  \"tokenContexts\": [\n    {\n      \"files\": [\n        \"Card.tsx\"\n      ],\n      \"tokens\": [\n        \"theme.css\"\n      ]\n    }\n  ]\n}\n"
+    },
+    "output": "  [MEDIUM] token/stock-palette-utility\n    1 use site(s) name the framework palette instead of a theme token (1 distinct across 1 file(s))\n    where: bg-white at Card.tsx:1\n    risk:  Bypassing theme roles can leave surfaces in the wrong mode or text with insufficient contrast when the theme changes.\n    fix:   Check the resolved framework theme and project contract. Where a semantic role applies, use its utility (for example bg-surface or text-muted-foreground). This audit checks structure, not rendering: confirm the swap in the browser in both modes."
+  },
+  {
+    "id": "unread",
+    "engineVersion": "0.2.1",
+    "files": {
+      "theme.scss": "$brand: #1da1f2;\n",
+      "W.vue": "<template><div/></template>\n"
+    },
+    "output": "  ✗ not checked — no adapter reads any styling format found here.\n\n  scope — what this audit read\n    not read at all: 1× .vue, 1× .scss — no adapter handles these\n    no adapter read anything here — there is no coverage to report\n    formats present: 1× .vue, 1× .scss\n\n  This is not a clean result. Nothing was judged."
+  }
+]

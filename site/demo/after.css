@@ -1,0 +1,8 @@
+:root {
+  --palette-blue-500: #245bdb;
+  --color-action-background: var(--palette-blue-500, #245bdb);
+}
+.theme-dark {
+  --palette-blue-500: #9ab8ff;
+  --color-action-background: var(--palette-blue-500, #245bdb);
+}

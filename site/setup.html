@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started | Design System Loop</title>
+<meta name="description" content="Install Design System Loop, load its skill in your coding agent, and plan a usable design system for your product.">
+<meta name="theme-color" content="#080512">
+<meta property="og:title" content="Get started | Design System Loop">
+<meta property="og:description" content="Install Design System Loop, load its skill in your coding agent, and plan a usable design system for your product.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/ds-circuit.svg" type="image/svg+xml">
+<link rel="preload" href="assets/manrope.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme.css">
+<script src="app.js" defer>
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header wrap">
+<a class="brand" href="index.html" aria-label="Design System Loop home"><img class="brand-emblem" src="assets/ds-circuit.svg" width="42" height="42" alt="">Design System Loop</a>
+<nav class="nav" aria-label="Main">
+<a href="docs.html">Guide</a>
+<a href="system-example.html">SaaS example</a>
+<a class="github-link" href="https://github.com/owaizin/ds-loop">GitHub</a>
+<a class="nav-start" href="setup.html" aria-current="page">Get started</a>
+</nav>
+</header>
+<main id="main" class="wrap docs-layout setup-layout">
+<aside class="docs-nav" aria-label="Setup steps">
+<div class="nav-group">
+<p>Connect your codebase</p>
+<a href="#build">1. Install the package</a>
+<a href="#connect">2. Load the skill</a>
+<a href="#task">3. Agree on the delivery</a>
+<a href="#help">Check your result</a>
+<a href="#source">Install from source</a>
+<a href="docs.html">Choose a workflow</a>
+<a href="reference.html#coverage">Coverage & limits</a>
+</div>
+</aside>
+<article>
+<div class="doc-title">
+<h1>Set up<br>Design System Loop.</h1>
+<p>Install the package, load the skill in your coding agent, and describe what you need. Your agent investigates the repository and guides the next steps.</p>
+</div>
+<aside class="setup-requirements" aria-label="Before you start">
+<strong>Before you start</strong>
+<p>You’ll need Node 22.6 or later and npm. For the companion skill, use a coding agent that can read local files and run terminal commands. Start in an isolated checkout of the project you want to inspect.</p>
+<p>The CLI checks CSS custom-property declarations, Tailwind arbitrary values, and selected named-palette utilities in JS/TS when token context is available. Your agent uses the companion skill to investigate findings and work with your project’s conventions. <a href="reference.html#coverage">Check the supported scope</a>.</p>
+</aside>
+<section class="doc-section" id="build" aria-labelledby="build-title">
+<h2 id="build-title">1. Install the package</h2>
+<p>Run this in your project directory to install Design System Loop 0.2.0 from npm. To try the expanded 0.2.1 setup procedure before publication, use <a href="#source">source installation</a>.</p>
+<div class="code-head"><span>Terminal · your project directory</span><button class="copy-button" type="button" data-copy="build-code" hidden>Copy command</button></div>
+<pre><code id="build-code">npm install --save-dev ds-loop@0.2.0</code></pre>
+<div class="copy-status" id="build-code-status" role="status" aria-live="polite"></div>
+<p>The package includes the CLI and the companion skill at <code>node_modules/ds-loop/skill/SKILL.md</code>. Installing it does not load the skill into your agent or enable ongoing maintenance. Load the skill in step 2.</p>
+</section>
+<section class="doc-section" id="connect" aria-labelledby="connect-title">
+<h2 id="connect-title">2. Load the skill</h2>
+<p>Open your coding agent in the project where you installed the package. Paste this prompt and describe your problem. The agent runs the relevant checks; you do not need to interpret an audit before starting.</p>
+<div class="code-head"><span>Agent prompt · add your product and problem</span><button class="copy-button" type="button" data-copy="first-task" data-copy-kind="Prompt" hidden>Copy prompt</button></div>
+<pre class="prompt"><code id="first-task">Read node_modules/ds-loop/skill/SKILL.md and follow it throughout this task. Confirm the installed version.
+
+I need help with our design system. Start by asking what problem we need to solve, unless I have already explained it. Inspect the repository, existing components, conventions, and representative workflows.
+
+Explain what exists, what is missing, and what you could not verify. Ask only about unknowns that would change your approach. Recommend a delivery with clear outputs and a finish line. Start read-only.</code></pre>
+<div class="copy-status" id="first-task-status" role="status" aria-live="polite"></div>
+<p><strong>You should receive:</strong> a diagnosis grounded in your project, a recommended scope, and questions about decisions the agent cannot infer. Installing the package alone does not start this conversation.</p>
+<p class="small">Keep the whole package installed. The skill needs the adjacent <code>bin/</code> and <code>dist/</code> directories. Asking the agent to read the file directly avoids relying on automatic skill discovery.</p>
+</section>
+<section class="doc-section" id="task" aria-labelledby="task-title">
+<h2 id="task-title">3. Agree on the delivery</h2>
+<p>For a full setup, the plan should cover foundations, components, product patterns, a working reference, and maintenance guidance. It should name the workflows that will use them and the behavior to preserve. A proposal-only request should remain read-only.</p>
+<aside class="note"><p><strong>Expanded setup in 0.2.1:</strong> the full establishment procedure is in the source checkout and is not yet on npm. Use <a href="#source">source installation</a> to evaluate it. The npm command above installs 0.2.0.</p></aside>
+<p>When the scope is right, authorize the work. If you already provided a clear task and permission, the agent should continue without asking again at every step.</p>
+<div class="code-head"><span>Agent prompt · after reviewing the plan</span><button class="copy-button" type="button" data-copy="delivery-prompt" data-copy-kind="Prompt" hidden>Copy prompt</button></div>
+<pre class="prompt"><code id="delivery-prompt">Proceed with the agreed plan. Implement and adopt the system across the agreed workflows, verify the affected behavior, and document how developers use, customize, and extend it.
+
+Make routine decisions within that scope. Ask when missing information or a wider change needs my decision. Keep me informed of what is done, what comes next, and what remains. Continue through the agreed delivery, not only its first example.</code></pre>
+<div class="copy-status" id="delivery-prompt-status" role="status" aria-live="polite"></div>
+<p>Use the <a href="docs.html">Start, Improve, and Maintain examples</a> for a more specific task. These are examples to adapt, not commands you must learn.</p>
+</section>
+<section class="doc-section" id="help" aria-labelledby="help-title">
+<h2 id="help-title">Review the result</h2>
+<p>A useful handoff distinguishes delivered work from the checks supporting it. It names the relevant files, failed or unrun checks, the saved decision, and the next useful step. A finished audit does not mean the product change is complete. <a href="docs.html#engagement">See the skill’s progress and completion examples</a>. <a href="example.html#record">Compare it with the worked example</a>.</p>
+<details>
+<summary>I only want to run the engine.</summary>
+<p>You can run deterministic checks without a coding agent. From the project directory:</p>
+<div class="code-head"><span>Terminal · optional direct checks</span><button class="copy-button" type="button" data-copy="connect-code" hidden>Copy commands</button></div>
+<pre><code id="connect-code">./node_modules/.bin/ds-loop context .
+./node_modules/.bin/ds-loop audit . --json</code></pre>
+<div class="copy-status" id="connect-code-status" role="status" aria-live="polite"></div>
+<p><code>context</code> reports configuration and extraction scope; it runs no rules. The unfiltered audit supplies findings and judgment limits. Read <code>verdict</code> and <code>coverage</code>: exit 0 alone does not mean the input was checked.</p>
+</details>
+<details>
+<summary>The audit returned findings. Did setup fail?</summary>
+<p>Findings are an audit result. Exit code 1 is expected when findings are present. Read the report before deciding whether the code needs to change; a finding can reflect an intentional exception or a checker limitation.</p>
+</details>
+<details>
+<summary>The report says “not-checked”.</summary>
+<p>The engine did not check that input with its supported adapters. Reinstalling won’t add coverage for an unsupported format. Read <a href="reference.html#coverage">coverage and limitations</a>, then have your agent inspect the relevant source another way.</p>
+</details>
+<details>
+<summary>My agent cannot find the skill.</summary>
+<p>Check that the agent is working in the project where you installed the package. Ask it to read <code>node_modules/ds-loop/skill/SKILL.md</code> directly. Install the full package rather than copying only the skill folder.</p>
+</details>
+<div class="setup-next">
+<h3>Plan the next improvement</h3>
+<p>Use the workflow guide to define the next change and what you’ll review. Add optional Claude Code edit feedback or CI checks after choosing a policy for your project.</p>
+<a class="button" href="docs.html">Explore the workflows</a>
+<a class="text-link" href="reference.html#automation">Edit feedback and CI</a>
+</div>
+</section>
+<section class="doc-section" id="source" aria-labelledby="source-title">
+<span id="preview" aria-hidden="true"></span>
+<h2 id="source-title">Install from source</h2>
+<p>Use this route to try the current source. Clone into a separate directory, then verify the version and build an archive. If you already have the source checkout, use it directly. Packing does not publish it:</p>
+<pre><code>git clone https://github.com/owaizin/ds-loop.git
+cd ds-loop
+npm pkg get version
+npm ci
+npm pack</code></pre>
+<p>The current source version is <code>0.2.1</code>, which produces <code>ds-loop-0.2.1.tgz</code>. Install it in the project you want to inspect using its actual absolute path:</p>
+<pre><code>npm install --save-dev /absolute/path/to/ds-loop-0.2.1.tgz</code></pre>
+<p>Then load <code>node_modules/ds-loop/skill/SKILL.md</code> as in step 2. Version 0.2.1 adds the expanded establishment procedure. Its engine checks are unchanged from 0.2.0. A local tarball path is machine-specific; use the matching npm release when it is published before asking teammates to install it.</p>
+<p>Local tarballs rebuilt under 0.1.2 can differ from registry 0.1.2. Check the dependency’s resolved artifact and integrity in the lockfile, not only the version string. Run an unfiltered audit after upgrading and review coverage before comparing measurements.</p>
+</section>
+
+</article>
+</main>
+<footer class="site-footer wrap">
+<span>Design System Loop · Shared foundations and components</span>
+<div class="footer-links">
+<a href="reference.html">Technical reference</a>
+<a href="https://github.com/owaizin/ds-loop">Source on GitHub</a>
+<a href="https://github.com/owaizin/ds-loop/blob/main/LICENSE">MIT license</a>
+</div>
+</footer>
+</body>
+</html>

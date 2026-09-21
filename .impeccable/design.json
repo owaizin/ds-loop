@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-17T19:12:19.758036+00:00",
+  "title": "Design System: Design System Loop",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#080512",
+        "tonalRamp": [
+          "oklch(15.00% 0.03071 294.52)",
+          "oklch(26.43% 0.03071 294.52)",
+          "oklch(37.86% 0.03071 294.52)",
+          "oklch(49.29% 0.03071 294.52)",
+          "oklch(60.71% 0.03071 294.52)",
+          "oklch(72.14% 0.03071 294.52)",
+          "oklch(83.57% 0.03071 294.52)",
+          "oklch(95.00% 0.03071 294.52)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#110d20",
+        "tonalRamp": [
+          "oklch(15.00% 0.03858 291.60)",
+          "oklch(26.43% 0.03858 291.60)",
+          "oklch(37.86% 0.03858 291.60)",
+          "oklch(49.29% 0.03858 291.60)",
+          "oklch(60.71% 0.03858 291.60)",
+          "oklch(72.14% 0.03858 291.60)",
+          "oklch(83.57% 0.03858 291.60)",
+          "oklch(95.00% 0.03858 291.60)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#f3f0ff",
+        "tonalRamp": [
+          "oklch(15.00% 0.02019 295.19)",
+          "oklch(26.43% 0.02019 295.19)",
+          "oklch(37.86% 0.02019 295.19)",
+          "oklch(49.29% 0.02019 295.19)",
+          "oklch(60.71% 0.02019 295.19)",
+          "oklch(72.14% 0.02019 295.19)",
+          "oklch(83.57% 0.02019 295.19)",
+          "oklch(95.00% 0.02019 295.19)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "#b1abc4",
+        "tonalRamp": [
+          "oklch(15.00% 0.03600 296.52)",
+          "oklch(26.43% 0.03600 296.52)",
+          "oklch(37.86% 0.03600 296.52)",
+          "oklch(49.29% 0.03600 296.52)",
+          "oklch(60.71% 0.03600 296.52)",
+          "oklch(72.14% 0.03600 296.52)",
+          "oklch(83.57% 0.03600 296.52)",
+          "oklch(95.00% 0.03600 296.52)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "#2d2541",
+        "tonalRamp": [
+          "oklch(15.00% 0.05103 296.18)",
+          "oklch(26.43% 0.05103 296.18)",
+          "oklch(37.86% 0.05103 296.18)",
+          "oklch(49.29% 0.05103 296.18)",
+          "oklch(60.71% 0.05103 296.18)",
+          "oklch(72.14% 0.05103 296.18)",
+          "oklch(83.57% 0.05103 296.18)",
+          "oklch(95.00% 0.05103 296.18)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Accent",
+        "canonical": "#d1bcff",
+        "tonalRamp": [
+          "oklch(15.00% 0.09475 298.71)",
+          "oklch(26.43% 0.09475 298.71)",
+          "oklch(37.86% 0.09475 298.71)",
+          "oklch(49.29% 0.09475 298.71)",
+          "oklch(60.71% 0.09475 298.71)",
+          "oklch(72.14% 0.09475 298.71)",
+          "oklch(83.57% 0.09475 298.71)",
+          "oklch(95.00% 0.09475 298.71)"
+        ]
+      },
+      "deep": {
+        "role": "neutral",
+        "displayName": "Deep",
+        "canonical": "#0e091b",
+        "tonalRamp": [
+          "oklch(15.00% 0.03758 294.56)",
+          "oklch(26.43% 0.03758 294.56)",
+          "oklch(37.86% 0.03758 294.56)",
+          "oklch(49.29% 0.03758 294.56)",
+          "oklch(60.71% 0.03758 294.56)",
+          "oklch(72.14% 0.03758 294.56)",
+          "oklch(83.57% 0.03758 294.56)",
+          "oklch(95.00% 0.03758 294.56)"
+        ]
+      },
+      "code": {
+        "role": "neutral",
+        "displayName": "Code",
+        "canonical": "#f3f0ff",
+        "tonalRamp": [
+          "oklch(15.00% 0.02019 295.19)",
+          "oklch(26.43% 0.02019 295.19)",
+          "oklch(37.86% 0.02019 295.19)",
+          "oklch(49.29% 0.02019 295.19)",
+          "oklch(60.71% 0.02019 295.19)",
+          "oklch(72.14% 0.02019 295.19)",
+          "oklch(83.57% 0.02019 295.19)",
+          "oklch(95.00% 0.02019 295.19)"
+        ]
+      },
+      "warm": {
+        "role": "secondary",
+        "displayName": "Warm",
+        "canonical": "#efd79b",
+        "tonalRamp": [
+          "oklch(15.00% 0.08140 88.71)",
+          "oklch(26.43% 0.08140 88.71)",
+          "oklch(37.86% 0.08140 88.71)",
+          "oklch(49.29% 0.08140 88.71)",
+          "oklch(60.71% 0.08140 88.71)",
+          "oklch(72.14% 0.08140 88.71)",
+          "oklch(83.57% 0.08140 88.71)",
+          "oklch(95.00% 0.08140 88.71)"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus",
+        "canonical": "#dfcbff",
+        "tonalRamp": [
+          "oklch(15.00% 0.07376 302.44)",
+          "oklch(26.43% 0.07376 302.44)",
+          "oklch(37.86% 0.07376 302.44)",
+          "oklch(49.29% 0.07376 302.44)",
+          "oklch(60.71% 0.07376 302.44)",
+          "oklch(72.14% 0.07376 302.44)",
+          "oklch(83.57% 0.07376 302.44)",
+          "oklch(95.00% 0.07376 302.44)"
+        ]
+      },
+      "action-hover": {
+        "role": "primary",
+        "displayName": "Action Hover",
+        "canonical": "#7b46dc",
+        "tonalRamp": [
+          "oklch(15.00% 0.21536 294.21)",
+          "oklch(26.43% 0.21536 294.21)",
+          "oklch(37.86% 0.21536 294.21)",
+          "oklch(49.29% 0.21536 294.21)",
+          "oklch(60.71% 0.21536 294.21)",
+          "oklch(72.14% 0.21536 294.21)",
+          "oklch(83.57% 0.21536 294.21)",
+          "oklch(95.00% 0.21536 294.21)"
+        ]
+      },
+      "surface-hover": {
+        "role": "neutral",
+        "displayName": "Surface Hover",
+        "canonical": "#211632",
+        "tonalRamp": [
+          "oklch(15.00% 0.05394 300.33)",
+          "oklch(26.43% 0.05394 300.33)",
+          "oklch(37.86% 0.05394 300.33)",
+          "oklch(49.29% 0.05394 300.33)",
+          "oklch(60.71% 0.05394 300.33)",
+          "oklch(72.14% 0.05394 300.33)",
+          "oklch(83.57% 0.05394 300.33)",
+          "oklch(95.00% 0.05394 300.33)"
+        ]
+      },
+      "code-ground": {
+        "role": "neutral",
+        "displayName": "Code Ground",
+        "canonical": "#151022",
+        "tonalRamp": [
+          "oklch(15.00% 0.03627 295.51)",
+          "oklch(26.43% 0.03627 295.51)",
+          "oklch(37.86% 0.03627 295.51)",
+          "oklch(49.29% 0.03627 295.51)",
+          "oklch(60.71% 0.03627 295.51)",
+          "oklch(72.14% 0.03627 295.51)",
+          "oklch(83.57% 0.03627 295.51)",
+          "oklch(95.00% 0.03627 295.51)"
+        ]
+      },
+      "inline-code-ground": {
+        "role": "neutral",
+        "displayName": "Inline Code Ground",
+        "canonical": "#261d38",
+        "tonalRamp": [
+          "oklch(15.00% 0.05072 298.08)",
+          "oklch(26.43% 0.05072 298.08)",
+          "oklch(37.86% 0.05072 298.08)",
+          "oklch(49.29% 0.05072 298.08)",
+          "oklch(60.71% 0.05072 298.08)",
+          "oklch(72.14% 0.05072 298.08)",
+          "oklch(83.57% 0.05072 298.08)",
+          "oklch(95.00% 0.05072 298.08)"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Line Strong",
+        "canonical": "#776391",
+        "tonalRamp": [
+          "oklch(15.00% 0.07398 303.94)",
+          "oklch(26.43% 0.07398 303.94)",
+          "oklch(37.86% 0.07398 303.94)",
+          "oklch(49.29% 0.07398 303.94)",
+          "oklch(60.71% 0.07398 303.94)",
+          "oklch(72.14% 0.07398 303.94)",
+          "oklch(83.57% 0.07398 303.94)",
+          "oklch(95.00% 0.07398 303.94)"
+        ]
+      },
+      "loop-panel": {
+        "role": "neutral",
+        "displayName": "Loop Panel",
+        "canonical": "#171027",
+        "tonalRamp": [
+          "oklch(15.00% 0.04561 295.93)",
+          "oklch(26.43% 0.04561 295.93)",
+          "oklch(37.86% 0.04561 295.93)",
+          "oklch(49.29% 0.04561 295.93)",
+          "oklch(60.71% 0.04561 295.93)",
+          "oklch(72.14% 0.04561 295.93)",
+          "oklch(83.57% 0.04561 295.93)",
+          "oklch(95.00% 0.04561 295.93)"
+        ]
+      },
+      "loop-selected": {
+        "role": "neutral",
+        "displayName": "Loop Selected",
+        "canonical": "#382256",
+        "tonalRamp": [
+          "oklch(15.00% 0.09138 300.67)",
+          "oklch(26.43% 0.09138 300.67)",
+          "oklch(37.86% 0.09138 300.67)",
+          "oklch(49.29% 0.09138 300.67)",
+          "oklch(60.71% 0.09138 300.67)",
+          "oklch(72.14% 0.09138 300.67)",
+          "oklch(83.57% 0.09138 300.67)",
+          "oklch(95.00% 0.09138 300.67)"
+        ]
+      },
+      "action-base": {
+        "role": "primary",
+        "displayName": "Action Base",
+        "canonical": "#6323b9",
+        "tonalRamp": [
+          "oklch(15.00% 0.21243 295.50)",
+          "oklch(26.43% 0.21243 295.50)",
+          "oklch(37.86% 0.21243 295.50)",
+          "oklch(49.29% 0.21243 295.50)",
+          "oklch(60.71% 0.21243 295.50)",
+          "oklch(72.14% 0.21243 295.50)",
+          "oklch(83.57% 0.21243 295.50)",
+          "oklch(95.00% 0.21243 295.50)"
+        ]
+      },
+      "action-top": {
+        "role": "primary",
+        "displayName": "Action Top",
+        "canonical": "#8141df",
+        "tonalRamp": [
+          "oklch(15.00% 0.22489 296.64)",
+          "oklch(26.43% 0.22489 296.64)",
+          "oklch(37.86% 0.22489 296.64)",
+          "oklch(49.29% 0.22489 296.64)",
+          "oklch(60.71% 0.22489 296.64)",
+          "oklch(72.14% 0.22489 296.64)",
+          "oklch(83.57% 0.22489 296.64)",
+          "oklch(95.00% 0.22489 296.64)"
+        ]
+      },
+      "action-text": {
+        "role": "primary",
+        "displayName": "Action Text",
+        "canonical": "#fff",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 89.88)",
+          "oklch(26.43% 0.00000 89.88)",
+          "oklch(37.86% 0.00000 89.88)",
+          "oklch(49.29% 0.00000 89.88)",
+          "oklch(60.71% 0.00000 89.88)",
+          "oklch(72.14% 0.00000 89.88)",
+          "oklch(83.57% 0.00000 89.88)",
+          "oklch(95.00% 0.00000 89.88)"
+        ]
+      },
+      "action-border": {
+        "role": "primary",
+        "displayName": "Action Border",
+        "canonical": "#a371dc",
+        "tonalRamp": [
+          "oklch(15.00% 0.16065 303.81)",
+          "oklch(26.43% 0.16065 303.81)",
+          "oklch(37.86% 0.16065 303.81)",
+          "oklch(49.29% 0.16065 303.81)",
+          "oklch(60.71% 0.16065 303.81)",
+          "oklch(72.14% 0.16065 303.81)",
+          "oklch(83.57% 0.16065 303.81)",
+          "oklch(95.00% 0.16065 303.81)"
+        ]
+      },
+      "secondary-ground": {
+        "role": "neutral",
+        "displayName": "Secondary Ground",
+        "canonical": "#171021",
+        "tonalRamp": [
+          "oklch(15.00% 0.03491 302.17)",
+          "oklch(26.43% 0.03491 302.17)",
+          "oklch(37.86% 0.03491 302.17)",
+          "oklch(49.29% 0.03491 302.17)",
+          "oklch(60.71% 0.03491 302.17)",
+          "oklch(72.14% 0.03491 302.17)",
+          "oklch(83.57% 0.03491 302.17)",
+          "oklch(95.00% 0.03491 302.17)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "hero": {
+        "displayName": "Hero",
+        "purpose": "Homepage hierarchy."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Homepage hierarchy."
+      },
+      "display-base": {
+        "displayName": "Display Base",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "headline-base": {
+        "displayName": "Headline Base",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "navigation": {
+        "displayName": "Navigation",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Shared reading, navigation or technical role."
+      },
+      "panel-body": {
+        "displayName": "Panel body",
+        "purpose": "Readable supporting text in current homepage panels."
+      },
+      "specimen-label": {
+        "displayName": "Specimen label",
+        "purpose": "Minimum text size in current compact examples and hero labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "homepage-action-inset",
+        "value": "inset 0 1px 0 #ffffff26",
+        "purpose": "Small highlight on homepage actions."
+      },
+      {
+        "name": "hero-record",
+        "value": "12px 24px 50px #0006, inset 0 1px #dcecff25",
+        "purpose": "Local dimensional hero record only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "sculpture-ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Sculpture and workbench settling."
+      },
+      {
+        "name": "loop-clock",
+        "value": "24000ms",
+        "purpose": "Continuous hero orbit; four 6000ms stages."
+      },
+      {
+        "name": "workbench-clock",
+        "value": "5700ms",
+        "purpose": "Finite assembly at 350, 1600, 2750 and 4050ms."
+      },
+      {
+        "name": "hero-parallax",
+        "value": "500ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Mouse-only shallow tilt; reduced motion removes it."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "homepage-narrow",
+        "value": "760px"
+      },
+      {
+        "name": "workbench-narrow",
+        "value": "700px"
+      },
+      {
+        "name": "workbench-intermediate",
+        "value": "1000px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Homepage primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact purple action with an inset highlight.",
+      "html": "<a class=\"ds-primary\" href=\"#\">Get started</a>",
+      "css": ".ds-primary{font:15px/1.65 system-ui,sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;background:linear-gradient(180deg,#8141df,#6323b9);color:#fff;border:1px solid #a371dc;border-radius:8px;padding:12px 22px;font-weight:600;box-shadow:inset 0 1px 0 #ffffff26}.ds-primary:hover{background:var(--action-hover,#7b46dc);border-color:#c9a5f3}.ds-primary:focus-visible{outline:3px solid var(--focus,#dfcbff);outline-offset:5px}"
+    },
+    {
+      "name": "Homepage secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Quiet unfilled secondary link.",
+      "html": "<a class=\"ds-secondary\" href=\"#\">See the difference</a>",
+      "css": ".ds-secondary{font:15px/1.65 system-ui,sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:var(--ink,#f3f0ff);border-radius:6px;padding:12px 16px;min-height:46px}.ds-secondary:hover{background:var(--surface-hover,#211632)}.ds-secondary:focus-visible{outline:3px solid var(--focus,#dfcbff);outline-offset:5px}"
+    },
+    {
+      "name": "Copy control",
+      "kind": "button",
+      "refersTo": "button-copy",
+      "description": "Compact code-copy control.",
+      "html": "<button class=\"ds-copy\">Copy</button>",
+      "css": ".ds-copy{font:12px/1.65 system-ui,sans-serif;background:var(--white,#110d20);color:var(--ink,#f3f0ff);border:1px solid var(--line,#2d2541);border-radius:4px;padding:6px 11px;min-height:36px;cursor:pointer}.ds-copy:hover{background:var(--accent,#d1bcff);color:var(--paper,#080512)}.ds-copy:focus-visible{outline:3px solid var(--focus,#dfcbff);outline-offset:5px}"
+    },
+    {
+      "name": "Homepage navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Open links without an enclosing pill.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Guide</a><a href=\"#\">Reference</a></nav>",
+      "css": ".ds-nav{display:flex;gap:12px}.ds-nav a{font:13px/1.65 system-ui,sans-serif;color:var(--ink,#f3f0ff);padding:8px 10px;border-radius:999px;text-decoration:none}.ds-nav a:hover,.ds-nav a[aria-current]{background:var(--surface-hover,#211632)}.ds-nav a:focus-visible{outline:3px solid var(--focus,#dfcbff);outline-offset:5px}"
+    },
+    {
+      "name": "FAQ disclosure",
+      "kind": "custom",
+      "refersTo": "faq",
+      "description": "Native flat disclosure separated by a rule.",
+      "html": "<details class=\"ds-faq\"><summary>Does it repair the system automatically?</summary><p>Your team reviews findings and agrees on the changes.</p></details>",
+      "css": ".ds-faq{font:16px/1.65 system-ui,sans-serif;color:var(--ink,#f3f0ff);background:none;border:0;border-bottom:1px solid var(--line,#2d2541);border-radius:0;padding:20px 0}.ds-faq summary{cursor:pointer}.ds-faq summary:hover{color:var(--accent,#d1bcff)}.ds-faq summary:focus-visible{outline:3px solid var(--focus,#dfcbff);outline-offset:5px}.ds-faq p{font-size:14px;color:var(--muted,#b1abc4)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Violet orbit",
+    "overview": "Design System Loop uses a violet-black ground, pale lilac text, restrained Manrope headings and spectral process artwork. Ruled editorial sections make the information easy to scan; shallow perspective and sculptural material concentrate attention on the maintenance loop.\n\nThe user-selected violet identity remains established. Current homepage refinements use compact actions and open navigation, while supporting pages retain some earlier rounded treatments. `site/styles.css` owns shared primitives; homepage cascade order is `styles.css`, `home.css`, `theme.css`, then `craft.css`. The surface brief owns composition and demonstration timing. This document records the implemented local source, not a deployment or visual-quality certification.",
+    "keyCharacteristics": [
+      "Violet-black reading surfaces and lilac text.",
+      "Manrope hierarchy, system reading text and monospace evidence.",
+      "Spectral sculptures, concentric geometry and a shallow central record.",
+      "Compact controls, ruled sections and accessible native interactions."
+    ],
+    "rules": [
+      {
+        "name": "The Scoped Color Rule",
+        "body": "Preserve the main loop spectrum without promoting illustration or demonstration paints into global brand tokens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Voices Rule",
+        "body": "Use Manrope for hierarchy, the system stack for reading, and monospace for commands, source and technical labels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Scoped Light Rule",
+        "body": "Concentrate expressive illumination on the process artwork and preserve quiet reading and product frames.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Evidence Boundary Rule",
+        "body": "Keep authored examples and illustrative records distinct from actual engine findings.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** preserve the established violet identity and main loop spectrum.",
+      "**Do** use shared properties for reading surfaces, text, actions and focus.",
+      "**Do** preserve native controls, keyboard range access, visible focus and motion fallbacks.",
+      "**Do** keep panel copy at least 14px and current specimen text at least 12px.",
+      "**Do** retain synthetic-example disclosures and the artwork and font provenance."
+    ],
+    "donts": [
+      "**Don't** promote local specimen paints or intentional before-screen inconsistencies into brand tokens.",
+      "**Don't** restore boxed loop stages, an Active badge or pill-shaped main homepage actions.",
+      "**Don't** use decorative eyebrows or Unicode glyphs as the small icon system.",
+      "**Don't** imply automatic repair, measured customer outcomes or automatic agent memory through illustration.",
+      "**Don't** treat local source checks as proof of live deployment, measured contrast or visual-reference equivalence."
+    ]
+  }
+}

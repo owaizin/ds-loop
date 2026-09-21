@@ -1,0 +1,189 @@
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-17T09:05:50.460Z",
+        "reason": "Agent review: browser computed customer-problem padding is 54px and proof-section padding is 94px. Before/After frames intentionally meet their container edge; headings have 16px/18px insets and frame theme content has 24px padding (18px/12px on narrow frames). No text is flush against a boundary."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "arial",
+        "files": [
+          "site/demo/saas.css"
+        ],
+        "createdAt": "2026-09-17T11:49:11.319Z",
+        "reason": "Agent review: this font is confined to intentionally inconsistent before specimens. The user requested four visibly different bad designs; after specimens use the documented Manrope system."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "tahoma",
+        "files": [
+          "site/demo/saas.css"
+        ],
+        "createdAt": "2026-09-17T11:49:11.348Z",
+        "reason": "Agent review: this font is confined to intentionally inconsistent before specimens. The user requested four visibly different bad designs; after specimens use the documented Manrope system."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "georgia",
+        "files": [
+          "site/demo/saas.css"
+        ],
+        "createdAt": "2026-09-17T11:49:11.378Z",
+        "reason": "Agent review: this font is confined to intentionally inconsistent before specimens. The user requested four visibly different bad designs; after specimens use the documented Manrope system."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "verdana",
+        "files": [
+          "site/demo/saas.css"
+        ],
+        "createdAt": "2026-09-17T11:49:11.407Z",
+        "reason": "Agent review: this font is confined to intentionally inconsistent before specimens. The user requested four visibly different bad designs; after specimens use the documented Manrope system."
+      },
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "files": [
+          "site/demo/saas.css"
+        ],
+        "createdAt": "2026-09-17T11:56:09.012Z",
+        "reason": "Agent review: Arial appears only in projects-old and requests-old, intentionally inconsistent before specimens. The user explicitly requested visibly different bad designs for comparison."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "site/demo/saas.css"
+        ],
+        "createdAt": "2026-09-17T11:56:09.077Z",
+        "reason": "Agent review: the only side-tab finding is member-nav strong, a selected navigation item inside the deliberately inconsistent Members before specimen, not an accent on an after card. The user requested the bad-design comparison."
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "site/demo/saas-build.html"
+        ],
+        "createdAt": "2026-09-17T12:15:46.772Z",
+        "reason": "Agent browser review: kit previews have 8px vertical padding, workspace topbars have 8px 18px padding, and page content has 20px padding. The app-window is intentionally edge-to-edge structural chrome; nested text is inset. Static findings miss the final CSS cascade."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-17T15:30:50.977Z",
+        "reason": "Agent review: the user requested the Neurox layout and graphic direction; violet illumination is intentional on the loop, authored graphic panels, and actions. Limited to the homepage."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "site/setup.html"
+        ],
+        "createdAt": "2026-09-17T15:43:41.383Z",
+        "reason": "Agent review: both findings come from the shared theme.css violet action shadow on the Get started navigation link and Explore the workflows button. This intentionally carries the user-requested Neurox visual direction into setup; no page-wide or decorative panel glow is added."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "site/docs.html"
+        ],
+        "createdAt": "2026-09-17T16:23:29.125Z",
+        "reason": "Agent review: the unchanged shared violet action treatment belongs to the user-selected theme; the new guide blueprint is flat SVG."
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "site/demo/saas-compact.html"
+        ],
+        "createdAt": "2026-09-17T16:23:29.269Z",
+        "reason": "Agent review: comparison masks intentionally meet the window edges; fixed-height bars and rows center their content with visible internal space. Legacy excerpts intentionally demonstrate inconsistent spacing."
+      },
+      {
+        "rule": "repeated-container-text",
+        "value": "*",
+        "files": [
+          "site/demo/saas-compact.html"
+        ],
+        "createdAt": "2026-09-17T16:23:29.388Z",
+        "reason": "Agent review: Projects is the same product area in two registered before/after layers and its legacy navigation, not repeated marketing copy."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "tahoma",
+        "files": [
+          "site/demo/saas-compact.html"
+        ],
+        "createdAt": "2026-09-17T16:23:29.490Z",
+        "reason": "Agent review: distinct legacy fonts are intentional bad-design specimens requested by the user. Shared after screens use Manrope."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "tahoma",
+        "files": [
+          "site/demo/saas-compact.css"
+        ],
+        "createdAt": "2026-09-17T16:23:29.708Z",
+        "reason": "Agent review: distinct legacy fonts are intentional bad-design specimens requested by the user. Shared after screens use Manrope."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "georgia",
+        "files": [
+          "site/demo/saas-compact.html"
+        ],
+        "createdAt": "2026-09-17T16:23:29.826Z",
+        "reason": "Agent review: distinct legacy fonts are intentional bad-design specimens requested by the user. Shared after screens use Manrope."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "georgia",
+        "files": [
+          "site/demo/saas-compact.css"
+        ],
+        "createdAt": "2026-09-17T16:23:29.968Z",
+        "reason": "Agent review: distinct legacy fonts are intentional bad-design specimens requested by the user. Shared after screens use Manrope."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "verdana",
+        "files": [
+          "site/demo/saas-compact.html"
+        ],
+        "createdAt": "2026-09-17T16:23:30.037Z",
+        "reason": "Agent review: distinct legacy fonts are intentional bad-design specimens requested by the user. Shared after screens use Manrope."
+      },
+      {
+        "rule": "design-system-font",
+        "value": "verdana",
+        "files": [
+          "site/demo/saas-compact.css"
+        ],
+        "createdAt": "2026-09-17T16:23:30.173Z",
+        "reason": "Agent review: distinct legacy fonts are intentional bad-design specimens requested by the user. Shared after screens use Manrope."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "site/variants/loop-lab/index.html"
+        ],
+        "createdAt": "2026-09-20T05:37:55.358Z",
+        "reason": "User requested a playground for the current illuminated multicolored ellipse, including glow controls; intentional loop illustration lighting only."
+      }
+    ]
+  }
+}

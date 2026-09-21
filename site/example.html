@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System Loop | A theme repair with audit evidence</title>
+<meta name="description" content="Follow one request through investigation, a code change, browser checks, and a saved decision.">
+<meta name="theme-color" content="#080512">
+<meta property="og:title" content="Design System Loop | A theme repair with audit evidence">
+<meta property="og:description" content="Follow one request through investigation, a code change, browser checks, and a saved decision.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/ds-circuit.svg" type="image/svg+xml">
+<link rel="preload" href="assets/manrope.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme.css">
+<script src="app.js" defer>
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header wrap">
+<a class="brand" href="index.html" aria-label="Design System Loop home"><img class="brand-emblem" src="assets/ds-circuit.svg" width="42" height="42" alt="">Design System Loop</a>
+<nav class="nav" aria-label="Main">
+<a href="docs.html">Guide</a>
+<a href="system-example.html">SaaS example</a>
+<a class="github-link" href="https://github.com/owaizin/ds-loop">GitHub</a>
+<a class="nav-start" href="setup.html">Get started</a>
+</nav>
+</header>
+<main id="main" class="wrap docs-layout">
+<aside class="docs-nav" aria-label="Page sections">
+<div class="nav-group">
+<p>On this page</p>
+<a href="#request">The request</a>
+<a href="#before">Before</a>
+<a href="#decision">The decision</a>
+<a href="#verify">Verification</a>
+<a href="#record">Saved decision</a>
+</div>
+</aside>
+<article>
+<div class="doc-title">
+<h1>Fix a button’s dark theme.</h1>
+<p>A small, reproducible example of a token repair, with audit output, browser checks, and a saved decision.</p>
+</div>
+<p class="eyebrow">Synthetic project · source included</p>
+<section class="doc-section" id="request" aria-labelledby="request-title">
+<h2 id="request-title">1. Start with the intended behavior</h2>
+<p>
+<strong>Request:</strong> “The primary button should use our action palette in each theme. Fix the dark-theme background. Keep the light theme, button size, and markup unchanged.”</p>
+<p>This example supplies that convention explicitly. It is an authored walkthrough using a small runnable project, not a customer result or an independent agent evaluation.</p>
+</section>
+<section class="doc-section" id="before" aria-labelledby="before-title">
+<h2 id="before-title">2. Inspect the current result</h2>
+<p>The dark theme defines a lighter blue, but the action token repeats the light-theme value. The button therefore stays the same color in both themes.</p>
+<iframe class="demo-frame" src="demo/before.html" title="Before: the button stays blue in both themes">
+</iframe>
+<p class="small">Visual and keyboard specimens only. These buttons do not save data.</p>
+<pre>
+<code>:root {
+  --palette-blue-500: #245bdb;
+  --color-action-background: #245bdb;
+}
+.theme-dark {
+  --palette-blue-500: #9ab8ff;
+  --color-action-background: #245bdb;
+}</code>
+</pre>
+<p>The unfiltered audit reports <code>color/semantic-holds-literal</code> and <code>color/literal-duplicate-tokens</code>. Those findings help locate the problem. The requested theme behavior is the reason to change it.</p>
+</section>
+<section class="doc-section" id="decision" aria-labelledby="decision-title">
+<h2 id="decision-title">3. Choose the smallest useful change</h2>
+<p>Reference the palette from the action token in each theme. This follows the supplied convention and keeps the button markup intact.</p>
+<p>Changing the palette would affect other users of that color. Hardcoding the dark value would repair today’s appearance while leaving the action token disconnected from the palette. Neither is needed here.</p>
+<pre>
+<code>/* In both :root and .theme-dark */
+--color-action-background: var(--palette-blue-500, #245bdb);</code>
+</pre>
+<p>Keep the reference in both selectors so it resolves against each theme’s palette. See the complete <a href="demo/before.css">before CSS</a> and <a href="demo/after.css">after CSS</a>.</p>
+</section>
+<section class="doc-section" id="verify" aria-labelledby="verify-title">
+<h2 id="verify-title">4. Check the behavior</h2>
+<iframe class="demo-frame" src="demo/after.html" title="After: the button follows each theme">
+</iframe>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Light background</td>
+<td>#245bdb</td>
+<td>#245bdb (unchanged)</td>
+</tr>
+<tr>
+<td>Dark background</td>
+<td>#245bdb</td>
+<td>#9ab8ff (follows palette)</td>
+</tr>
+<tr>
+<td>Button size in the measured browser</td>
+<td>129.20 × 43.59 CSS px</td>
+<td>129.20 × 43.59 CSS px (unchanged)</td>
+</tr>
+<tr>
+<td>Semantic literal and duplicate findings</td>
+<td>Present</td>
+<td>Absent</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>These colors and dimensions were measured in the browser. Keyboard focus reached the light-theme button and showed its outline after the change. The shared component CSS and markup were unchanged.</p>
+<p>
+<strong>Remaining limit:</strong> the after-audit cannot classify these reference names with its default tier patterns. It reports <code>token/tier-model-undetectable</code>; the audit is not clean. The browser checks establish the requested theme behavior, not full accessibility or product coverage.</p>
+<details>
+<summary>Run the same audits</summary>
+<p>From the repository checkout, after <code>npm ci</code>:</p>
+<pre>
+<code>npm run ds-loop -- audit site/demo/before.css --json
+npm run ds-loop -- audit site/demo/after.css --json</code>
+</pre>
+<p>Both return findings and exit 1. These runs use the default configuration.</p>
+</details>
+</section>
+<section class="doc-section" id="record" aria-labelledby="record-title">
+<h2 id="record-title">5. Document the decision</h2>
+<p>The deliverable includes the two-line token change, the before and after views, the checks above, and a <a href="demo/decision.md">saved decision</a>.</p>
+<p>The record states why the alias belongs in both themes and when to reconsider it. This page links to it so future contributors can find the reasoning. Finding it through an independent agent session has not been tested in this example.</p>
+<p>
+<a class="button" href="setup.html">Get started</a>
+<a class="text-link" href="docs.html#improve">Use the improve prompt</a>
+</p>
+</section>
+</article>
+</main>
+<footer class="site-footer wrap">
+<span>Design System Loop · Shared foundations and components</span>
+<div class="footer-links">
+<a href="reference.html">Technical reference</a>
+<a href="https://github.com/owaizin/ds-loop">Source on GitHub</a>
+<a href="https://github.com/owaizin/ds-loop/blob/main/LICENSE">MIT license</a>
+</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System Loop technical reference</title>
+<meta name="description" content="Commands, configuration, coverage, and verified engine output.">
+<meta name="theme-color" content="#080512">
+<meta property="og:title" content="Design System Loop technical reference">
+<meta property="og:description" content="Commands, configuration, coverage, and verified engine output.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/ds-circuit.svg" type="image/svg+xml">
+<link rel="preload" href="assets/manrope.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme.css">
+<script src="app.js" defer>
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header wrap">
+<a class="brand" href="index.html" aria-label="Design System Loop home"><img class="brand-emblem" src="assets/ds-circuit.svg" width="42" height="42" alt="">Design System Loop</a>
+<nav class="nav" aria-label="Main">
+<a href="docs.html">Guide</a>
+<a href="system-example.html">SaaS example</a>
+<a class="github-link" href="https://github.com/owaizin/ds-loop">GitHub</a>
+<a class="nav-start" href="setup.html">Get started</a>
+</nav>
+</header>
+<main id="main" class="wrap docs-layout">
+<aside class="docs-nav" aria-label="Page sections">
+<div class="nav-group">
+<p>On this page</p>
+<a href="#coverage">Coverage and limits</a>
+<a href="#commands">Commands</a>
+<a href="#configuration">Configuration</a>
+<a href="#token-context">Token context</a>
+<a href="#exceptions">Exceptions</a>
+<a href="#automation">Edit feedback and CI</a>
+<a href="#examples">Audit examples</a>
+</div>
+</aside>
+<article>
+<div class="doc-title">
+<h1>Technical reference.</h1>
+<p>Use this when you need a command, a configuration option, or the exact limits of a check.</p>
+</div>
+<aside class="note" aria-label="Release version"><p><strong>Version 0.2.0.</strong> This reference describes the published npm engine. The same excerpts are checked against local 0.2.1 source, whose engine is unchanged; its new setup procedure belongs to the agent skill. <a href="setup.html#build">Install from npm</a>, or <a href="setup.html#source">build from source</a> for local development.</p></aside>
+<section class="doc-section" id="coverage" aria-labelledby="coverage-title">
+<h2 id="coverage-title">Coverage and limitations</h2>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Adapter</th>
+<th>Reads</th>
+<th>Does not read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CSS custom properties</td>
+<td>Custom-property declarations in <code>.css</code>
+</td>
+<td>Ordinary rule bodies and declarations inside at-rules</td>
+</tr>
+<tr>
+<td>Tailwind JSX</td>
+<td>Arbitrary-value strings and selected framework-palette color utilities in <code>.jsx .tsx .js .ts .mjs</code> (adapter 0.4.0)
+</td>
+<td>Project-defined named utilities, arbitrary variants, bracketed opacity, inline styles and CSS-in-JS. No Tailwind theme resolution.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Sass maps, design-token JSON and unsupported formats remain outside these adapters. Recognized colors that cannot be converted are reported as ambiguous. The engine uses regex-based extraction with documented limits.</p>
+<h3>Read the verdict with the coverage</h3>
+<ul>
+<li>
+<code>clean</code>: no findings survived the selected scope and severity. Read coverage before interpreting this result.</li>
+<li>
+<code>issues</code>: findings survived. Some checks may still have been unable to judge.</li>
+<li>
+<code>not-checked</code>: no adapter read a source, including an empty source.</li>
+</ul>
+<p>Severity filtering does not remove <code>coverage.couldNotJudge</code>. The hook filters at high severity and <code>context</code> runs no rules. Run an unfiltered audit to see all judgment limitations.</p>
+<h3>Current status</h3>
+<p>Design System Loop is a supervised alpha. Start in an isolated checkout, choose an area to review, and check the result before wider adoption. Findings and ratios describe extracted source. They do not establish design intent, system maturity, accessibility or user outcomes.</p>
+</section>
+<section class="doc-section" id="commands" aria-labelledby="commands-title">
+<h2 id="commands-title">Command reference</h2>
+<p>Run commands from the target project so configuration resolves from its working directory. A positional path selects the source. For a local npm installation, replace <code>ds-loop</code> below with <code>./node_modules/.bin/ds-loop</code>.</p>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Result</th>
+<th>Writes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>context [path]</code>
+</td>
+<td>Configuration, usual intent-source paths and extraction scope. Runs no rules.</td>
+<td>Only with <code>--write-contract</code>; never overwrites</td>
+</tr>
+<tr>
+<td>
+<code>audit [path]</code>
+</td>
+<td>Findings, ratios, verdict and coverage.</td>
+<td>With --out</td>
+</tr>
+<tr>
+<td>
+<code>scan &lt;path&gt;</code>
+</td>
+<td>Extracted-value taxonomy and palette clusters.</td>
+<td>No</td>
+</tr>
+<tr>
+<td>
+<code>sweep &lt;path&gt;</code>
+</td>
+<td>Clustering curve across the configured ΔE range.</td>
+<td>With --out</td>
+</tr>
+<tr>
+<td>
+<code>scorecard [path]</code>
+</td>
+<td>Ratios and comparable deltas. Not a CI gate.</td>
+<td>Appends local history; --dry-run previews</td>
+</tr>
+<tr>
+<td>
+<code>fix &lt;path&gt;</code>
+</td>
+<td>Mechanically resolvable var() fallbacks.</td>
+<td>Only with --write</td>
+</tr>
+<tr>
+<td>
+<code>guard on|off|status</code>
+</td>
+<td>Claude Code post-edit feedback configuration.</td>
+<td>on/off edit settings</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<code>scorecard</code> appends to <code>.ds-scorecard/history.jsonl</code> in cwd. It reports a delta only when adapter versions and configuration match. <code>fix</code> is not an automatic token migration.</p>
+<h3>Preview a mechanical fix</h3>
+<pre><code>ds-loop fix . --help
+ds-loop fix .
+ds-loop fix . --write
+ds-loop audit .</code></pre>
+<p>Review the preview before choosing <code>--write</code>. The fixer inserts missing <code>var()</code> fallbacks only in CSS custom-property declarations whose referenced token has a direct color or dimension literal in scope. It does not follow alias chains or migrate JSX utilities. A zero-edit result explains why nothing was eligible; it does not mean the audit is clean. <code>--target</code> is an audit option, not a fix option.</p>
+<h3 id="contract">Draft a contract</h3>
+<pre><code>ds-loop context . --write-contract</code></pre>
+<p>This creates <code>DESIGN-SYSTEM.md</code> with measured declarations, extraction limits, recorded exceptions, and questions the team still needs to answer. It never overwrites an existing file. Keep your existing decision home when it already works. The draft does not establish policy; an agent must read and apply your decisions. Editing it does not configure or suppress rules.</p>
+<h3>Audit options</h3>
+<pre>
+<code>ds-loop audit . --json
+ds-loop audit src/ --target tokens
+ds-loop audit . --files src/tokens.css,src/Card.tsx
+ds-loop audit . --since main --min-severity high
+ds-loop audit . --out ./audit-report
+ds-loop audit . --require-coverage</code>
+</pre>
+<p>Targets are <code>all</code>, <code>tokens</code>, <code>color</code>, <code>spacing</code>, <code>typography</code>, <code>elevation</code> and <code>motion</code>. Use an unfiltered audit when you need the complete findings list.</p>
+<p><code>--files</code> selects paths relative to the working directory. <code>--since main</code> selects committed changes from the merge base to HEAD; it excludes uncommitted edits. An empty selection returns <code>not-checked</code>. A failed Git comparison stops the command.</p>
+<h3>Agent procedures</h3>
+<p>
+<code>discover</code>, <code>census</code>, <code>drift</code>, <code>tokenize</code>, <code>scaffold</code>, <code>extract</code>, <code>shape</code>, <code>review</code> and <code>doctor</code> are playbooks. An agent executes them. They are not CLI commands or deterministic findings.</p>
+</section>
+<section class="doc-section" id="configuration" aria-labelledby="configuration-title">
+<h2 id="configuration-title">Configure the checks</h2>
+<p>Automatic discovery checks these filenames, in order, in the current working directory:</p>
+<pre>
+<code>.ds-loop-config.yml
+.ds-loop-config.yaml
+ds-loop.config.json
+.ds-ops-config.yml
+.ds-ops-config.yaml</code>
+</pre>
+<p>The explicit <code>--config &lt;file&gt;</code> option currently reads JSON. Auto-discovered YAML uses a limited parser rather than the full YAML specification.</p>
+<h3>Represent the project’s naming</h3>
+<p>If your actual contract uses <code>--foundation-*</code> primitives and <code>--intent-*</code> semantics, an illustrative <code>ds-loop.config.json</code> is:</p>
+<pre>
+<code>{
+  "taxonomy": {
+    "primitivePattern": "^--foundation-",
+    "semanticNamespaces": ["intent"]
+  }
+}</code>
+</pre>
+<p>Use patterns from your own contract. A config entry configures an existing rule; it does not create a checker. The engine’s palette → semantic → component assumption is not a universal architecture. Report a limitation when your model cannot be represented faithfully.</p>
+<p>Clustering cutoffs and taxonomy defaults are uncalibrated. Use <code>sweep</code> to investigate the source before choosing a cutoff. See the <a href="https://github.com/owaizin/ds-loop/blob/main/src/config/schema.ts">configuration schema</a> and <a href="https://github.com/owaizin/ds-loop/blob/main/src/config/defaults.ts">defaults</a>.</p>
+<h3 id="token-context">Token context</h3>
+<p><code>token/stock-palette-utility</code> reports selected framework-palette utilities such as <code>bg-white</code> when applicable color declarations exist. A finding asks you to check the project's theme and contract; it does not establish the rendered color or a contrast failure.</p>
+<p>Use JSON to associate consumers with the CSS declarations they use:</p>
+<pre><code>{
+  "tokenContexts": [
+    { "files": ["app/*"], "tokens": ["app/theme.css"] }
+  ]
+}</code></pre>
+<p>These paths are relative to the audit source root, or the containing directory for a single-file audit. <code>files</code> supports exact paths and trailing-<code>*</code> prefixes. <code>tokens</code> names exact CSS files inside that root. The declarations supply context without adding out-of-scope findings or changing ratios.</p>
+<p>Once you add a mapping, every stock-palette use site in the audit scope needs applicable, readable context. Unmapped consumers become unjudged, including in a full-tree audit. <code>--require-coverage</code> fails on those gaps even if a severity filter hides the related finding. Without mappings, an unscoped audit uses any color declaration in its target as a broad context gate.</p>
+<p>Mappings do not resolve CSS imports or Tailwind themes. JSON reports retain context paths, consumers, hashes, and read failures in <code>manifest</code>; mappings change <code>configHash</code>. The YAML subset cannot represent these entries. Migrate a higher-priority YAML configuration into JSON, or select JSON with <code>--config</code>. The hook uses automatic discovery.</p>
+<h3 id="exceptions">Record an exception</h3>
+<p>Add a verified exception to the project's existing JSON configuration, with the reason and intended scope:</p>
+<pre><code>{
+  "ignore": [
+    {
+      "rule": "color/semantic-holds-literal",
+      "value": "--color-surface-raised",
+      "files": ["theme.css"],
+      "reason": "This token seeds the palette layer planned for next sprint.",
+      "createdAt": "2026-09-19"
+    }
+  ]
+}</code></pre>
+<p><code>reason</code> is required. <code>rule</code> accepts a rule ID or <code>*</code>; <code>value</code> matches a token name, literal, or <code>*</code>. Omitted <code>files</code> covers all files; <code>files: []</code> matches none. Paths match exactly or by suffix, so <code>theme.css</code> also matches <code>legacy/theme.css</code>. A trailing <code>*</code> matches a prefix from the audit source root; interior wildcards are unsupported. Invalid scopes fail configuration loading.</p>
+<pre><code>ds-loop audit . --json</code></pre>
+<p>Run this before and after the config edit. Check <code>suppressions</code> for the intended rule, value, and matched count, and confirm unrelated occurrences remain visible. Exceptions remove matching values from that rule's input and change <code>configHash</code>. A lower finding count caused by an exception records a policy choice, not a repair. The report keeps matched exceptions visible even when the verdict is clean.</p>
+<p>After an upgrade, rerun an unfiltered audit. Adapter 0.4.0 changes extraction, and changed adapter versions or configuration hashes can make scorecard measurements incomparable.</p>
+<p>The <code>.ds-ops-config.yml</code> compatibility path reads system context and maps supported severity settings from <a href="https://github.com/murphytrueman/design-system-ops">design-system-ops</a>.</p>
+</section>
+<section class="doc-section" id="automation" aria-labelledby="automation-title">
+<h2 id="automation-title">Edit feedback and CI</h2>
+<h3>Feedback during Claude Code edits</h3>
+<pre>
+<code>./node_modules/.bin/ds-loop guard on
+./node_modules/.bin/ds-loop guard status
+./node_modules/.bin/ds-loop guard off</code>
+</pre>
+<p>The PostToolUse hook reports high-severity findings after supported edits and announces changes in project extraction coverage. It never blocks an edit. <code>guard off</code> removes its entry while preserving other hooks and settings.</p>
+<p>The hook does not deliver lower-severity judgment limitations. Run an unfiltered audit at session setup and before calling a change complete.</p>
+<p>In 0.2.0, hook failures and timeouts explicitly report that the edit was not checked. Correct the error and rerun the audit. The default high-severity hook also filters out the medium-severity palette rule.</p>
+<h3>Choose a CI policy deliberately</h3>
+<pre>
+<code>./node_modules/.bin/ds-loop audit . --min-severity high --require-coverage</code>
+</pre>
+<p>This exits 1 on findings at the chosen floor or reported coverage gaps. A pass applies to the adapters’ stated scope and selected severity. Inspect unsupported formats before enabling strict coverage.</p>
+</section>
+<section class="doc-section" id="examples" aria-labelledby="examples-title">
+<h2 id="examples-title">Reproduce the examples</h2>
+<p>These four synthetic cases are reproduced from local engine 0.2.1, unchanged from 0.2.0. This website does not scan your repository.</p>
+<p>From this checkout, run <code>npm run site:check</code> to run the four audits against this checkout’s engine in temporary directories and compare their output with the saved website examples. Release verification also checks these excerpts against the published npm archive. The inputs and excerpts are also available as <a href="examples.json">plain JSON</a>.</p>
+<details>
+<summary>A hardcoded value</summary>
+<h3>tokens.css</h3>
+<pre>
+<code>:root {
+  --palette-blue-500: #1da1f2;
+  --brand: var(--palette-blue-500, #1da1f2);
+}
+</code>
+</pre>
+<h3>Card.tsx</h3>
+<pre>
+<code>export const Card = () =&gt; (
+  &lt;div className=&quot;bg-[#1da1f2] p-[13px]&quot;&gt;
+    &lt;span className=&quot;text-[14px]&quot; /&gt;
+  &lt;/div&gt;
+);
+</code>
+</pre>
+<h3>Engine output excerpt</h3>
+<pre>
+<code>  [HIGH] token/raw-value-in-markup
+    3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct, 1 already declared as a token)
+    where: bg-[#1da1f2] at Card.tsx:2; p-[13px] at Card.tsx:2; text-[14px] at Card.tsx:3
+    risk:  The value is invisible to every theme, rebrand and audit that reads the token files — a rebrand ships and these sites keep the old colour.
+    fix:   #1da1f2 is already --palette-blue-500. Swap those first. Replace each with the scale step or token that covers it — a utility that names the scale (bg-surface, p-4) or var(--token) via an arbitrary value. If no token matches the value, add one to the system first; a bracket is the system being bypassed, not extended.</code>
+</pre>
+</details>
+<details>
+<summary>A naming pattern the scanner cannot judge</summary>
+<h3>tokens.css</h3>
+<pre>
+<code>:root {
+  --ocean: #1da1f2;
+  --link: var(--ocean, #1da1f2);
+}
+</code>
+</pre>
+<h3>Engine output excerpt</h3>
+<pre>
+<code>  [LOW] token/tier-model-undetectable
+    only 0 of 1 referencing token(s) match a tier pattern (0 &lt; floor 0.5) — tier checks could not judge this source
+    where: --link
+    risk:  A clean `token/tier-leakage` result in this source means nothing was checked, not that nothing is wrong — the strongest silent-pass this tool can produce.
+    fix:   Set taxonomy.primitivePattern, semanticNamespaces and componentPattern to this source&#x27;s naming convention, then re-run. Until then treat a clean token/tier-leakage result as &quot;not checked&quot;, not &quot;passed&quot;.</code>
+</pre>
+</details>
+<details>
+<summary>An unsupported source</summary>
+<h3>theme.scss</h3>
+<pre>
+<code>$brand: #1da1f2;
+</code>
+</pre>
+<h3>W.vue</h3>
+<pre>
+<code>&lt;template&gt;&lt;div/&gt;&lt;/template&gt;
+</code>
+</pre>
+<h3>Engine output excerpt</h3>
+<pre>
+<code>  ✗ not checked — no adapter reads any styling format found here.
+
+  scope — what this audit read
+    not read at all: 1× .vue, 1× .scss — no adapter handles these
+    no adapter read anything here — there is no coverage to report
+    formats present: 1× .vue, 1× .scss
+
+  This is not a clean result. Nothing was judged.</code>
+</pre>
+</details>
+<details>
+<summary>A framework-palette utility with explicit token context</summary>
+<h3>theme.css</h3>
+<pre><code>:root {
+  --palette-blue-500: #2456ab;
+}
+</code></pre>
+<h3>Card.tsx</h3>
+<pre><code>export const Card = () =&gt; &lt;div className=&quot;bg-white&quot;&gt;Account&lt;/div&gt;;
+</code></pre>
+<h3>ds-loop.config.json</h3>
+<pre><code>{
+  &quot;tokenContexts&quot;: [
+    {
+      &quot;files&quot;: [
+        &quot;Card.tsx&quot;
+      ],
+      &quot;tokens&quot;: [
+        &quot;theme.css&quot;
+      ]
+    }
+  ]
+}
+</code></pre>
+<h3>Engine output excerpt</h3>
+<pre><code>  [MEDIUM] token/stock-palette-utility
+    1 use site(s) name the framework palette instead of a theme token (1 distinct across 1 file(s))
+    where: bg-white at Card.tsx:1
+    risk:  Bypassing theme roles can leave surfaces in the wrong mode or text with insufficient contrast when the theme changes.
+    fix:   Check the resolved framework theme and project contract. Where a semantic role applies, use its utility (for example bg-surface or text-muted-foreground). This audit checks structure, not rendering: confirm the swap in the browser in both modes.</code></pre>
+</details>
+<p>For a public source, run <code>npm run ds-loop -- audit fixtures/radix-colors</code>. Its snapshot provenance is in <code>fixtures/radix-colors/SOURCE.json</code>. The guide includes <a href="https://github.com/owaizin/ds-loop/blob/main/docs/guide/output.md">verified audit and scorecard examples</a>.</p>
+</section>
+</article>
+</main>
+<footer class="site-footer wrap">
+<span>Design System Loop · Shared foundations and components</span>
+<div class="footer-links">
+<a href="reference.html">Technical reference</a>
+<a href="https://github.com/owaizin/ds-loop">Source on GitHub</a>
+<a href="https://github.com/owaizin/ds-loop/blob/main/LICENSE">MIT license</a>
+</div>
+</footer>
+</body>
+</html>

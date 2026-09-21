@@ -1,0 +1,334 @@
+/* Review corrections: raised artwork and the original illustrated bento. */
+.visual-home .loop-stops {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.visual-home .loop-stop {
+  pointer-events: auto;
+}
+.visual-home .loop-stop,
+.visual-home .loop-stop:hover,
+.visual-home .loop-stop[aria-pressed="true"] {
+  transform: translate(-50%, -42%) translateZ(72px);
+}
+.visual-home .loop-stop::before {
+  display: none;
+}
+.visual-home .loop-stop .sculpture-icon {
+  opacity: 0.88;
+  filter: none;
+}
+.visual-home .loop-stop[aria-pressed="true"] .sculpture-icon {
+  opacity: 1;
+}
+.visual-home .loop-motion {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  z-index: 8;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+  color: #b5becf;
+  background: #100d1b;
+  border: 1px solid #3a324a;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.loop-motion svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+}
+.loop-motion .play-symbol,
+.loop-motion.is-paused .pause-symbol {
+  display: none;
+}
+.loop-motion.is-paused .play-symbol {
+  display: block;
+}
+.loop-motion:hover {
+  color: #fff;
+}
+.loop-motion:focus-visible {
+  outline: 2px solid #c1b7ed;
+  outline-offset: 4px;
+}
+.visual-home .restored-bento {
+  grid-template-columns: 1fr 1.08fr 1fr;
+  grid-template-rows: 310px 310px;
+  gap: 16px;
+  border: 0;
+  overflow: visible;
+}
+.visual-home .restored-bento .scope-panel {
+  min-height: 0;
+  border: 1px solid #362b47;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 85%, #30213f66, transparent 75%), #100c1b;
+}
+.visual-home .restored-bento .foundation-panel {
+  grid-row: span 2;
+}
+.visual-home .restored-bento .upkeep-panel {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+.visual-home .restored-bento .exception-panel {
+  grid-column: 2;
+  grid-row: 2;
+}
+.visual-home .restored-bento .panel-copy {
+  padding: 26px 24px;
+}
+.visual-home .restored-bento .panel-copy h3 {
+  font-size: 20px;
+  letter-spacing: -.02em;
+}
+.visual-home .restored-bento .foundation-art {
+  height: auto;
+  padding: 40px 36px;
+  margin: auto;
+}
+.visual-home .restored-bento .token-sheet {
+  padding: 20px;
+  transform: perspective(800px) rotateY(8deg) rotate(-7deg);
+  box-shadow: 0 20px 30px #0005;
+}
+.visual-home .restored-bento .token-caption {
+  display: block;
+  font-size: 12px;
+}
+.visual-home .restored-bento .type-specimen {
+  font-size: 60px;
+  gap: 10px;
+}
+.visual-home .restored-bento .sheet-shadow {
+  display: block;
+  inset: 48px 27px 32px;
+}
+.visual-home .restored-bento .convention-art {
+  order: 0;
+  height: 166px;
+  padding: 24px 20px 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+.visual-home .restored-bento .convention-art > svg {
+  top: 54px;
+}
+.visual-home .restored-bento .source-labels span {
+  padding: 8px;
+}
+.visual-home .restored-bento .shared-control {
+  margin-top: 46px;
+  padding: 10px 12px;
+  box-shadow: none;
+}
+.visual-home .restored-bento .exception-art {
+  order: 0;
+  height: 164px;
+  padding: 22px 24px 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+.visual-home .restored-bento .exception-note {
+  right: 18px;
+  bottom: 0;
+}
+.visual-home .restored-bento .convention-panel .panel-copy,
+.visual-home .restored-bento .exception-panel .panel-copy {
+  padding-top: 14px;
+}
+.visual-home .restored-bento .upkeep-art {
+  margin: auto;
+  padding: 24px 26px 38px;
+}
+.visual-home .restored-bento .review-record {
+  padding: 20px;
+  box-shadow: 0 20px 30px #0005;
+}
+.visual-home .restored-bento .review-record > strong {
+  font-size: 22px;
+  margin-top: 0;
+}
+.visual-home .restored-bento .record-trail {
+  display: flex;
+  margin-top: 32px;
+}
+.restored-bento .shared-control svg,
+.restored-bento .exception-note svg,
+.restored-bento .review-check svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+@media (max-width: 1000px) {
+  .visual-home .restored-bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  .visual-home .restored-bento .scope-panel {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 390px;
+  }
+  .visual-home .restored-bento .foundation-art {
+    padding-block: 22px 42px;
+  }
+  .visual-home .restored-bento .convention-art,
+  .visual-home .restored-bento .exception-art {
+    margin: auto;
+    order: 1;
+  }
+  .visual-home .restored-bento .upkeep-art {
+    padding-top: 12px;
+  }
+}
+@media (max-width: 600px) {
+  .visual-home .restored-bento {
+    grid-template-columns: 1fr;
+  }
+  .visual-home .restored-bento .scope-panel {
+    min-height: 350px;
+  }
+  .visual-home .restored-bento .foundation-art {
+    max-width: 340px;
+  }
+  .visual-home .restored-bento .upkeep-art {
+    max-width: 340px;
+    padding-bottom: 28px;
+  }
+  .visual-home .loop-stop::before {
+    width: 96px;
+    height: 96px;
+    left: calc(50% - 48px);
+    top: -12px;
+  }
+}
+
+@media (max-width: 760px) {
+  .visual-home .loop-motion {
+    bottom: -8px;
+    left: calc(50% - 20px);
+    right: auto;
+  }
+}
+
+/* Upright raised loop, with a separate shallow orbital plane behind it. */
+.visual-home.raised-loop .hero-loop .loop-instrument {
+  aspect-ratio: 1000 / 660;
+  height: auto;
+  transform: none;
+  perspective: 1200px;
+  margin: 12px auto 20px;
+}
+.visual-home.raised-loop .loop-track,
+.visual-home.raised-loop .orbital-field {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.visual-home.raised-loop .orbital-field {
+  opacity: 1;
+}
+.raised-loop .track-extrusion {
+  display: block;
+  stroke: #151c2c;
+  stroke-width: 19;
+  transform: translateY(12px);
+}
+.visual-home.raised-loop .track-body {
+  stroke: url(#metal);
+  stroke-width: 18;
+}
+.visual-home.raised-loop .track-center,
+.visual-home.raised-loop .track-progress {
+  stroke-width: 3;
+}
+.visual-home.raised-loop .stop-measure,
+.visual-home.raised-loop .stop-retain {
+  left: 28%;
+}
+.visual-home.raised-loop .stop-decide,
+.visual-home.raised-loop .stop-verify {
+  left: 72%;
+}
+.visual-home.raised-loop .stop-measure,
+.visual-home.raised-loop .stop-decide {
+  top: 22%;
+}
+.visual-home.raised-loop .stop-retain,
+.visual-home.raised-loop .stop-verify {
+  top: 75%;
+}
+.visual-home.raised-loop .loop-stop > span {
+  transform: none;
+}
+.visual-home.raised-loop .loop-record {
+  transform: translate(-50%, -48%) translateZ(56px) rotateX(12deg) rotateY(-12deg) rotateZ(-4deg);
+}
+.visual-home.raised-loop .loop-stop .sculpture-icon {
+  transform: translateY(-12px) scale(1.05);
+  filter: drop-shadow(0 4px 5px #0003);
+}
+.visual-home.raised-loop .loop-stop[aria-pressed="true"] .sculpture-icon {
+  transform: translateY(-20px) scale(1.1);
+}
+.visual-home.raised-loop .stop-trace {
+  top: -8px;
+}
+.visual-home .orbital-guide {
+  stroke: #9a9fbc;
+  stroke-width: 0.8;
+  opacity: 0.2;
+}
+.visual-home .orbital-halo {
+  stroke-width: 14;
+  opacity: 0.65;
+}
+.visual-home .orbital-highlight {
+  stroke-width: 1.5;
+  opacity: 0.9;
+}
+@media (max-width: 760px) {
+  .visual-home.raised-loop .hero-loop .loop-instrument {
+    height: 640px;
+    aspect-ratio: auto;
+    perspective: none;
+  }
+  .visual-home.raised-loop .stop-measure,
+  .visual-home.raised-loop .stop-decide {
+    top: 8%;
+  }
+  .visual-home.raised-loop .stop-retain,
+  .visual-home.raised-loop .stop-verify {
+    top: 84%;
+  }
+  .visual-home.raised-loop .loop-record {
+    transform: translate(-50%, -50%) rotate(-3deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .visual-home.raised-loop .loop-stop .sculpture-icon {
+    transition: none;
+  }
+}
+
+/* The 1200-unit plane is 20% wider than the 1000-unit upright track.
+   Both retain the same unit scale; the ellipse itself encodes the backward tilt. */
+.visual-home.raised-loop .orbital-field {
+  left: -10%;
+  width: 120%;
+}
+@media (max-width: 760px) {
+  .visual-home.raised-loop .orbital-field {
+    left: 0;
+    width: 100%;
+  }
+}

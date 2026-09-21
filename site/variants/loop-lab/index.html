@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loop playground | Design System Loop</title>
+<link rel="icon" href="../../assets/ds-circuit.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../../craft.css">
+<link rel="stylesheet" href="../../refinements.css">
+<link rel="stylesheet" href="../../restored-loop.css">
+<link rel="stylesheet" href="lab.css">
+<script src="lab.js" defer></script>
+</head>
+<body class="visual-home loop-lab">
+<header class="lab-header"><a href="../../index.html#workflow">← Back to homepage</a><span>Loop playground</span><span class="lab-local">Preview only</span></header>
+<main class="lab-layout">
+<section class="lab-preview" aria-label="Live loop preview"><div id="scene"><p>Loading the current loop…</p></div><p class="preview-note">The current cards and inner loop stay in place. These controls change the background ellipses.</p></section>
+<aside class="lab-controls" aria-labelledby="controls-title">
+<div class="lab-intro"><h1 id="controls-title">Shape the loop</h1><p>Try a wider orbit or a tunnel that keeps moving into the distance.</p></div>
+<div class="lab-presets"><button type="button" id="reset">Current look</button><button type="button" id="infinity">Try infinity</button></div>
+<form id="controls">
+<fieldset><legend>Geometry</legend>
+<label for="zoom">Preview zoom <output id="zoom-value" for="zoom">100%</output></label><input id="zoom" name="zoom" type="range" min="50" max="100" step="1" value="100">
+<label for="count">Ellipses <output id="count-value" for="count">2</output></label><input id="count" name="count" type="range" min="1" max="40" step="1" value="2">
+<label for="width">Width <output id="width-value" for="width">100%</output></label><input id="width" name="width" type="range" min="60" max="190" step="1" value="100">
+<label for="height">Height / tilt <output id="height-value" for="height">100%</output></label><input id="height" name="height" type="range" min="25" max="140" step="1" value="100">
+<label for="depth">Tunnel depth <output id="depth-value" for="depth">0%</output></label><input id="depth" name="depth" type="range" min="0" max="100" step="1" value="0">
+<label for="vanish">Vanishing point <output id="vanish-value" for="vanish">0%</output></label><input id="vanish" name="vanish" type="range" min="-100" max="100" step="1" value="0">
+<p class="control-note">Lower height tilts the plane back. Depth packs rings toward the center; the vanishing point moves that center up or down.</p>
+</fieldset>
+<fieldset><legend>Light</legend>
+<label for="opacity">Ring visibility <output id="opacity-value" for="opacity">30%</output></label><input id="opacity" name="opacity" type="range" min="5" max="100" value="30">
+<label for="thickness">Line weight <output id="thickness-value" for="thickness">1 px</output></label><input id="thickness" name="thickness" type="range" min="0.5" max="4" step="0.1" value="1">
+<label for="glow">Front-edge glow <output id="glow-value" for="glow">100%</output></label><input id="glow" name="glow" type="range" min="0" max="150" value="100">
+</fieldset>
+<fieldset><legend>Motion</legend>
+<label for="motion">Animation</label><select id="motion" name="motion"><option value="still">Still</option><option value="inward">Into the distance</option><option value="outward">Flow toward you</option><option value="breathe">Slow breathing</option></select>
+<label for="duration">Cycle length <output id="duration-value" for="duration">12 s</output></label><input id="duration" name="duration" type="range" min="3" max="30" value="12">
+<button class="lab-pause" type="button" id="motion-pause" disabled>Pause ellipses</button>
+<p class="control-note" id="motion-note">Animation repeats continuously. The center panel has its own play/pause control.</p>
+</fieldset>
+</form>
+<div class="lab-save"><button type="button" id="copy">Copy settings</button><button type="button" id="share">Copy preview link</button><p id="lab-status" role="status" aria-live="polite">Changes stay in this playground.</p><textarea id="copy-fallback" aria-label="Settings to copy" hidden readonly></textarea></div>
+</aside>
+</main>
+</body>
+</html>
