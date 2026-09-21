@@ -5,7 +5,7 @@ Your next feature should build on the components you already have. When teams ke
 Install in your project with Node 22.6 or later:
 
 ```sh
-npm install --save-dev ds-loop@0.2.0
+npm install --save-dev ds-loop@0.2.1
 ```
 
 Then ask your coding agent to load the skill and describe the problem you want solved:
@@ -16,10 +16,6 @@ Replace that example with your own task. Installing the package provides the eng
 and skill files; loading the skill starts the guided work. The agent reads the
 repository, asks about unknowns that affect the plan, and carries out the work you
 authorize. You do not need to choose its internal commands.
-
-**Release note:** npm currently provides 0.2.0. This checkout contains the expanded
-setup procedure for 0.2.1, described below. Until that version is published, use
-[source installation](docs/guide/install.md#install-from-source) to try it.
 
 [Installation guide](docs/guide/install.md) · [Design-system workflows](docs/guide/workflow.md) · [CLI reference](docs/guide/reference.md)
 

@@ -102,6 +102,7 @@ test('--since selects against the target repository and does not conceal invalid
   project(fixture, (dir) => {
     const git = (...args: string[]) => execFileSync('git', args, { cwd: dir, stdio: 'pipe' });
     git('init');
+    git('config', 'core.hooksPath', '');
     git('add', '.');
     git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture');
     const report = audit(dir, { since: 'HEAD', silent: true });
