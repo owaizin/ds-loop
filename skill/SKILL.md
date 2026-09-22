@@ -45,6 +45,9 @@ Resolve the skill path before running commands and keep cwd at the target projec
    coverage and scope. `context` runs no rules; the high-severity hook does not
    replace this audit. If no code exists, say there is no code baseline and work
    from the product brief and a representative use case.
+   Report what was read before reporting what is wrong: the source, the formats
+   no adapter covers, and the checks that could not judge. A findings list handed
+   over without its coverage invites a conclusion the run cannot support.
 3. Ask about unknowns that could change the next action. For broad pain, uncertain intent, or a
    first system, read [discover.md](reference/discover.md): diagnose before choosing
    a route. For a specific authorized task, use [routing.md](reference/routing.md)

@@ -54,6 +54,29 @@ availability; the same explanation must remain usable as text. Do not install a
 visualization dependency, start a server or generate a dashboard for an ordinary
 status update. Never imply the npm engine created an agent-authored view.
 
+## Say what a step costs before taking it
+
+Before a step that will run long, read or change many files, or spend the user's
+budget — a repository-wide inventory, a migration, a multi-file edit, a batch of
+subagents — say what it will cover and roughly how much it will take, then let
+them narrow it. Name what you are excluding and why. A cost that only becomes
+visible afterwards cannot be declined.
+
+This is not the authorization check in [scope.md](scope.md). That asks whether
+you may act; this tells someone what acting will cost so they can choose a
+smaller version. A step already authorized can still be worth resizing.
+
+## End on the question the evidence raises
+
+Close a piece of work with the question it has put in front of the team, and
+offer to pursue it. The engine's `next` block names commands to type; a question
+names what is still undecided, which is the part a person has to answer.
+
+Draw it from what the run actually surfaced — a rule that could not judge, two
+components that solve one problem, a token nobody references, a convention the
+code contradicts. Ask one. Do not manufacture a question to seem thorough, and
+do not ask one the evidence cannot settle.
+
 ## Plan template
 
 ```text
