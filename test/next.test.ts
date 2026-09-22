@@ -231,3 +231,16 @@ test('a non-terminal keeps one long line per field, and the gutter is always pre
     assert.ok(risk.trimStart().startsWith('│'), 'the gutter must be emitted everywhere');
   });
 });
+
+/**
+ * The wordmark is decoration. Without a terminal it must degrade to the plain
+ * name — a block-character logo in a captured hook log or a CI transcript is
+ * noise that nobody chose to receive.
+ */
+test('the wordmark degrades to plain text without a terminal', () => {
+  inTree({ 'tokens.css': ':root{--color-surface:#ffffff}' }, (dir) => {
+    const { out } = run([], dir);
+    assert.ok(!out.includes('█'), 'block characters reached a non-terminal');
+    assert.match(out, /ds-loop \d+\.\d+\.\d+/, 'the plain name and version must still appear');
+  });
+});

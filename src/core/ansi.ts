@@ -20,9 +20,11 @@ const CODES = {
   bold: 1,
   dim: 2,
   red: 31,
+  green: 32,
   yellow: 33,
   blue: 34,
   cyan: 36,
+  inverse: 7,
 } as const;
 
 export type Style = keyof Omit<typeof CODES, 'reset'>;
@@ -90,4 +92,47 @@ export function wrapTo(text: string, firstPrefix: string, continuation: string):
 /** Groups the lines of one finding, so stacked findings do not read as one block. */
 export function gutter(): string {
   return style('│', 'dim');
+}
+
+/** A label set off from the prose around it, the way a wizard names its current step. */
+export function chip(text: string): string {
+  return style(` ${text} `, 'inverse', 'cyan');
+}
+
+/**
+ * A vertical rail for the commands that are a *sequence* — `guard`, `fix --write`.
+ * Deliberately not used for `audit`: a findings list is a report, and a step marker
+ * beside a row that is not a step is decoration pretending to be structure.
+ */
+export const rail = {
+  open: (): string => style('╭', 'dim'),
+  step: (): string => style('◇', 'green'),
+  bar: (): string => style('│', 'dim'),
+  close: (): string => style('╰', 'dim'),
+};
+
+/** `  ◇  text`, with following lines hanging under the text. */
+export function railStep(text: string, detail?: string): string[] {
+  const lines = [`  ${rail.step()}  ${text}`];
+  if (detail !== undefined) {
+    // Style the text, then compose. Wrapping an already-styled prefix in another
+    // style ends at the inner reset, which silently drops the outer one.
+    const prefix = `  ${rail.bar()}  `;
+    for (const line of wrapTo(detail, '', '')) lines.push(`${prefix}${style(line, 'dim')}`);
+  }
+  return lines;
+}
+
+const MARK = ['█▀▄ █▀▀   █   █▀█ █▀█ █▀█', '█ █ ▀▀█   █   █ █ █ █ █▀▀', '█▄▀ ▀▀▀   ▀▀▀ ▀▀▀ ▀▀▀ ▀  '];
+
+/**
+ * Shown where a reader arrives — the entrance and `--help` — and nowhere else.
+ * `audit` runs inside the guard hook and in CI loops, where a logo on every
+ * invocation is a cost paid forever for a thing seen once.
+ */
+export function wordmark(version: string): string[] {
+  if (!colorEnabled()) return [`  ds-loop ${version}`];
+  const out = MARK.map((line) => `  ${style(line, 'cyan')}`);
+  out[2] = `${out[2]}  ${style(version, 'dim')}`;
+  return out;
 }

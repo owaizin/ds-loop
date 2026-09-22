@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { chip, rail, railStep } from '../core/ansi.ts';
 
 /**
  * `guard on` installs a PostToolUse hook in the project's .claude/settings.json.
@@ -45,12 +46,15 @@ export function guard(action: 'on' | 'off' | 'status'): void {
   const postToolUse = settings.hooks?.PostToolUse ?? [];
   const installed = postToolUse.some((m) => m.hooks?.some(isOurs));
 
+  const say = (lines: string[]) => {
+    for (const line of lines) console.log(line);
+  };
+
   if (action === 'status') {
-    console.log(`\n  ds-loop guard`);
-    console.log(`  settings: ${p}${existsSync(p) ? '' : ' (does not exist yet)'}`);
-    console.log(`  installed: ${installed ? 'yes' : 'no'}`);
-    if (installed) console.log(`  hook: ${HOOK_COMMAND}`);
-    console.log('');
+    console.log(`\n  ${chip('ds-loop guard')}`);
+    say(railStep('settings', `${p}${existsSync(p) ? '' : ' (does not exist yet)'}`));
+    say(railStep(`installed: ${installed ? 'yes' : 'no'}`, installed ? HOOK_COMMAND : undefined));
+    console.log(`  ${rail.close()}\n`);
     return;
   }
 
@@ -79,10 +83,16 @@ export function guard(action: 'on' | 'off' | 'status'): void {
   const entry: Matcher = { matcher: MATCHER, hooks: [{ type: 'command', command: HOOK_COMMAND }] };
   settings.hooks = { ...settings.hooks, PostToolUse: [...postToolUse, entry] };
   write(settings);
-  console.log(`\n  ds-loop guard: installed in ${p}`);
-  console.log(`  After any Edit/Write to a .css / .jsx / .tsx file, ds-loop audits it and`);
-  console.log(`  reports high-severity findings. It never blocks the edit.`);
-  console.log(`  Restart the agent session for the hook to take effect.\n`);
+  console.log(`\n  ${chip('ds-loop guard')}`);
+  say(railStep('Hook installed', p));
+  say(
+    railStep(
+      'Reports high-severity findings after an Edit/Write to a .css / .jsx / .tsx file',
+      'It never blocks the edit.',
+    ),
+  );
+  say(railStep('Restart the agent session for the hook to take effect'));
+  console.log(`  ${rail.close()}\n`);
 }
 
 function write(settings: Settings): void {

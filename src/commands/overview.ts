@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { LoadedConfig } from '../config/load.ts';
-import { severityTag, style, wrapTo } from '../core/ansi.ts';
+import { chip, severityTag, style, wordmark, wrapTo } from '../core/ansi.ts';
 import { formatCoverage } from '../core/coverage.ts';
 import { formatNext } from '../core/next.ts';
 import { audit } from './audit.ts';
@@ -32,9 +32,9 @@ export function overview(path: string, loaded: LoadedConfig): number {
   });
   const { findings, coverage, verdict } = report;
 
-  console.log(
-    `\n  ${style(`ds-loop ${VERSION}`, 'bold')}  ·  ${report.manifest.fixtureLabel}  ·  ${report.manifest.fixtureSha}`,
-  );
+  console.log('');
+  for (const line of wordmark(VERSION)) console.log(line);
+  console.log(`\n  ${chip(report.manifest.fixtureLabel)}  ${style(report.manifest.fixtureSha, 'dim')}`);
   if (loaded.source !== 'defaults') console.log(`  config ${loaded.source}`);
   console.log('');
 
