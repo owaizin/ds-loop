@@ -235,3 +235,74 @@ test('guard: a non-style file is ignored entirely', () => {
     assert.ok(!existsSync(join(dir, STATE)), 'and no state written for an ignored file');
   });
 });
+
+/**
+ * Attribution.
+ *
+ * The hook audits the whole edited file, so before this it returned a legacy
+ * stylesheet's existing debt as findings of the edit that touched one line of
+ * it. Two harms: a reader learns the hook cries wolf, and an agent widens a
+ * scoped task into a cleanup nobody authorized.
+ *
+ * Attribution comes from git's changed-line ranges, so it is only as good as
+ * git's answer. An untracked file has no answer, and the hook must say so
+ * rather than assume either way — a confident wrong basis is worse than none.
+ */
+function git(dir: string, ...args: string[]) {
+  // fixture repositories must not run the developer's global hooks
+  spawnSync('git', args, { cwd: dir, encoding: 'utf8' });
+}
+
+function commitBaseline(dir: string, file: string, body: string) {
+  git(dir, 'init');
+  git(dir, 'config', 'core.hooksPath', '');
+  git(dir, 'config', 'user.email', 'fixture@example.invalid');
+  git(dir, 'config', 'user.name', 'Fixture');
+  writeFileSync(join(dir, file), body);
+  git(dir, 'add', '.');
+  git(dir, 'commit', '-m', 'baseline');
+}
+
+test('a finding on a line this edit did not touch is reported as pre-existing', () => {
+  inProject({}, (dir) => {
+    // line 1 holds the offence; the edit appends an unrelated clean line
+    commitBaseline(dir, 'tokens.css', ':root{--color-surface:#ffffff}\n');
+    writeFileSync(join(dir, 'tokens.css'), ':root{--color-surface:#ffffff}\n/* note */\n');
+    const { stderr } = edit(dir, 'tokens.css');
+    assert.match(stderr, /\[pre-existing\]/, `expected a pre-existing tag, got:\n${stderr}`);
+    assert.doesNotMatch(stderr, /\[new\]/, 'the edit did not touch the offending line');
+    assert.match(stderr, /do not treat them as regressions/, 'the label needs its instruction');
+  });
+});
+
+test('a finding on a line this edit introduced is reported as new', () => {
+  inProject({}, (dir) => {
+    commitBaseline(dir, 'tokens.css', ':root{--palette-blue-500:#1da1f2}\n');
+    writeFileSync(
+      join(dir, 'tokens.css'),
+      ':root{--palette-blue-500:#1da1f2}\n:root{--color-surface:#ffffff}\n',
+    );
+    const { stderr } = edit(dir, 'tokens.css');
+    assert.match(stderr, /\[new\]/, `expected a new tag, got:\n${stderr}`);
+  });
+});
+
+test('an untracked file is attributed unknown, never guessed', () => {
+  inProject({ 'tokens.css': ':root{--color-surface:#ffffff}\n' }, (dir) => {
+    const { stderr } = edit(dir, 'tokens.css');
+    assert.match(stderr, /\[unknown\]/, `outside git the basis is unknown, got:\n${stderr}`);
+    assert.doesNotMatch(stderr, /\[new\]|\[pre-existing\]/, 'git said nothing; claim nothing');
+    assert.match(stderr, /Treat it as pre-existing until\nchecked/);
+  });
+});
+
+test('a finding counting old and new lines is partly new, not new', () => {
+  inProject({}, (dir) => {
+    // the rule counts both declarations into one finding: line 1 predates, line 2 is new
+    commitBaseline(dir, 'tokens.css', ':root{--color-surface:#ffffff}\n');
+    writeFileSync(join(dir, 'tokens.css'), ':root{--color-surface:#ffffff}\n:root{--brand-accent:#1da1f2}\n');
+    const { stderr } = edit(dir, 'tokens.css');
+    assert.match(stderr, /\[partly new\]/, `expected a mixed basis, got:\n${stderr}`);
+    assert.match(stderr, /the rest is existing\nwork to raise, not to absorb/);
+  });
+});

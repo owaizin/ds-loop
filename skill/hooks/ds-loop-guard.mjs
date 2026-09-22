@@ -142,6 +142,57 @@ function transitionNeedsNotice(signature) {
   return previous !== signature && signature !== 'complete' && signature !== 'unknown';
 }
 
+/**
+ * Which lines of this file the working tree changed against HEAD.
+ *
+ * Without this the hook reports every high finding in the edited file, so
+ * touching one line of a legacy stylesheet returns its pre-existing debt as
+ * though this edit caused it. That trains a reader to ignore the hook, and it
+ * invites an agent to widen a small task into a cleanup nobody asked for.
+ *
+ * Returns null — meaning "cannot attribute" — for an untracked file, outside a
+ * repository, or any git failure. A wrong attribution is worse than none.
+ */
+function changedLineRanges(file, dir) {
+  try {
+    const r = spawnSync('git', ['diff', '-U0', 'HEAD', '--', file], {
+      encoding: 'utf8',
+      cwd: dir,
+      timeout: 5_000,
+    });
+    if (r.error || r.status !== 0 || typeof r.stdout !== 'string') return null;
+    // an edit that git reports no diff for is already committed; nothing is new
+    const ranges = [];
+    for (const m of r.stdout.matchAll(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/gm)) {
+      const start = Number(m[1]);
+      const count = m[2] === undefined ? 1 : Number(m[2]);
+      if (count > 0) ranges.push([start, start + count - 1]);
+    }
+    return ranges;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * `where` is a formatted string — a token name, a `file:line`, or a count — so
+ * a line is available for some findings and not others. No line means the
+ * attribution is unknown, which is said rather than guessed.
+ */
+function attribute(finding, ranges) {
+  if (ranges === null) return 'unknown';
+  const lines = [...String(finding.where ?? '').matchAll(/:(\d+)\b/g)].map((m) => Number(m[1]));
+  if (lines.length === 0) return 'unknown';
+  const touched = lines.filter((l) => ranges.some(([a, b]) => l >= a && l <= b));
+  if (touched.length === 0) return 'pre-existing';
+  // Most rules count several values into one finding, so a mixed finding is the
+  // normal case, not an edge. Calling it `new` would report a mostly-legacy
+  // finding as freshly caused — the same cry-wolf failure at smaller scale.
+  // ponytail: attribution is per finding, not per value inside it; per-value
+  // needs a structured line on Finding rather than parsing `where`.
+  return touched.length === lines.length ? 'new' : 'partly new';
+}
+
 const notes = [];
 if (coverage && transitionNeedsNotice(coverageSignature(coverage))) {
   const parts = [];
@@ -162,9 +213,32 @@ if (findings.length === 0) {
   process.exit(0);
 }
 
-const lines = findings.map(
-  (f) => `  • [${String(f.severity).toUpperCase()}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
+const ranges = changedLineRanges(filePath, cwd);
+const tagged = findings.map((f) => ({ f, basis: attribute(f, ranges) }));
+
+const lines = tagged.map(
+  ({ f, basis }) =>
+    `  • [${String(f.severity).toUpperCase()}] [${basis}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
 );
+
+// A label with no instruction is decoration: state what each basis licenses.
+const bases = new Set(tagged.map((t) => t.basis));
+if (bases.has('pre-existing')) {
+  notes.push(
+    'ds-loop attribution — [pre-existing] findings sit on lines this edit did not\ntouch. Report them; do not treat them as regressions of this change, and do not\nwiden the task to repair them without asking.',
+  );
+}
+if (bases.has('partly new')) {
+  notes.push(
+    'ds-loop attribution — [partly new] counts values from lines this edit touched\nand lines it did not. Repair what this change introduced; the rest is existing\nwork to raise, not to absorb.',
+  );
+}
+if (bases.has('unknown')) {
+  notes.push(
+    'ds-loop attribution — [unknown] means this finding names no line, or the file\nis untracked, so it may predate this session. Treat it as pre-existing until\nchecked.',
+  );
+}
+
 process.stderr.write(
   `ds-loop guard — the edit to ${filePath.split('/').pop()} has ${findings.length} design-system finding(s):\n\n${lines.join('\n\n')}\n${notes.length > 0 ? `\n${notes.join('\n\n')}\n` : ''}`,
 );
