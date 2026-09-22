@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { LoadedConfig } from '../config/load.ts';
-import { severityTag, style } from '../core/ansi.ts';
+import { severityTag, style, wrapTo } from '../core/ansi.ts';
 import { formatCoverage } from '../core/coverage.ts';
 import { formatNext } from '../core/next.ts';
 import { audit } from './audit.ts';
@@ -59,8 +59,8 @@ export function overview(path: string, loaded: LoadedConfig): number {
     // findings arrive severity-ranked, so the first one is the biggest
     const top = findings[0]!;
     console.log(`\n  biggest   ${severityTag(top.severity)} ${top.ruleId}`);
-    console.log(`            ${top.summary}`);
-    console.log(`            ${top.where}`);
+    for (const line of wrapTo(top.summary, '            ', '            ')) console.log(line);
+    for (const line of wrapTo(top.where, '            ', '            ')) console.log(line);
   }
 
   if (report.suppressions.length > 0) {

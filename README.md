@@ -77,10 +77,9 @@ The engine checks for specific ways code can bypass tokens. In this synthetic ex
 <!-- verified: audit-markup -->
 ```
   [HIGH] token/raw-value-in-markup
-    3 hardcoded value(s) at use sites bypass the token layer
-    (1 colour, 2 length; 3 distinct, 1 already declared as a token)
-    where: bg-[#1da1f2] at Card.tsx:2; p-[13px] at Card.tsx:2; text-[14px] at Card.tsx:3
-    fix:   #1da1f2 is already --palette-blue-500. Swap those first.
+  │ 3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct …
+  │ where: bg-[#1da1f2] at Card.tsx:2; p-[13px] at Card.tsx:2; text-[14px] at Card.tsx:3
+  │ fix:   #1da1f2 is already --palette-blue-500. Swap those first. …
 ```
 
 Before replacing the color, check that the token serves the same purpose in every affected theme. A matching value alone does not establish that.

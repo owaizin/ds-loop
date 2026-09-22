@@ -216,3 +216,18 @@ test('severity tags carry no escape codes when stdout is not a terminal', () => 
     assert.match(full.out, /\[HIGH\] color\/semantic-holds-literal/);
   });
 });
+
+/**
+ * Wrapping is width-dependent, so it is the one piece of presentation a
+ * non-terminal must not get: a captured hook log, a CI log and the documented
+ * samples all compare against single lines.
+ */
+test('a non-terminal keeps one long line per field, and the gutter is always present', () => {
+  inTree({ 'tokens.css': ':root{--color-surface:#ffffff}' }, (dir) => {
+    const { out } = run(['audit', '.'], dir);
+    const risk = out.split('\n').find((l) => l.includes('risk:'));
+    assert.ok(risk, 'no risk line');
+    assert.ok(risk.length > 100, `risk line was wrapped without a TTY: ${risk.length} cols`);
+    assert.ok(risk.trimStart().startsWith('│'), 'the gutter must be emitted everywhere');
+  });
+});

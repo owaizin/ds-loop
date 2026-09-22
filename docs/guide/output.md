@@ -2,6 +2,8 @@
 
 These excerpts are checked against the engine by `test/readme.test.ts`. Line wrapping and marked truncation are permitted; the output vocabulary is unchanged.
 
+The `│` gutter groups the lines of one finding and is always emitted. In a terminal, long `where:`, `risk:` and `fix:` lines wrap to the window width and continue under their label; piped or redirected output keeps each on one line, so a captured log and these excerpts stay comparable. Colour follows the same rule — severity tags are coloured only on a terminal, and `NO_COLOR` turns that off.
+
 ## Public fixture: Radix Colors
 
 From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. The frozen source and provenance are in `fixtures/radix-colors/SOURCE.json`. Findings need investigation: proximity between two palette steps does not prove one should be deleted.
@@ -13,17 +15,14 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
   12 rules run
 
   [LOW] color/near-duplicate-primitives
-    20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable
-    just-noticeable difference
-    where: --amber-1 ≈ --blue-1 (ΔE 2.252285); --amber-1 ≈ --green-1 (ΔE 1.956419);
-           --amber-1 ≈ --red-1 (ΔE 1.652821); --amber-1 ≈ --slate-1 (ΔE 1.563758) …
-    risk:  Nobody can tell these steps apart on screen, so authors pick between them
-           at random and the ramp stops meaning anything.
-    fix:   Confirm each pair is a deliberate ramp step. Collapse the ones that are not.
+  │ 20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable just-noticeable difference
+  │ where: --amber-1 ≈ --blue-1 (ΔE 2.252285); --amber-1 ≈ --green-1 (ΔE 1.956419) …
+  │ risk:  Nobody can tell these steps apart on screen, so authors pick between them at random …
+  │ fix:   Confirm each pair is a deliberate ramp step. Collapse the ones that are not.
 
   [LOW] color/no-intent-plateau
-    no ΔE band holds a cluster count within 15% of the 72 shipped primitives
-    where: swept ΔE 0.5–12
+  │ no ΔE band holds a cluster count within 15% of the 72 shipped primitives
+  │ where: swept ΔE 0.5–12
 
   2 findings — 0 blocking · 0 high · 0 medium · 2 low
 

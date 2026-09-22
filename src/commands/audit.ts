@@ -4,7 +4,7 @@ import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
-import { severityTag } from '../core/ansi.ts';
+import { gutter, severityTag, wrapTo } from '../core/ansi.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { surveyTree } from '../core/files.ts';
 import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
@@ -324,11 +324,18 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
     );
   } else {
     for (const f of r.findings) {
+      const g = gutter();
+      // The label column is 7 wide ('where: '), so a wrapped line resumes under the
+      // text rather than under the label.
+      const body = (label: string, text: string) =>
+        wrapTo(text, `  ${g} ${label.padEnd(7)}`, `  ${g} ${' '.repeat(7)}`);
+
       console.log(`  ${severityTag(f.severity)} ${f.ruleId}`);
-      console.log(`    ${f.summary}`);
-      console.log(`    where: ${f.where}`);
-      if (f.impact) console.log(`    risk:  ${f.impact}`);
-      console.log(`    fix:   ${f.fix}\n`);
+      for (const line of wrapTo(f.summary, `  ${g} `, `  ${g} `)) console.log(line);
+      for (const line of body('where:', f.where)) console.log(line);
+      if (f.impact) for (const line of body('risk:', f.impact)) console.log(line);
+      for (const line of body('fix:', f.fix)) console.log(line);
+      console.log('');
     }
     const bySev = r.findings.reduce<Record<string, number>>((acc, f) => {
       acc[f.severity] = (acc[f.severity] ?? 0) + 1;

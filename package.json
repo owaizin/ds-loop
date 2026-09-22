@@ -17,7 +17,7 @@
     "build": "tsc -p tsconfig.build.json",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "ds-loop": "node --experimental-strip-types src/cli.ts",
+    "ds-loop": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli.ts",
     "prepack": "npm run build",
     "smoke": "node scripts/smoke.mjs",
     "site:serve": "node scripts/serve-site.mjs",

@@ -44,3 +44,50 @@ const SEVERITY_STYLE: Record<Severity, Style[]> = {
 export function severityTag(severity: Severity): string {
   return style(`[${severity.toUpperCase()}]`, ...SEVERITY_STYLE[severity]);
 }
+
+/**
+ * Wrapping is the one thing that cannot be identical everywhere: it depends on a
+ * width only a terminal has. A pipe, a file, the guard hook and the documented
+ * samples in `test/readme.test.ts` therefore keep receiving one long line, exactly
+ * as before. Structure (the gutter, the label column) is deterministic and is
+ * emitted everywhere, so the documentation shows what a reader actually sees.
+ */
+export function termWidth(): number {
+  if (process.stdout.isTTY !== true) return 0;
+  const w = process.stdout.columns;
+  if (typeof w === 'number' && w > 0) return w;
+  // A pty can report no size (`script`, some CI terminals); COLUMNS is the
+  // conventional answer. Only consulted on a TTY, so a pipe still never wraps.
+  const env = Number.parseInt(process.env.COLUMNS ?? '', 10);
+  return Number.isFinite(env) && env > 0 ? env : 0;
+}
+
+/**
+ * Greedy fill. `continuation` is prepended to every line after the first, so a
+ * wrapped `risk:` paragraph stays inside its label column instead of falling back
+ * to column 0 — which is what made a long finding unreadable.
+ */
+export function wrapTo(text: string, firstPrefix: string, continuation: string): string[] {
+  const width = termWidth();
+  if (width === 0) return [`${firstPrefix}${text}`];
+
+  const room = Math.max(24, width - continuation.length - 1);
+  const out: string[] = [];
+  let line = '';
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    if (line === '') line = word;
+    else if (line.length + 1 + word.length <= room) line += ` ${word}`;
+    else {
+      out.push(line);
+      line = word;
+    }
+  }
+  if (line !== '') out.push(line);
+  if (out.length === 0) return [`${firstPrefix}${text}`];
+  return out.map((l, i) => (i === 0 ? `${firstPrefix}${l}` : `${continuation}${l}`));
+}
+
+/** Groups the lines of one finding, so stacked findings do not read as one block. */
+export function gutter(): string {
+  return style('│', 'dim');
+}
