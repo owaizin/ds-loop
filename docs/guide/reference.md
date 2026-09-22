@@ -6,6 +6,7 @@ Run commands from the target project so configuration resolves from its working 
 
 | Command | Result | Writes? |
 | --- | --- | --- |
+| `start [path]` / bare `ds-loop` | Verdict for this directory, its biggest finding, what was read, and the next command | No |
 | `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | Only with `--write-contract`, which creates `DESIGN-SYSTEM.md` and never overwrites one |
 | `audit [path]` | Findings, ratios, verdict and coverage | Only with `--out <dir>` |
 | `scan <path>` | Extracted-value taxonomy and palette clusters | No |

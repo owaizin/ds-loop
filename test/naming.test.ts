@@ -68,3 +68,40 @@ test('CLI report headers are the command name, not the product name', () => {
     assert.doesNotMatch(src, /Design System Loop/, `${file} must not carry product branding in output`);
   }
 });
+
+/**
+ * The CLI inventory is documented twice — SKILL.md's command table and
+ * docs/guide/reference.md's engine-command table — and prose with no test
+ * drifts. It already had: `reference.md` listed seven commands and omitted the
+ * entrance (`start` / bare `ds-loop`), the one feature `src/core/next.ts` and
+ * `test/next.test.ts` exist to protect.
+ *
+ * `test/readme.test.ts` verifies sample *output*, not inventories, so nothing
+ * caught it. Both tables are checked against `cli.ts` rather than each other,
+ * so agreeing on a wrong list still fails.
+ */
+test('both command tables list exactly the commands the CLI implements', () => {
+  const implemented = new Set(
+    [...read('src/cli.ts').matchAll(/^ {4}case '([a-z-]+)':/gm)]
+      .map((m) => m[1]!)
+      .filter((c) => c !== '-h' && c !== '--help'),
+  );
+
+  // SKILL.md marks CLI rows with a **CLI** cell; playbook rows are not commands
+  // a cell may contain escaped pipes, as in `guard [on\|off\|status]`
+  const skillTable = new Set(
+    [...read('skill/SKILL.md').matchAll(/^\| `([a-z]+)(?:\\\||[^|])*\| \*\*CLI\*\*/gm)].map((m) => m[1]!),
+  );
+  // reference.md's engine-command table runs until the next heading
+  const engineSection =
+    read('docs/guide/reference.md').split('## Engine commands')[1]?.split('\n## ')[0] ?? '';
+  const refTable = new Set([...engineSection.matchAll(/^\| `([a-z]+)/gm)].map((m) => m[1]!));
+
+  const sorted = (s: Set<string>) => [...s].sort();
+  assert.deepEqual(sorted(skillTable), sorted(implemented), 'skill/SKILL.md command table is out of date');
+  assert.deepEqual(
+    sorted(refTable),
+    sorted(implemented),
+    'docs/guide/reference.md engine-command table is out of date',
+  );
+});
