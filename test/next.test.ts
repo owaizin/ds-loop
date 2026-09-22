@@ -199,3 +199,20 @@ test('the overview provides a real skill entry and separates activation from ins
     assert.match(out, /npx --no-install ds-loop/);
   });
 });
+
+/**
+ * Colour is for a human at a terminal. Every other consumer — the guard hook
+ * capturing stdout, a CI log, `--json`, and the documented-sample checks in
+ * `test/readme.test.ts` — must receive the bytes it received before colour
+ * existed. `spawnSync` gives no TTY, so these runs stand in for all of them.
+ */
+test('severity tags carry no escape codes when stdout is not a terminal', () => {
+  inTree({ 'tokens.css': ':root{--color-surface:#ffffff}' }, (dir) => {
+    const bare = run([], dir);
+    const full = run(['audit', '.'], dir);
+    const ESC = String.fromCharCode(27);
+    assert.ok(!bare.out.includes(ESC), 'the entrance emitted an escape code without a TTY');
+    assert.ok(!full.out.includes(ESC), 'audit emitted an escape code without a TTY');
+    assert.match(full.out, /\[HIGH\] color\/semantic-holds-literal/);
+  });
+});

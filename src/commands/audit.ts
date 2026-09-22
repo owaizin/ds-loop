@@ -4,6 +4,7 @@ import { adapterLabel, adaptersFor } from '../adapters/registry.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
+import { severityTag } from '../core/ansi.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { surveyTree } from '../core/files.ts';
 import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
@@ -323,7 +324,7 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
     );
   } else {
     for (const f of r.findings) {
-      console.log(`  [${f.severity.toUpperCase()}] ${f.ruleId}`);
+      console.log(`  ${severityTag(f.severity)} ${f.ruleId}`);
       console.log(`    ${f.summary}`);
       console.log(`    where: ${f.where}`);
       if (f.impact) console.log(`    risk:  ${f.impact}`);

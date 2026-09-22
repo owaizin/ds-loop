@@ -1,8 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { LoadedConfig } from '../config/load.ts';
+import { severityTag, style } from '../core/ansi.ts';
 import { formatCoverage } from '../core/coverage.ts';
 import { formatNext } from '../core/next.ts';
 import { audit } from './audit.ts';
+
+const VERSION: string = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf8'),
+).version;
 
 /**
  * What `ds-loop` says when it is run with no arguments — and what `ds-loop start`
@@ -26,7 +32,9 @@ export function overview(path: string, loaded: LoadedConfig): number {
   });
   const { findings, coverage, verdict } = report;
 
-  console.log(`\n  ds-loop ${report.manifest.fixtureLabel}  ·  ${report.manifest.fixtureSha}`);
+  console.log(
+    `\n  ${style(`ds-loop ${VERSION}`, 'bold')}  ·  ${report.manifest.fixtureLabel}  ·  ${report.manifest.fixtureSha}`,
+  );
   if (loaded.source !== 'defaults') console.log(`  config ${loaded.source}`);
   console.log('');
 
@@ -50,7 +58,7 @@ export function overview(path: string, loaded: LoadedConfig): number {
     );
     // findings arrive severity-ranked, so the first one is the biggest
     const top = findings[0]!;
-    console.log(`\n  biggest   [${top.severity.toUpperCase()}] ${top.ruleId}`);
+    console.log(`\n  biggest   ${severityTag(top.severity)} ${top.ruleId}`);
     console.log(`            ${top.summary}`);
     console.log(`            ${top.where}`);
   }
@@ -71,13 +79,16 @@ export function overview(path: string, loaded: LoadedConfig): number {
     console.log('');
     for (const line of next) console.log(line);
   }
-  console.log(`\n  ds-loop audit ${path} prints every finding · ds-loop --help lists every command\n`);
-  console.log('  For a local npm install, run commands as: npx --no-install ds-loop <command>');
+  console.log(`\n  ds-loop audit ${path} prints every finding · ds-loop --help lists every command`);
+
+  // Installing the package prints nothing, so this is the first place a reader can
+  // be told what they have and what to type. Aligned because it is scanned, not read.
   console.log('\n  guided work');
-  console.log('    Ask your coding agent to read:');
-  console.log(`    ${fileURLToPath(new URL('../../skill/SKILL.md', import.meta.url))}`);
+  console.log(`    skill   ${fileURLToPath(new URL('../../skill/SKILL.md', import.meta.url))}`);
+  console.log('    run     npx --no-install ds-loop <command>');
   console.log(
-    '    Describe the problem you want to solve. Installing the package does not start the agent.\n',
+    '\n    Ask your coding agent to read that skill, then describe the problem you want\n' +
+      '    solved. Installing the package does not start the agent.\n',
   );
 
   return findings.length > 0 ? 1 : 0;
