@@ -33,6 +33,10 @@
     "type": "git",
     "url": "git+https://github.com/owaizin/ds-loop.git"
   },
+  "homepage": "https://design-system-loop.vercel.app",
+  "bugs": {
+    "url": "https://github.com/owaizin/ds-loop/issues"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^22.9.0",

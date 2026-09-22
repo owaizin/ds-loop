@@ -29,3 +29,8 @@ docs/PILOT-BRIEF-*.md
 
 # npm pack artifacts from local distribution tests
 *.tgz
+
+# knowledge-graph build output (graphify): generated artifacts and its extraction
+# cache, rebuilt on demand. biome reads this file, so listing it here also keeps
+# the generated JSON out of `npm run check`.
+graphify-out/
