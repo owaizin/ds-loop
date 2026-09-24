@@ -146,15 +146,26 @@ function transitionNeedsNotice(signature) {
  * Which lines of this file the working tree changed against HEAD.
  *
  * Without this the hook reports every high finding in the edited file, so
- * touching one line of a legacy stylesheet returns its pre-existing debt as
- * though this edit caused it. That trains a reader to ignore the hook, and it
- * invites an agent to widen a small task into a cleanup nobody asked for.
+ * touching one line of a legacy stylesheet returns its existing debt with no
+ * way to tell it from the lines just written. That trains a reader to ignore
+ * the hook, and invites an agent to widen a small task into a cleanup.
  *
- * Returns null — meaning "cannot attribute" — for an untracked file, outside a
- * repository, or any git failure. A wrong attribution is worse than none.
+ * This places a finding; it does not establish cause. The diff is against
+ * HEAD, so it includes every uncommitted change to the file, and an edit can
+ * change what an untouched line means (remove the token it references).
+ *
+ * Returns null — meaning "cannot compare" — for an untracked file, outside a
+ * repository, or any git failure. An untracked file needs its own check:
+ * inside a repository `git diff HEAD -- <untracked>` exits 0 with no hunks,
+ * which would otherwise read as "no line changed".
  */
 function changedLineRanges(file, dir) {
   try {
+    const tracked = spawnSync('git', ['ls-files', '--error-unmatch', '--', file], {
+      cwd: dir,
+      timeout: 5_000,
+    });
+    if (tracked.error || tracked.status !== 0) return null;
     const r = spawnSync('git', ['diff', '-U0', 'HEAD', '--', file], {
       encoding: 'utf8',
       cwd: dir,
@@ -184,13 +195,13 @@ function attribute(finding, ranges) {
   const lines = [...String(finding.where ?? '').matchAll(/:(\d+)\b/g)].map((m) => Number(m[1]));
   if (lines.length === 0) return 'unknown';
   const touched = lines.filter((l) => ranges.some(([a, b]) => l >= a && l <= b));
-  if (touched.length === 0) return 'pre-existing';
+  if (touched.length === 0) return 'unchanged lines';
   // Most rules count several values into one finding, so a mixed finding is the
-  // normal case, not an edge. Calling it `new` would report a mostly-legacy
-  // finding as freshly caused — the same cry-wolf failure at smaller scale.
+  // normal case, not an edge. Calling it changed would place a mostly-untouched
+  // finding on this edit — the same cry-wolf failure at smaller scale.
   // ponytail: attribution is per finding, not per value inside it; per-value
   // needs a structured line on Finding rather than parsing `where`.
-  return touched.length === lines.length ? 'new' : 'partly new';
+  return touched.length === lines.length ? 'changed lines' : 'partly changed';
 }
 
 const notes = [];
@@ -223,19 +234,24 @@ const lines = tagged.map(
 
 // A label with no instruction is decoration: state what each basis licenses.
 const bases = new Set(tagged.map((t) => t.basis));
-if (bases.has('pre-existing')) {
+if (bases.has('changed lines') || bases.has('partly changed')) {
   notes.push(
-    'ds-loop attribution — [pre-existing] findings sit on lines this edit did not\ntouch. Report them; do not treat them as regressions of this change, and do not\nwiden the task to repair them without asking.',
+    'ds-loop attribution — changed means the line differs from HEAD. That includes\nevery uncommitted change to this file, not only this edit, and a line can change\nwhile its offending value stays. It places a finding; it does not show this\nedit caused it.',
   );
 }
-if (bases.has('partly new')) {
+if (bases.has('partly changed')) {
   notes.push(
-    'ds-loop attribution — [partly new] counts values from lines this edit touched\nand lines it did not. Repair what this change introduced; the rest is existing\nwork to raise, not to absorb.',
+    'ds-loop attribution — [partly changed] counts values on changed and unchanged\nlines. Review the values on changed lines in this task; raise the rest rather\nthan absorb it.',
+  );
+}
+if (bases.has('unchanged lines')) {
+  notes.push(
+    'ds-loop attribution — [unchanged lines] findings name only lines that match\nHEAD. That does not clear this edit: removing or renaming a token changes what\nuntouched lines resolve to. Check that before calling them unrelated, and do\nnot widen the task to repair them without asking.',
   );
 }
 if (bases.has('unknown')) {
   notes.push(
-    'ds-loop attribution — [unknown] means this finding names no line, or the file\nis untracked, so it may predate this session. Treat it as pre-existing until\nchecked.',
+    'ds-loop attribution — [unknown] means this finding names no line, or the file\nis untracked or outside git, so no line can be compared with HEAD. Leave its\norigin open until checked.',
   );
 }
 
