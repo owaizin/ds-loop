@@ -13,6 +13,8 @@ product-system-skills-v0.2/
 # open engine. Kept on disk so a session can still read them — CLAUDE.md points at
 # HANDOFF.md by design — and out of the published history.
 HANDOFF.md
+docs/HANDOFF-*.md
+docs/CRITIQUE-*.md
 STRATEGY.md
 docs/SKILLS-*.md
 docs/FEEDBACK-TRIAGE-*.md
