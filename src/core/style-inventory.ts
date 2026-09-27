@@ -1,6 +1,11 @@
 import { type RawValue, VALUE_CATEGORIES, type ValueCategory } from './provenance.ts';
 
 export type CategoryInventory = {
+  /** Full extracted value distribution, before findings, exceptions or severity filters.
+   * Property disambiguates font-size from other typography values. No locations
+   * or declarations are inferred from this ordinary-style use-site inventory.
+   */
+  values: { value: string; property: string; classification: string; occurrences: number }[];
   occurrences: number;
   distinctValues: number;
   literals: number;
@@ -33,7 +38,28 @@ export function styleInventory(values: RawValue[]): StyleInventory {
     const denominator = literals + references + mixed;
     const files = new Map<string, number>();
     for (const v of vs) files.set(v.provenance.file, (files.get(v.provenance.file) ?? 0) + 1);
+    const distribution = new Map<
+      string,
+      { value: string; property: string; classification: string; occurrences: number }
+    >();
+    for (const v of vs) {
+      const key = JSON.stringify([v.raw, v.provenance.property, v.provenance.classification]);
+      const row = distribution.get(key) ?? {
+        value: v.raw,
+        property: v.provenance.property,
+        classification: v.provenance.classification,
+        occurrences: 0,
+      };
+      row.occurrences++;
+      distribution.set(key, row);
+    }
     inventory[category] = {
+      values: [...distribution.values()].sort(
+        (a, b) =>
+          b.occurrences - a.occurrences ||
+          a.value.localeCompare(b.value) ||
+          a.property.localeCompare(b.property),
+      ),
       occurrences: vs.length,
       distinctValues: new Set(vs.map((v) => v.raw)).size,
       literals,

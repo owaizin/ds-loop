@@ -92,3 +92,23 @@ test('project aliases outrank aliases internal to upstream in replacement sugges
     },
   );
 });
+
+test('extracted value rows survive suppressions and severity filtering for specimen consumers', () => {
+  project('.a{font-size:14px;padding:8px;color:#333}.b{font-size:14px;padding:var(--space,8px)}', (dir) => {
+    const before = audit(dir, { silent: true });
+    const after = audit(dir, {
+      silent: true,
+      minSeverity: 'blocking',
+      config: { ...config, ignore: [{ rule: '*', reason: 'Test inventory independence' }] },
+    });
+    assert.deepEqual(after.styleInventory, before.styleInventory);
+    assert.deepEqual(after.styleInventory.typography?.values, [
+      { value: '14px', property: 'font-size', classification: 'dimension', occurrences: 2 },
+    ]);
+    assert.equal(after.styleInventory.spacing?.values.length, 2);
+    assert.equal(
+      after.styleInventory.spacing?.values.reduce((sum, v) => sum + v.occurrences, 0),
+      2,
+    );
+  });
+});
