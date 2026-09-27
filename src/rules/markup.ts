@@ -1,3 +1,4 @@
+import { alreadyDeclared, suggestTokens } from '../core/token-suggestions.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
 
 /**
@@ -33,17 +34,9 @@ export const rawValueInMarkupRule: Rule = {
     const dims = offenders.length - colors.length;
     const distinct = new Set(offenders.map((v) => v.raw.toLowerCase())).size;
 
-    // the token layer read by a different adapter answers the only question that
-    // matters for remediation: does a token already carry this exact value? If
-    // it does, the fix is a swap, not a design decision.
-    const declared = new Map<string, string>();
-    for (const v of ctx.values) {
-      const name = v.provenance.tokenName;
-      if (name && v.provenance.classification !== 'reference') declared.set(norm(v.raw), name);
-    }
-    const covered = offenders
-      .map((v) => ({ value: v.raw, token: declared.get(norm(v.raw)) }))
-      .filter((h): h is { value: string; token: string } => h.token !== undefined);
+    // Legacy direct-value wording stays stable for an unambiguous direct match.
+    // The suggestion carries normalized matches, aliases and every candidate.
+    const covered = alreadyDeclared(ctx, offenders);
 
     const swaps =
       covered.length === 0
@@ -66,6 +59,7 @@ export const rawValueInMarkupRule: Rule = {
           )
           .join('; '),
         fix: `${swaps}Replace each with the scale step or token that covers it — a utility that names the scale (bg-surface, p-4) or var(--token) via an arbitrary value. If no token matches the value, add one to the system first; a bracket is the system being bypassed, not extended.`,
+        suggestion: suggestTokens(ctx, offenders),
         data: {
           count: offenders.length,
           colors: colors.length,
@@ -88,9 +82,13 @@ export const rawValueInMarkupRule: Rule = {
 const norm = (raw: string) => raw.replace(/\s+/g, ' ').trim().toLowerCase();
 
 function dedupePairs(pairs: { value: string; token: string }[]): { value: string; token: string }[] {
-  const byValue = new Map<string, { value: string; token: string }>();
-  for (const p of pairs) if (!byValue.has(norm(p.value))) byValue.set(norm(p.value), p);
-  return [...byValue.values()];
+  const seen = new Set<string>();
+  return pairs.filter((pair) => {
+    const key = JSON.stringify([norm(pair.value), pair.token]);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /**

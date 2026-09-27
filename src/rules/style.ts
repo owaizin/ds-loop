@@ -1,5 +1,6 @@
 import { type RawValue, VALUE_CATEGORIES, type ValueCategory } from '../core/provenance.ts';
 import { isStyleLiteral } from '../core/style-inventory.ts';
+import { suggestTokens } from '../core/token-suggestions.ts';
 import type { Rule, RuleTarget } from './types.ts';
 
 /**
@@ -41,6 +42,7 @@ export const rawValueInStyleRule: Rule = {
           where: locations(literals),
           fix: 'Review these values against the project token contract. Where a shared role applies, choose its token and verify affected states. Retain intentional literals with a recorded reason; this finding does not establish a policy violation.',
           data: { category, count: literals.length, hits: literals.map(hit) },
+          suggestion: suggestTokens(ctx, literals),
         });
       if (unknown.length)
         findings.push({

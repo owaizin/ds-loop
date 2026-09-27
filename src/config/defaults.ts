@@ -12,6 +12,7 @@ import type { DsOpsConfig } from './schema.ts';
  * it is a defensible neutral, not because it is correct for any given palette.
  */
 export const DEFAULT_CONFIG: DsOpsConfig = {
+  suggestions: { rootFontSize: 16, lengthTolerancePx: 1 },
   style: {
     // UNCALIBRATED review priorities, not proof that a literal violates policy.
     severity: {

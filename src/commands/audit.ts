@@ -12,6 +12,7 @@ import { changedFiles, resolveSource } from '../core/source.ts';
 import { type StyleInventory, styleInventory } from '../core/style-inventory.ts';
 import { type Suppression, applyIgnores } from '../core/suppress.ts';
 import { type TokenContextRead, readTokenContext } from '../core/token-context.ts';
+import { formatSuggestion } from '../core/token-suggestions.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
 
@@ -346,6 +347,8 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
       for (const line of body('where:', f.where)) console.log(line);
       if (f.impact) for (const line of body('risk:', f.impact)) console.log(line);
       for (const line of body('fix:', f.fix)) console.log(line);
+      if (f.suggestion)
+        for (const line of body('suggest:', formatSuggestion(f.suggestion))) console.log(line);
       console.log('');
     }
     const bySev = r.findings.reduce<Record<string, number>>((acc, f) => {

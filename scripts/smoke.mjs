@@ -437,6 +437,35 @@ try {
     rmSync(probe, { recursive: true });
   });
 
+  check('installed token suggestions resolve aliases without enabling token replacement', () => {
+    const probe = join(dir, 'token-suggestions');
+    mkdirSync(probe);
+    writeFileSync(
+      join(probe, 'tokens.css'),
+      ':root{--palette-gray-500:#333;--color-text:var(--palette-gray-500)}',
+    );
+    writeFileSync(join(probe, 'a.css'), '.x{color:rgb(51 51 51)}');
+    writeFileSync(join(probe, 'Card.tsx'), '<p className="text-[#333333]" />');
+    const report = JSON.parse(run(['audit', '.', '--json'], probe).stdout);
+    const values = report.findings.flatMap((f) => f.suggestion?.values ?? []);
+    assert(values.length === 2, 'both style and markup suggestions must ship');
+    assert(
+      values.every((v) => v.status === 'exact'),
+      'equivalent color spellings should match',
+    );
+    assert(
+      values.every(
+        (v) => v.candidates.length === 2 && v.candidates.find((c) => c.preferred)?.token === '--color-text',
+      ),
+      'alias preference must retain primitive candidate',
+    );
+    assert(run(['audit', '.'], probe).stdout.includes('suggest:'), 'human output omitted suggestion');
+    assert(
+      !run(['fix', '--help'], probe).stdout.includes('--exact-tokens'),
+      'unapproved fixer must not ship',
+    );
+  });
+
   check('a non-git directory produces no git noise', () => {
     const r = run(['audit', '.']);
     assert(!/fatal:/.test(r.stderr), `git error leaked: ${r.stderr.trim()}`);

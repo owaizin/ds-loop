@@ -296,7 +296,7 @@ test('hundreds of CSS use sites cannot change palette rules, scan palette, or sw
   );
 });
 
-test('Tailwind finding JSON and human blocks remain byte-identical to the pre-change run', () => {
+test('Tailwind finding JSON and human blocks remain byte-identical except the added suggestion', () => {
   const baseline = JSON.parse(
     readFileSync(new URL('./fixtures/tailwind-findings.json', import.meta.url), 'utf8'),
   );
@@ -310,7 +310,10 @@ test('Tailwind finding JSON and human blocks remain byte-identical to the pre-ch
       const findings = report.findings.filter((f) =>
         ['token/raw-value-in-markup', 'token/stock-palette-utility'].includes(f.ruleId),
       );
-      assert.equal(JSON.stringify(findings), JSON.stringify(baseline.findings));
+      assert.equal(
+        JSON.stringify(findings.map(({ suggestion: _suggestion, ...legacy }) => legacy)),
+        JSON.stringify(baseline.findings),
+      );
       for (const block of baseline.blocks) {
         assert.ok(block.length > 0);
         assert.ok(output.includes(block));

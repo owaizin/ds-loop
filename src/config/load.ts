@@ -74,6 +74,7 @@ export function loadConfig(explicitPath: string | undefined, cwd = process.cwd()
 function mergeConfig(user: Record<string, unknown>): DsOpsConfig {
   const u = user as Partial<DsOpsConfig>;
   return {
+    suggestions: readSuggestions(user.suggestions),
     style: readStyle(user.style),
     clustering: { ...DEFAULT_CONFIG.clustering, ...u.clustering },
     taxonomy: { ...DEFAULT_CONFIG.taxonomy, ...u.taxonomy },
@@ -191,4 +192,23 @@ function readStyle(raw: unknown): DsOpsConfig['style'] {
     result[category as (typeof VALUE_CATEGORIES)[number]] = level as Severity;
   }
   return { severity: result };
+}
+
+function readSuggestions(raw: unknown): DsOpsConfig['suggestions'] {
+  if (raw === undefined) return { ...DEFAULT_CONFIG.suggestions };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+    throw new Error('config: suggestions must be an object');
+  const result = { ...DEFAULT_CONFIG.suggestions };
+  for (const [key, value] of Object.entries(raw)) {
+    if (
+      !['rootFontSize', 'lengthTolerancePx'].includes(key) ||
+      typeof value !== 'number' ||
+      !Number.isFinite(value) ||
+      value < 0 ||
+      (key === 'rootFontSize' && value === 0)
+    )
+      throw new Error(`config: invalid suggestions.${key}`);
+    result[key as keyof typeof result] = value;
+  }
+  return result;
 }

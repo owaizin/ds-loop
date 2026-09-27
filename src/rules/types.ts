@@ -3,6 +3,7 @@ import type { DsOpsConfig } from '../config/schema.ts';
 import type { FixtureMeta } from '../core/fixture.ts';
 import type { RawValue } from '../core/provenance.ts';
 import type { TokenContext } from '../core/token-context.ts';
+import type { FindingSuggestion } from '../core/token-suggestions.ts';
 
 export type Severity = 'blocking' | 'high' | 'medium' | 'low';
 
@@ -20,6 +21,8 @@ export type Finding = {
   fix: string;
   /** what breaks if it is left alone — copied from the rule when the finding is built */
   impact?: string;
+  /** Review candidates, never replacement authorization. */
+  suggestion?: FindingSuggestion;
   /** machine-readable payload for scorecards and diffs */
   data?: Record<string, unknown>;
 };

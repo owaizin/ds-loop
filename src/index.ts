@@ -28,3 +28,5 @@ export { RULES, rulesForTarget, KNOWN_TARGETS } from './rules/registry.ts';
 
 export { cssRuleBodiesAdapter } from './adapters/css-rule-bodies.ts';
 export type { StyleInventory, CategoryInventory } from './core/style-inventory.ts';
+
+export type { FindingSuggestion, TokenSuggestion, TokenCandidate } from './core/token-suggestions.ts';
