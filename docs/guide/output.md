@@ -10,9 +10,10 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 
 <!-- verified: audit-radix -->
 ```
+
   ds-loop audit — Radix Colors  ·  target: all  ·  fixture
-  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.3.0   config 6b7f4662
-  13 rules run
+  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.3.0   config 652d0f5e
+  14 rules run
 
   [LOW] color/near-duplicate-primitives
   │ 20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable just-noticeable difference
