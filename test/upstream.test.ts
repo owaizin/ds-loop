@@ -112,3 +112,9 @@ test('extracted value rows survive suppressions and severity filtering for speci
     );
   });
 });
+
+test('a JavaScript API caller missing the new field does not classify everything as upstream', () => {
+  const legacy = structuredClone(DEFAULT_CONFIG);
+  Reflect.deleteProperty(legacy.taxonomy, 'upstreamPattern');
+  assert.equal(classifyTier('--color-text', legacy), 'semantic');
+});

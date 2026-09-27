@@ -14,7 +14,8 @@ export type Tier = 'upstream' | 'primitive' | 'semantic' | 'component' | 'unknow
 export function isUpstreamName(tokenName: string | null, cfg: DsOpsConfig): boolean {
   return (
     tokenName !== null &&
-    cfg.taxonomy.upstreamPattern !== null &&
+    typeof cfg.taxonomy.upstreamPattern === 'string' &&
+    cfg.taxonomy.upstreamPattern.length > 0 &&
     new RegExp(cfg.taxonomy.upstreamPattern, 'i').test(tokenName)
   );
 }
