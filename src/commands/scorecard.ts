@@ -148,6 +148,19 @@ function print(row: ScorecardRow, prev: ScorecardRow | null, path: string, dryRu
   }
 
   const c = comparability(prev, row);
+  if (!c.clean) {
+    console.log(`  instrument moved — ${c.reason}. No delta reported.`);
+    for (const k of Object.keys(row.ratios)) console.log(`    ${k.padEnd(30)} ${fmt(row.ratios[k])}`);
+    console.log(
+      dryRun
+        ? '\n  Dry run: no new baseline recorded.'
+        : '\n  This row is the baseline for the next run with the same instrument.',
+    );
+    if (!row.coverageComplete)
+      console.log('  note: this audit could not read part of the source — run `audit` for the scope.');
+    console.log('');
+    return;
+  }
   console.log(`  since ${prev.ranAt.slice(0, 10)}\n`);
 
   for (const k of keys) {
@@ -165,13 +178,6 @@ function print(row: ScorecardRow, prev: ScorecardRow | null, path: string, dryRu
       if (a === b) continue;
       console.log(`    ${id.padEnd(44)} ${a} → ${b}  ${arrow(a, b)}`);
     }
-  }
-
-  if (!c.clean) {
-    console.log(`\n  ⚠ not a clean comparison — ${c.reason}.`);
-    console.log('    The source and the instrument both moved, so this delta cannot be');
-    console.log('    attributed to the code. Re-run the earlier point with the current');
-    console.log('    adapters before reading anything into it.');
   }
 
   if (!row.coverageComplete) {

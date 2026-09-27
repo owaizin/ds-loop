@@ -225,12 +225,38 @@ if (findings.length === 0) {
 }
 
 const ranges = changedLineRanges(filePath, cwd);
-const tagged = findings.map((f) => ({ f, basis: attribute(f, ranges) }));
+const tagged = findings.flatMap((f) => {
+  // Style findings carry complete structured hits. Never attribute a grouped
+  // finding from its abbreviated human `where` string when full hits exist.
+  if (f.ruleId !== 'token/raw-value-in-style' || ranges === null || !Array.isArray(f.data?.hits))
+    return [{ f, basis: attribute(f, ranges) }];
+  const groups = new Map();
+  for (const hit of f.data.hits) {
+    const basis =
+      !Number.isInteger(hit.line) || resolve(cwd, hit.file ?? '') !== resolve(cwd, filePath)
+        ? 'unknown'
+        : ranges.some(([a, b]) => hit.line >= a && hit.line <= b)
+          ? 'changed lines'
+          : 'unchanged lines';
+    if (!groups.has(basis)) groups.set(basis, []);
+    groups.get(basis).push(hit);
+  }
+  return [...groups].map(([basis, hits]) => ({
+    basis,
+    f: {
+      ...f,
+      summary: `${hits.length} ${f.data.category} property value(s) in this line group; ${f.data.notJudged ? 'classification unavailable' : 'literal presence; project permission not judged'}`,
+      where: hits.map((h) => `${h.property}: ${h.value} at ${h.file}:${h.line}`).join('; '),
+    },
+  }));
+});
 
-const lines = tagged.map(
-  ({ f, basis }) =>
-    `  • [${String(f.severity).toUpperCase()}] [${basis}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
-);
+const lines = tagged
+  .filter(({ basis }) => basis !== 'unchanged lines')
+  .map(
+    ({ f, basis }) =>
+      `  • [${String(f.severity).toUpperCase()}] [${basis}] ${f.summary}\n    ${f.where}\n    fix: ${f.fix}`,
+  );
 
 // A label with no instruction is decoration: state what each basis licenses.
 const bases = new Set(tagged.map((t) => t.basis));
@@ -245,8 +271,9 @@ if (bases.has('partly changed')) {
   );
 }
 if (bases.has('unchanged lines')) {
-  notes.push(
-    'ds-loop attribution — [unchanged lines] findings name only lines that match\nHEAD. That does not clear this edit: removing or renaming a token changes what\nuntouched lines resolve to. Check that before calling them unrelated, and do\nnot widen the task to repair them without asking.',
+  const count = tagged.filter(({ basis }) => basis === 'unchanged lines').length;
+  lines.push(
+    `  [unchanged lines] ${count} finding group(s) summarized; run an unfiltered audit for details. That does not clear this edit: token changes can affect untouched lines. Do not widen the task without asking.`,
   );
 }
 if (bases.has('unknown')) {

@@ -81,3 +81,29 @@ test('--dry-run writes nothing', async () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('an upgraded instrument prints current values without numerical deltas', async () => {
+  const { scorecard } = await import('../src/commands/scorecard.ts');
+  const { DEFAULT_CONFIG } = await import('../src/config/defaults.ts');
+  const dir = mkdtempSync(join(tmpdir(), 'ds-loop-upgrade-'));
+  const log = console.log;
+  const output: string[] = [];
+  console.log = (...args: unknown[]) => output.push(args.join(' '));
+  try {
+    writeFileSync(join(dir, 'tokens.css'), ':root{--brand:#333;--accent:#333}\n');
+    scorecard(dir, { dir });
+    output.length = 0;
+    const config = { ...DEFAULT_CONFIG, clustering: { deltaE: 1 } };
+    scorecard(dir, { dir, config });
+    assert.match(output.join('\n'), /instrument moved/);
+    assert.doesNotMatch(output.join('\n'), /→|▲|▼/);
+    assert.match(output.join('\n'), /baseline for the next run/);
+    output.length = 0;
+    scorecard(dir, { dir, config });
+    assert.doesNotMatch(output.join('\n'), /instrument moved/);
+    assert.match(output.join('\n'), /unchanged/);
+  } finally {
+    console.log = log;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

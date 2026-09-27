@@ -323,3 +323,17 @@ test('a finding counting changed and unchanged lines is partly changed', () => {
     assert.match(stderr, /raise the rest rather\nthan absorb it/);
   });
 });
+
+test('legacy style file: one edited line is reported; unchanged findings have one summary line', () => {
+  inProject({}, (dir) => {
+    const legacy = Array.from({ length: 80 }, (_, i) => `.old${i}{color:#333;padding:12px}`).join('\n');
+    commitBaseline(dir, 'legacy.css', `${legacy}\n.target{padding:8px}\n`);
+    writeFileSync(join(dir, 'legacy.css'), `${legacy}\n.target{padding:13px}\n`);
+    const { stderr, status } = edit(dir, 'legacy.css');
+    assert.equal(status, 2, stderr);
+    assert.match(stderr, /\[changed lines\].*spacing/, stderr);
+    assert.match(stderr, /legacy\.css:81/, 'the hit beyond the human eight-location cap must be placed');
+    assert.equal(stderr.split('\n').filter((line) => line.includes('[unchanged lines]')).length, 1, stderr);
+    assert.doesNotMatch(stderr, /\.old0|legacy\.css:1\b/, 'unchanged values are summarized, not expanded');
+  });
+});
