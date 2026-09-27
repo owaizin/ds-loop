@@ -7,6 +7,7 @@ import {
 } from './color.ts';
 import { rawDimensionRule } from './dimension.ts';
 import { rawValueInMarkupRule, stockPaletteUtilityRule } from './markup.ts';
+import { rawValueInStyleRule } from './style.ts';
 import {
   semanticAppearanceNameRule,
   tierLeakageRule,
@@ -35,6 +36,7 @@ export const RULES: Rule[] = [
   nearDuplicatePaletteRule,
   mixedColorFormRule,
   colorKneeRule,
+  rawValueInStyleRule,
 ];
 
 export function rulesForTarget(target: RuleTarget | 'all'): Rule[] {

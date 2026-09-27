@@ -24,6 +24,7 @@ export const rawValueInMarkupRule: Rule = {
     const offenders = ctx.values.filter(
       (v) =>
         v.provenance.tokenName === null &&
+        v.provenance.surface === 'markup' &&
         (v.provenance.classification === 'color' || v.provenance.classification === 'dimension'),
     );
     if (offenders.length === 0) return [];

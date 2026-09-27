@@ -9,6 +9,7 @@ import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.t
 import { surveyTree } from '../core/files.ts';
 import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
+import { type StyleInventory, styleInventory } from '../core/style-inventory.ts';
 import { type Suppression, applyIgnores } from '../core/suppress.ts';
 import { type TokenContextRead, readTokenContext } from '../core/token-context.ts';
 import { rulesForTarget } from '../rules/registry.ts';
@@ -28,6 +29,8 @@ export type AuditReport = {
     judgedFiles?: string[];
     tokenContext?: TokenContextRead[];
   };
+  /** Ordinary CSS property inventory before exceptions or severity filtering. */
+  styleInventory: StyleInventory;
   rulesRun: string[];
   findings: Finding[];
   /** what this audit could not read — a clean verdict is only as wide as its coverage */
@@ -103,7 +106,7 @@ export function audit(
   const values = adapters.flatMap((a) => a.extract(source, config));
   const colors = values.filter((v) => v.provenance.classification === 'color');
   const tokenContext = readTokenContext(source, config, values);
-  const ctx = { meta, source, config, values, colors, tokenContext };
+  const ctx = { meta, source, config, values, colors, tokenContext, target: ruleTarget };
 
   const rules = rulesForTarget(ruleTarget);
   const minRank = opts.minSeverity ? SEVERITY_ORDER[opts.minSeverity] : Number.POSITIVE_INFINITY;
@@ -165,7 +168,8 @@ export function audit(
   // `token/raw-value-in-markup`.
   const distinctDeclared = new Set(declared.map((v) => norm(v.raw))).size;
 
-  const ratios = {
+  const inventory = styleInventory(values);
+  const ratios: Record<string, number> = {
     // theme-confounded; kept because the calibration corpus quotes it. See row 007.
     'literal-colors-per-distinct': round(declared.length / Math.max(distinctDeclared, 1)),
     // theme-independent: the same measurement taken within each selector scope
@@ -177,6 +181,11 @@ export function audit(
     // set, so it moved from 0.714 to 0.455 across the corpus when rules were
     // added and nothing about any source changed. It described the tool.
   };
+
+  for (const [category, row] of Object.entries(inventory)) {
+    if (row.tokenizationRatio !== null)
+      ratios[`style-tokenization-${category}`] = round(row.tokenizationRatio);
+  }
 
   const coverage = buildCoverage(
     source.root,
@@ -201,6 +210,7 @@ export function audit(
       ...(source.only ? { judgedFiles: source.only } : {}),
       ...(tokenContext.reads.length > 0 ? { tokenContext: tokenContext.reads } : {}),
     },
+    styleInventory: inventory,
     rulesRun: rules.map((r) => r.id),
     findings,
     coverage,
@@ -261,6 +271,7 @@ function noAdapterReport(
       ranAt: new Date().toISOString(),
       ...(only !== undefined ? { judgedFiles: only } : {}),
     },
+    styleInventory: {},
     rulesRun: [],
     findings: [],
     coverage,
@@ -354,6 +365,24 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
         `    ${s.rule} · ${s.value} — ${s.matched} value(s)${s.createdAt ? ` · ${s.createdAt}` : ''}`,
       );
       console.log(`      ${s.reason}`);
+    }
+  }
+
+  if (Object.keys(r.styleInventory).length) {
+    console.log('\n  CSS property inventory — extracted, before exceptions and severity filtering');
+    console.log(
+      '    tokenization = reference-only values / (literal + reference + mixed values); not reference resolution',
+    );
+    for (const [category, row] of Object.entries(r.styleInventory)) {
+      console.log(
+        `    ${category}: ${row.occurrences} occurrences · ${row.distinctValues} distinct · ${row.literals} literal · ${row.references} reference · ${row.mixed} mixed · ${row.unclassified} unclassified · ${row.excluded} excluded`,
+      );
+      console.log(
+        `      tokenization: ${row.tokenizationRatio === null ? 'not measured' : row.tokenizationRatio.toFixed(3)} · top files: ${row.topFiles
+          .slice(0, 5)
+          .map((f) => `${f.file} (${f.occurrences})`)
+          .join(', ')}`,
+      );
     }
   }
 

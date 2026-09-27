@@ -20,6 +20,8 @@ function value(tokenName: string | null, raw: string, file = 'theme.css'): RawVa
       selector: ':root',
       property: tokenName ?? 'bg',
       tokenName,
+      surface: null,
+      category: null,
       classification: 'color',
       reason: 'test',
       fixtureSha: 'test',

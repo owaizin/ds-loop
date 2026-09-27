@@ -55,7 +55,10 @@ export function scorecard(
     adapters: report.manifest.adapter,
     configHash: report.manifest.configHash,
     ratios: report.ratios,
-    findings: Object.fromEntries(report.findings.map((f) => [f.ruleId, countOf(f)])),
+    findings: report.findings.reduce<Record<string, number>>((counts, f) => {
+      counts[f.ruleId] = (counts[f.ruleId] ?? 0) + countOf(f);
+      return counts;
+    }, {}),
     findingCount: report.findings.length,
     coverageComplete: report.coverage.complete,
   };
@@ -179,7 +182,7 @@ function print(row: ScorecardRow, prev: ScorecardRow | null, path: string, dryRu
 
 const fmt = (n: number | undefined) => (n === undefined ? '—' : String(n));
 
-/** lower is better for every ratio ds-loop emits, so down is progress */
+/** Arrows indicate numeric direction, not product progress. Tokenization rises with reference usage. */
 function arrow(a: number | undefined, b: number | undefined): string {
   if (a === undefined || b === undefined) return '';
   if (a === b) return 'unchanged';

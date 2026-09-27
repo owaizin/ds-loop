@@ -1,4 +1,10 @@
-export type { RawValue, Provenance, ValueClassification, RunManifest } from './core/provenance.ts';
+export type {
+  RawValue,
+  Provenance,
+  ValueClassification,
+  ValueCategory,
+  RunManifest,
+} from './core/provenance.ts';
 export type { FixtureMeta } from './core/fixture.ts';
 export { loadFixture } from './core/fixture.ts';
 export type { DsOpsConfig, TokenContextMapping } from './config/schema.ts';
@@ -19,3 +25,6 @@ export { audit } from './commands/audit.ts';
 export type { AuditReport } from './commands/audit.ts';
 export type { Rule, RuleContext, Finding, Severity, RuleTarget } from './rules/types.ts';
 export { RULES, rulesForTarget, KNOWN_TARGETS } from './rules/registry.ts';
+
+export { cssRuleBodiesAdapter } from './adapters/css-rule-bodies.ts';
+export type { StyleInventory, CategoryInventory } from './core/style-inventory.ts';

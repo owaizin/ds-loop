@@ -39,6 +39,8 @@ export type Coverage = {
    * human, not a hole in the tool, and conflating the two makes both unreadable.
    */
   undecided: { count: number; samples: string[] };
+  /** Unsupported CSS use-site expressions, distinct from low-alpha color roles. */
+  unclassifiedStyles?: { count: number; samples: string[] };
   /** rules that returned nothing because they could not judge, not because it was clean */
   couldNotJudge: string[];
   /**
@@ -97,7 +99,12 @@ export function buildCoverage(
 
   const ambiguous = values.filter((v) => v.provenance.classification === 'ambiguous');
   const cannotConvert = ambiguous.filter((v) => isUnparsedColorFunction(v.raw));
-  const roleUndecided = ambiguous.filter((v) => !isUnparsedColorFunction(v.raw));
+  const roleUndecided = ambiguous.filter(
+    (v) => v.provenance.surface !== 'style' && !isUnparsedColorFunction(v.raw),
+  );
+  const unclassifiedStyles = ambiguous.filter(
+    (v) => v.provenance.surface === 'style' && !isUnparsedColorFunction(v.raw),
+  );
   const sample = (vs: typeof ambiguous) => [...new Set(vs.map((v) => v.raw))].slice(0, 4);
 
   // a rule whose own finding says it could not judge — the tier rules do this
@@ -117,6 +124,9 @@ export function buildCoverage(
     unconvertible: { count: cannotConvert.length, samples: sample(cannotConvert) },
     undecided: { count: roleUndecided.length, samples: sample(roleUndecided) },
     couldNotJudge,
+    ...(unclassifiedStyles.length
+      ? { unclassifiedStyles: { count: unclassifiedStyles.length, samples: sample(unclassifiedStyles) } }
+      : {}),
     // `undecided` does not make an audit incomplete: the tool read the value and
     // converted it. Someone has to decide what it means, which is not a gap.
     complete:
@@ -124,6 +134,7 @@ export function buildCoverage(
       Object.keys(unreadFormats).length === 0 &&
       tokenFiles.length === 0 &&
       cannotConvert.length === 0 &&
+      unclassifiedStyles.length === 0 &&
       couldNotJudge.length === 0,
   };
 }
@@ -163,6 +174,13 @@ export function formatCoverage(c: Coverage): string[] {
       `    ${c.undecided.count} low-alpha colour(s) of undecided role: ${c.undecided.samples.join(', ')}`,
     );
     lines.push('      converted fine; whether each is a palette entry or an overlay tint is yours');
+  }
+
+  if (c.unclassifiedStyles?.count) {
+    lines.push(
+      `    ${c.unclassifiedStyles.count} CSS property expression(s) unclassified: ${c.unclassifiedStyles.samples.join(', ')}`,
+    );
+    lines.push('      excluded from tokenization denominators; inspect in source context');
   }
 
   if (c.couldNotJudge.length > 0) {

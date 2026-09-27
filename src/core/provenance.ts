@@ -11,7 +11,20 @@
  * Reconstructing this after the fact is impossible. It is cheap now.
  */
 
+export const VALUE_CATEGORIES = [
+  'color',
+  'spacing',
+  'typography',
+  'radius',
+  'shadow',
+  'z-index',
+  'duration',
+] as const;
+export type ValueCategory = (typeof VALUE_CATEGORIES)[number];
+
 export type ValueClassification =
+  | 'style-literal' // a property-qualified literal or recipe, not a palette declaration
+  | 'mixed' // token references and active literals in the same value
   | 'color' // a real color the design system reasons about
   | 'dimension' // a raw length or number: 16px, 1rem, 600, a shorthand
   | 'shadow-internal' // a color that only exists as part of a shadow/elevation recipe
@@ -31,6 +44,10 @@ export type Provenance = {
   property: string;
   /** the design-token name, when the property is a custom property */
   tokenName: string | null;
+  /** Use-site medium; null for declarations or unclassified legacy values. */
+  surface: 'markup' | 'style' | null;
+  /** Property role, separate from how the value is represented. */
+  category: ValueCategory | null;
   classification: ValueClassification;
   /** human-readable justification for the classification — this is opinion, made inspectable */
   reason: string;

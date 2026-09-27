@@ -25,6 +25,8 @@ export type Finding = {
 };
 
 export type RuleContext = {
+  /** Requested audit domain; omitted by direct callers means all. */
+  target?: RuleTarget | 'all';
   meta: FixtureMeta;
   source: SourceRef;
   config: DsOpsConfig;

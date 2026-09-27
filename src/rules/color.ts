@@ -76,7 +76,7 @@ export const literalDuplicateRule: Rule = {
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const byValue = new Map<string, string[]>();
-    for (const v of ctx.colors) {
+    for (const v of ctx.colors.filter((v) => v.provenance.tokenName !== null)) {
       const k = normRaw(v.raw);
       const names = byValue.get(k) ?? [];
       names.push(v.provenance.tokenName ?? '(inline)');
@@ -115,6 +115,7 @@ export const nearDuplicatePaletteRule: Rule = {
   run(ctx: RuleContext): Finding[] {
     const prims = dedupe(
       ctx.colors
+        .filter((v) => v.provenance.tokenName !== null)
         .filter((v) => isPrimitive(v.provenance.tokenName, ctx.config))
         .map((v) => ({ id: v.provenance.tokenName ?? v.raw, raw: v.raw })),
     );

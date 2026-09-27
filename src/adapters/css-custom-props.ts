@@ -82,6 +82,8 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
           selector,
           property: tokenName,
           tokenName,
+          surface: null,
+          category: null,
           fixtureSha: source.fixtureSha,
           adapterId: ID,
           adapterVersion: VERSION,

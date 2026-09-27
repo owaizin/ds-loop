@@ -398,6 +398,45 @@ try {
     assert(report.verdict === 'not-checked', `verdict was ${report.verdict}`);
   });
 
+  check('installed CSS style adapter reports uncapped hits, category policy and inventory', () => {
+    const probe = join(dir, 'style-literals');
+    mkdirSync(probe);
+    writeFileSync(
+      join(probe, 'a.css'),
+      Array.from({ length: 61 }, (_, i) => `.x${i}{padding:12px}`)
+        .concat('.ref{padding:var(--space, 12px);transition:opacity 100ms ease}')
+        .join('\n'),
+    );
+    writeFileSync(
+      join(probe, 'ds-loop.config.json'),
+      JSON.stringify({ style: { severity: { duration: 'high' } } }),
+    );
+    const result = run(['audit', '.', '--json'], probe);
+    assert(result.status === 1, `expected findings, got ${result.status}`);
+    const report = JSON.parse(result.stdout);
+    assert(
+      report.manifest.adapter.includes('css-rule-bodies@0.1.0'),
+      'style adapter missing from packed registry',
+    );
+    const spacing = report.findings.find(
+      (f) => f.ruleId === 'token/raw-value-in-style' && f.data.category === 'spacing',
+    );
+    const duration = report.findings.find(
+      (f) => f.ruleId === 'token/raw-value-in-style' && f.data.category === 'duration',
+    );
+    assert(spacing?.data.hits.length === 61, 'style hits truncated');
+    assert(duration?.severity === 'high', 'category config was not applied');
+    assert(report.styleInventory.spacing.occurrences === 62, 'extracted inventory missing references');
+    assert(report.styleInventory.spacing.tokenizationRatio === 1 / 62, 'wrong ratio denominator');
+    assert(
+      spacing.data.hits.every(
+        (hit) => hit.surface === 'style' && hit.category === 'spacing' && hit.tokenName === null,
+      ),
+      'use-site provenance missing',
+    );
+    rmSync(probe, { recursive: true });
+  });
+
   check('a non-git directory produces no git noise', () => {
     const r = run(['audit', '.']);
     assert(!/fatal:/.test(r.stderr), `git error leaked: ${r.stderr.trim()}`);

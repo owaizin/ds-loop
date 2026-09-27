@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { VALUE_CATEGORIES } from '../core/provenance.ts';
 import type { Severity } from '../rules/types.ts';
 import { DEFAULT_CONFIG } from './defaults.ts';
 import type { DsOpsConfig, IgnoreEntry, TokenContextMapping } from './schema.ts';
@@ -73,6 +74,7 @@ export function loadConfig(explicitPath: string | undefined, cwd = process.cwd()
 function mergeConfig(user: Record<string, unknown>): DsOpsConfig {
   const u = user as Partial<DsOpsConfig>;
   return {
+    style: readStyle(user.style),
     clustering: { ...DEFAULT_CONFIG.clustering, ...u.clustering },
     taxonomy: { ...DEFAULT_CONFIG.taxonomy, ...u.taxonomy },
     sweep: { ...DEFAULT_CONFIG.sweep, ...u.sweep },
@@ -168,4 +170,25 @@ function readTokenContexts(raw: unknown): TokenContextMapping[] {
       tokens: paths(m.tokens, `tokenContexts[${i}].tokens`, false),
     };
   });
+}
+
+function readStyle(raw: unknown): DsOpsConfig['style'] {
+  if (raw === undefined) return structuredClone(DEFAULT_CONFIG.style);
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw))
+    throw new Error('config: style must be an object');
+  const severity = (raw as Record<string, unknown>).severity;
+  if (severity === undefined) return structuredClone(DEFAULT_CONFIG.style);
+  if (severity === null || typeof severity !== 'object' || Array.isArray(severity))
+    throw new Error('config: style.severity must be a category mapping');
+  const result = { ...DEFAULT_CONFIG.style.severity };
+  for (const [category, level] of Object.entries(severity)) {
+    if (
+      !VALUE_CATEGORIES.includes(category as (typeof VALUE_CATEGORIES)[number]) ||
+      typeof level !== 'string' ||
+      !['blocking', 'high', 'medium', 'low'].includes(level)
+    )
+      throw new Error(`config: invalid style.severity entry ${category}: ${level}`);
+    result[category as (typeof VALUE_CATEGORIES)[number]] = level as Severity;
+  }
+  return { severity: result };
 }

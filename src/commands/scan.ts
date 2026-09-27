@@ -20,7 +20,7 @@ export function scan(fixtureDir: string, config: DsOpsConfig = DEFAULT_CONFIG): 
   const values = adapters.flatMap((a) => a.extract(source, config));
 
   const byClass = groupBy(values, (v) => v.provenance.classification);
-  const colors = byClass.color ?? [];
+  const colors = (byClass.color ?? []).filter((v) => v.provenance.tokenName !== null);
   const ambiguous = byClass.ambiguous ?? [];
   const shadowInternal = byClass['shadow-internal'] ?? [];
   const excluded = byClass.excluded ?? [];

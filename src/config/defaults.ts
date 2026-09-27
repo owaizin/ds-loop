@@ -12,6 +12,18 @@ import type { DsOpsConfig } from './schema.ts';
  * it is a defensible neutral, not because it is correct for any given palette.
  */
 export const DEFAULT_CONFIG: DsOpsConfig = {
+  style: {
+    // UNCALIBRATED review priorities, not proof that a literal violates policy.
+    severity: {
+      color: 'high',
+      spacing: 'high',
+      typography: 'medium',
+      radius: 'medium',
+      shadow: 'medium',
+      'z-index': 'low',
+      duration: 'low',
+    },
+  },
   clustering: {
     deltaE: 2.3,
   },

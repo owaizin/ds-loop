@@ -117,7 +117,10 @@ export const tierModelUndetectableRule: Rule = {
     'A clean `token/tier-leakage` result in this source means nothing was checked, not that nothing is wrong — the strongest silent-pass this tool can produce.',
   targets: ['tokens'],
   run(ctx: RuleContext): Finding[] {
-    const refs = ctx.values.filter((v) => v.provenance.classification === 'reference');
+    // Ordinary CSS references are consumers, not tokens whose tier is unknown.
+    const refs = ctx.values.filter(
+      (v) => v.provenance.classification === 'reference' && v.provenance.surface !== 'style',
+    );
     if (refs.length === 0) return [];
 
     const classified = refs.filter((v) => classifyTier(v.provenance.tokenName, ctx.config) !== 'unknown');

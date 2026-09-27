@@ -93,6 +93,8 @@ export const tailwindJsxAdapter: Adapter = {
             // declaration. Rules key on that to tell "the system declares a
             // literal" apart from "a component hardcoded one".
             tokenName: null,
+            surface: 'markup',
+            category: null,
             classification,
             reason,
             fixtureSha: source.fixtureSha,

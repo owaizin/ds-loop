@@ -1,3 +1,5 @@
+import type { ValueCategory } from '../core/provenance.ts';
+import type { Severity } from '../rules/types.ts';
 /**
  * The config object is the mechanism/policy seam.
  *
@@ -12,6 +14,8 @@
  */
 
 export type DsOpsConfig = {
+  /** UNCALIBRATED category policy for observed literals in ordinary CSS. */
+  style: { severity: Record<ValueCategory, Severity> };
   clustering: {
     /**
      * CIEDE2000 ΔE threshold for clustering color values. Proximity does not

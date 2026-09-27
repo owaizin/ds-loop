@@ -33,6 +33,7 @@ test('hashConfig distinguishes configs that differ anywhere, at any depth', () =
 
   // and it must not depend on key order
   const reordered = {
+    style: base.style,
     sweep: base.sweep,
     taxonomy: base.taxonomy,
     clustering: base.clustering,
