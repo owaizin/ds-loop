@@ -252,7 +252,8 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
     const exact = candidates.filter((c) => c.match === 'exact');
     const pool = exact.length ? exact : candidates.filter((c) => c.distance === candidates[0]?.distance);
     const aliases = pool.filter(
-      (c) => c.tier === 'semantic' || (c.aliasChain.length > 1 && c.tier !== 'component'),
+      (c) =>
+        c.tier === 'semantic' || (c.aliasChain.length > 1 && c.tier !== 'component' && c.tier !== 'upstream'),
     );
     const preferred = aliases.length ? aliases : pool;
     for (const c of preferred) c.preferred = true;

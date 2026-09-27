@@ -1,7 +1,7 @@
 import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
 import { toLab } from '../color/convert.ts';
 import { ciede2000 } from '../color/delta-e.ts';
-import { isPrimitiveName } from './tier.ts';
+import { isPrimitiveName, isUpstreamName } from './tier.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
 
 // One definition of "is a palette primitive", shared with classifyTier — the two
@@ -29,7 +29,10 @@ export const semanticLiteralRule: Rule = {
   targets: ['tokens', 'color'],
   run(ctx: RuleContext): Finding[] {
     const offenders = ctx.colors.filter(
-      (v) => v.provenance.tokenName !== null && !isPrimitive(v.provenance.tokenName, ctx.config),
+      (v) =>
+        v.provenance.tokenName !== null &&
+        !isUpstreamName(v.provenance.tokenName, ctx.config) &&
+        !isPrimitive(v.provenance.tokenName, ctx.config),
     );
     if (offenders.length === 0) return [];
 

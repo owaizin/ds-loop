@@ -138,6 +138,7 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
     // (--slate-500, --amber-9), OR a trailing named scale step
     // (--font-size-xs, --line-height-tight, --radius-full). Tailwind and Radix both
     // use this shape.
+    upstreamPattern: null,
     primitivePattern:
       '(^|-)(raw|palette|scale|ref)(-|$)|-\\d{1,4}$|-(xs|sm|md|lg|xl|xxs|xxl|2xl|3xl|4xl|base|none|full|tight|snug|normal|relaxed|loose)$',
     // a token named for a widget right after the --ns- prefix (--ds-button-bg).

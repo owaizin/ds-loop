@@ -77,7 +77,11 @@ function mergeConfig(user: Record<string, unknown>): DsOpsConfig {
     suggestions: readSuggestions(user.suggestions),
     style: readStyle(user.style),
     clustering: { ...DEFAULT_CONFIG.clustering, ...u.clustering },
-    taxonomy: { ...DEFAULT_CONFIG.taxonomy, ...u.taxonomy },
+    taxonomy: {
+      ...DEFAULT_CONFIG.taxonomy,
+      ...u.taxonomy,
+      upstreamPattern: readUpstreamPattern(u.taxonomy?.upstreamPattern),
+    },
     sweep: { ...DEFAULT_CONFIG.sweep, ...u.sweep },
     ignore: readIgnores(u.ignore),
     ...(u.tokenContexts !== undefined ? { tokenContexts: readTokenContexts(u.tokenContexts) } : {}),
@@ -211,4 +215,16 @@ function readSuggestions(raw: unknown): DsOpsConfig['suggestions'] {
     result[key as keyof typeof result] = value;
   }
   return result;
+}
+
+function readUpstreamPattern(raw: unknown): string | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw !== 'string' || !raw.trim())
+    throw new Error('config: taxonomy.upstreamPattern must be a nonempty regex string or null');
+  try {
+    new RegExp(raw, 'i');
+  } catch {
+    throw new Error('config: taxonomy.upstreamPattern is not a valid regex');
+  }
+  return raw;
 }

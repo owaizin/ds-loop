@@ -36,7 +36,7 @@ export type ContractFacts = {
   generatedAt: string;
 };
 
-const TIERS: Tier[] = ['primitive', 'semantic', 'component', 'unknown'];
+const TIERS: Tier[] = ['upstream', 'primitive', 'semantic', 'component', 'unknown'];
 
 /**
  * The namespace a reader sees: the first segment after `--`, or the first two
@@ -194,7 +194,9 @@ export function renderContract(f: ContractFacts): string {
   L.push('- **Scales** — which values are shared conventions, and where are local values intentional? TODO');
   L.push('');
   L.push('Where the model fits the engine, configure its naming patterns: `taxonomy.primitivePattern`,');
-  L.push('`taxonomy.semanticNamespaces`, and `taxonomy.componentPattern`. Naming configuration does not');
+  L.push(
+    '`taxonomy.semanticNamespaces`, `taxonomy.componentPattern`, and optional `taxonomy.upstreamPattern`. Naming configuration does not',
+  );
   L.push('change permitted tier relationships. Record unsupported checks separately from passing checks.');
   L.push('');
 

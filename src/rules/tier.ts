@@ -1,7 +1,7 @@
 import type { DsOpsConfig } from '../config/schema.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
 
-export type Tier = 'primitive' | 'semantic' | 'component' | 'unknown';
+export type Tier = 'upstream' | 'primitive' | 'semantic' | 'component' | 'unknown';
 
 /**
  * The three-tier model (primitive → semantic → component). Reference direction
@@ -11,6 +11,14 @@ export type Tier = 'primitive' | 'semantic' | 'component' | 'unknown';
  * Tier detection is by name convention and therefore a judgment call about the
  * target — every pattern is config (`taxonomy.*Pattern`, `semanticNamespaces`).
  */
+export function isUpstreamName(tokenName: string | null, cfg: DsOpsConfig): boolean {
+  return (
+    tokenName !== null &&
+    cfg.taxonomy.upstreamPattern !== null &&
+    new RegExp(cfg.taxonomy.upstreamPattern, 'i').test(tokenName)
+  );
+}
+
 export function isPrimitiveName(tokenName: string | null, cfg: DsOpsConfig): boolean {
   if (tokenName == null) return false;
   const name = tokenName.toLowerCase();
@@ -25,6 +33,7 @@ export function isPrimitiveName(tokenName: string | null, cfg: DsOpsConfig): boo
 
 export function classifyTier(tokenName: string | null, cfg: DsOpsConfig): Tier {
   if (!tokenName) return 'unknown';
+  if (isUpstreamName(tokenName, cfg)) return 'upstream';
   const name = tokenName.toLowerCase();
   const t = cfg.taxonomy;
   // order matters: a token in a semantic namespace (--ns-color-bg-skeleton) is
@@ -46,10 +55,13 @@ export function classifyTier(tokenName: string | null, cfg: DsOpsConfig): Tier {
   return 'unknown';
 }
 
-const RANK: Record<Tier, number> = { primitive: 0, semantic: 1, component: 2, unknown: -1 };
+const RANK: Record<Tier, number> = { upstream: -2, primitive: 0, semantic: 1, component: 2, unknown: -1 };
 
 /** allowed: strictly one tier down, or same-tier aliasing */
 function isAllowedReference(from: Tier, to: Tier): boolean {
+  // Upstream relationships have their own rule. We do not impose the project's
+  // naming hierarchy on another system's internals. Project aliases may borrow it.
+  if (from === 'upstream' || to === 'upstream') return true;
   if (from === 'unknown' || to === 'unknown') return true; // can't judge
   if (from === to) return true; // aliasing within a tier is fine
   return RANK[from] - RANK[to] === 1; // exactly one step down
@@ -218,6 +230,7 @@ export const varMissingFallbackRule: Rule = {
     const hits: { token: string; ref: string; where: string }[] = [];
     for (const v of ctx.values) {
       if (v.provenance.classification !== 'reference') continue;
+      if (isUpstreamName(v.provenance.tokenName, ctx.config)) continue;
       for (const m of v.raw.matchAll(VAR_NO_FALLBACK)) {
         // a var() sitting after a comma is itself a fallback — the author already
         // gave the outer reference a fallback path, don't nag about the leaf.
@@ -242,6 +255,51 @@ export const varMissingFallbackRule: Rule = {
           .join('; '),
         fix: 'Add a fallback: var(--token, <value>) — the base-theme value, so a missing token degrades to something sane instead of nothing.',
         data: { count: hits.length, hits: hits.slice(0, 40) },
+      },
+    ];
+  },
+};
+
+/**
+ * Imported tokens belong behind project aliases. This is the layer-2 seam in
+ * docs/METHODOLOGY.md: swapping an upstream system must not edit components.
+ * https://github.com/salesforce-ux/design-system-2-starter-kit/blob/main/.builderrules
+ * Naming is configured, not evidence of ownership inferred from a vendor name.
+ */
+export const upstreamBypassRule: Rule = {
+  id: 'token/upstream-bypass',
+  title: 'Component references upstream instead of a project alias',
+  impact: 'Changing the upstream system requires editing this consumer rather than its project alias.',
+  targets: ['tokens', 'color', 'spacing', 'typography', 'elevation', 'motion'],
+  run(ctx): Finding[] {
+    const hits = ctx.values.flatMap((v) => {
+      const p = v.provenance;
+      const consumer =
+        classifyTier(p.tokenName, ctx.config) === 'component' ||
+        (p.tokenName === null && (p.surface === 'style' || p.surface === 'markup'));
+      if (!consumer) return [];
+      return (v.refs ?? [])
+        .filter((ref) => isUpstreamName(ref, ctx.config))
+        .map((ref) => ({
+          token: p.tokenName,
+          target: ref,
+          file: p.file,
+          line: p.line,
+          property: p.property,
+        }));
+    });
+    if (!hits.length) return [];
+    return [
+      {
+        ruleId: this.id,
+        severity: 'high',
+        summary: `${hits.length} component/use-site reference(s) bypass project aliases and point directly at upstream tokens`,
+        where: hits
+          .slice(0, 8)
+          .map((h) => `${h.token ?? h.property} → ${h.target} (${h.file}:${h.line})`)
+          .join('; '),
+        fix: 'Choose a project alias for this role, with an upstream reference and fallback; point the consumer at that alias. An equal value alone does not establish the right role.',
+        data: { count: hits.length, hits },
       },
     ];
   },

@@ -12,6 +12,7 @@ import {
   semanticAppearanceNameRule,
   tierLeakageRule,
   tierModelUndetectableRule,
+  upstreamBypassRule,
   varMissingFallbackRule,
 } from './tier.ts';
 import type { Rule, RuleTarget } from './types.ts';
@@ -24,6 +25,7 @@ import type { Rule, RuleTarget } from './types.ts';
  * rule id is `domain/kebab-slug` and is stable — scorecards key on it.
  */
 export const RULES: Rule[] = [
+  upstreamBypassRule,
   tierLeakageRule,
   semanticLiteralRule,
   literalDuplicateRule,

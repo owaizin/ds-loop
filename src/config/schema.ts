@@ -73,6 +73,11 @@ export type DsOpsConfig = {
      * This is a judgment call about the target's convention; override per source.
      */
     primitivePattern: string;
+    /** Explicit upstream token namespace regex; null disables the upstream layer.
+     * Takes precedence over project tier patterns. Imported literals are allowed;
+     * components/use sites must consume project aliases instead.
+     */
+    upstreamPattern: string | null;
     /**
      * Name segments that mark a token as a CATEGORY token — a chart series, a
      * subject colour — where the colour name IS the identity. These look like
