@@ -455,3 +455,32 @@ test('presentation keeps three ranked candidates, expandable overflow and comple
     );
   });
 });
+
+test('repeated comparisons retain file context, property roles, and changes between audit calls', () => {
+  project(
+    {
+      'first.css': ':root{--color-first:#333}',
+      'second.css': ':root{--color-second:#333}',
+      'A.tsx': '<p className="text-[#333] text-[#333]" />',
+      'B.tsx': '<p className="text-[#333] text-[#333]" />',
+    },
+    (dir) => {
+      const config = {
+        ...DEFAULT_CONFIG,
+        tokenContexts: [
+          { files: ['A.tsx'], tokens: ['first.css'] },
+          { files: ['B.tsx'], tokens: ['second.css'] },
+        ],
+      };
+      const opts = { config, files: [join(dir, 'A.tsx'), join(dir, 'B.tsx')] };
+      const before = suggestions(dir, opts);
+      assert.equal(before.length, 4);
+      for (const s of before)
+        assert.deepEqual(preferred(s), [s.file === 'A.tsx' ? '--color-first' : '--color-second']);
+      writeFileSync(join(dir, 'first.css'), ':root{--color-updated:#333}');
+      const after = suggestions(dir, opts);
+      assert.deepEqual(preferred(after.find((s) => s.file === 'A.tsx')!), ['--color-updated']);
+      assert.deepEqual(preferred(after.find((s) => s.file === 'B.tsx')!), ['--color-second']);
+    },
+  );
+});

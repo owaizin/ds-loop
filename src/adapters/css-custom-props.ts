@@ -66,16 +66,26 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
     // fall back to the path so a finding never reads `(:12)`
     const rel = relative(source.root, file) || file;
     const lines = text.split('\n');
+    let offset = 0;
+    let lastOpen = -1;
+    let selectorAt = -2;
+    let selector: string | null = null;
 
     for (let li = 0; li < lines.length; li++) {
       const line = lines[li];
+      const open = line.lastIndexOf('{');
+      if (open !== -1) lastOpen = offset + open;
+      offset += line.length + 1;
       DECL.lastIndex = 0;
       let m: RegExpExecArray | null;
       // biome-ignore lint/suspicious/noAssignInExpressions: standard regex-exec loop
       while ((m = DECL.exec(line)) !== null) {
         const tokenName = m[1];
         const value = m[2].trim();
-        const selector = findSelector(lines, li);
+        if (selectorAt !== lastOpen) {
+          selector = findSelector(text, lastOpen);
+          selectorAt = lastOpen;
+        }
 
         const refs = [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map((r) => r[1]!);
         const base = {
@@ -186,11 +196,14 @@ function classify(
   return { classification: 'color', reason: 'opaque color value on a non-shadow token' };
 }
 
-function findSelector(lines: string[], lineIdx: number): string | null {
-  const before = lines.slice(0, lineIdx + 1).join('\n');
-  const lastOpen = before.lastIndexOf('{');
+/** Same suffix match as before, without joining/rescanning the whole prefix per token. */
+function findSelector(text: string, lastOpen: number): string | null {
   if (lastOpen === -1) return null;
-  const head = before.slice(0, lastOpen);
+  // The legacy selector regex can only consume these characters. Anything before
+  // the first other character cannot participate in its end-anchored match.
+  let start = lastOpen;
+  while (start > 0 && /[.#:\[\]\w,\s-]/.test(text[start - 1])) start--;
+  const head = text.slice(start, lastOpen);
   const m = head.match(/([.#:\[\]\w-]+(?:\s*,\s*[.#:\[\]\w-]+)*)\s*$/);
   return m ? m[1].trim() : null;
 }

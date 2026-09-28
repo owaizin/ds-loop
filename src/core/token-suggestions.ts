@@ -187,9 +187,9 @@ function match(
   value: string,
   token: string,
   cfg: DsOpsConfig,
+  a: Normal | null,
+  b: Normal | null,
 ): Pick<TokenCandidate, 'match' | 'distance' | 'metric'> | null {
-  const a = normalize(value, cfg);
-  const b = normalize(token, cfg);
   if (a?.kind === 'color' && b?.kind === 'color') {
     // ΔE does not account for transparency or compositing. Never compare alpha
     // differences using a background guessed by the engine.
@@ -221,6 +221,20 @@ function match(
 export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSuggestion {
   const cache = new Map<string, ReturnType<typeof resolver>>();
   const categoryCache = new Map<string, ReturnType<typeof categoryResolver>>();
+  // Call-local only: config, declarations, context and category evidence are fixed
+  // during this call. Never retain results across audits, edits or exceptions.
+  const sourceCache = new Map<string, ReturnType<typeof declarationsFor>>();
+  const comparisons = new Map<string, TokenSuggestion>();
+  const normalized = new Map<string, Normal | null>();
+  const numbers = new Map<string, number | null>();
+  const normalFor = (raw: string) => {
+    if (!normalized.has(raw)) normalized.set(raw, normalize(raw, ctx.config));
+    return normalized.get(raw)!;
+  };
+  const numberFor = (raw: string) => {
+    if (!numbers.has(raw)) numbers.set(raw, unitlessNumber(clean(raw)));
+    return numbers.get(raw)!;
+  };
   const values: TokenSuggestion[] = sites.map((site) => {
     const base = {
       value: site.raw,
@@ -236,10 +250,27 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
         candidates: [],
         limits: ['Use-site category is unknown; no category-safe token comparison was made.'],
       };
-    const source = declarationsFor(ctx, site);
+    const key = ctx.tokenContext?.required ? site.provenance.file : '*';
+    const comparisonKey = JSON.stringify([key, site.raw, base.property, base.category]);
+    const cached = comparisons.get(comparisonKey);
+    if (cached)
+      return {
+        ...cached,
+        ...base,
+        candidates: cached.candidates.map((candidate) => ({
+          ...candidate,
+          categories: [...candidate.categories],
+          categoryEvidence: [...candidate.categoryEvidence],
+        })),
+        limits: [...cached.limits],
+      };
+    let source = sourceCache.get(key);
+    if (!source) {
+      source = declarationsFor(ctx, site);
+      sourceCache.set(key, source);
+    }
     if (source.limits.length)
       return { ...base, status: 'not-checked', candidates: [], limits: source.limits };
-    const key = ctx.tokenContext?.required ? site.provenance.file : '*';
     let tokens = cache.get(key);
     if (!tokens) {
       tokens = resolver(source.values);
@@ -251,9 +282,9 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
       categoryCache.set(key, categoriesFor);
     }
     const candidates: TokenCandidate[] = [];
+    const number = numberFor(site.raw);
     for (const token of tokens.resolved) {
-      const number = unitlessNumber(clean(site.raw));
-      const tokenNumber = unitlessNumber(clean(token.value));
+      const tokenNumber = numberFor(token.value);
       let unitlessRole: UnitlessRole | undefined;
       let found: Pick<TokenCandidate, 'match' | 'distance' | 'metric'> | null;
       if (number !== null || tokenNumber !== null) {
@@ -287,7 +318,7 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
             : policy.tolerance > 0 && distance <= policy.tolerance
               ? { match: 'nearest', distance, metric: 'unitless' }
               : null;
-      } else found = match(site.raw, token.value, ctx.config);
+      } else found = match(site.raw, token.value, ctx.config, normalFor(site.raw), normalFor(token.value));
       if (!found) continue;
       const categoryEvidence = categoriesFor(token.aliasChain[0]);
       const categories = [...new Set(categoryEvidence.map((e) => e.category))];
@@ -329,7 +360,7 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
     const conditional = pool.some((c) =>
       c.aliasChain.some((name) => (tokens!.byName.get(name)?.length ?? 0) > 1),
     );
-    return {
+    const result: TokenSuggestion = {
       ...base,
       status:
         preferred.length === 0
@@ -353,6 +384,8 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
           : []),
       ],
     };
+    comparisons.set(comparisonKey, result);
+    return result;
   });
   return {
     basis: BASIS,
