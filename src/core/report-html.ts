@@ -1,9 +1,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { parseColor } from '../color/convert.ts';
 import type { AuditReport } from '../commands/audit.ts';
 import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
+import { reportData } from './report-data.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
 import { TOKEN_CSS, TOKEN_SCRIPT, architectureHtml } from './token-architecture-html.ts';
 import { type TokenSuggestion, displayCandidates, formatSuggestion } from './token-suggestions.ts';
@@ -14,10 +16,10 @@ const htmlEscape = (s: unknown): string =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
   );
 const json = (value: unknown): string =>
-  JSON.stringify(value).replace(
-    /[<>&\u2028\u2029]/g,
-    (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`,
-  );
+  JSON.stringify({
+    encoding: 'gzip-base64',
+    data: gzipSync(JSON.stringify(value), { level: 9 }).toString('base64'),
+  });
 const list = (items: string[], empty: string) =>
   items.length
     ? `<ul>${items.map((s) => `<li>${htmlEscape(s)}</li>`).join('')}</ul>`
@@ -294,8 +296,21 @@ export function renderAuditHtml(
   <section id="trend"><h2>04 / Recorded trend</h2>${trendView}</section>
   <section id="next"><h2>05 / Next commands</h2>${r.next.map((n) => `<article class="card"><code>${htmlEscape(n.command)}</code><p>${htmlEscape(n.why)}</p></article>`).join('') || '<p>No next commands recorded.</p>'}</section>
   <p class="print-note">Printed summary: only expanded evidence is included. Open the HTML file for the full recorded lists.</p><noscript>JavaScript is disabled. The summary and three examples per group remain readable. Enable JavaScript to browse all recorded evidence.</noscript>
-  </main><script id="audit-data" type="application/json">${json({ report: r, groups, trend, swatches, suggestions, locations })}</script><script>${REPORT_SCRIPT}
-${TOKEN_SCRIPT}</script></body></html>`;
+  </main><script id="audit-data" type="application/json">${json({ report: reportData(r), groups, trend, swatches, suggestions, locations })}</script><script>(async () => {
+try {
+const packed = JSON.parse(document.getElementById('audit-data').textContent);
+const bytes = Uint8Array.from(atob(packed.data), c => c.charCodeAt(0));
+const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+const decoded = await new Response(stream).text();
+document.getElementById('audit-data').textContent = decoded;
+${REPORT_SCRIPT}
+${TOKEN_SCRIPT}
+} catch (error) {
+const notice = document.createElement('p'); notice.setAttribute('role', 'alert');
+notice.textContent = 'Evidence browser could not load. Open this report in a browser with gzip DecompressionStream support. The printed summary remains available; audit --json provides the full evidence.';
+document.querySelector('main').prepend(notice);
+}
+})();</script></body></html>`;
 }
 
 export function writeAuditHtml(

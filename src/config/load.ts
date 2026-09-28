@@ -288,16 +288,30 @@ function readUpstreamPattern(raw: unknown): string | null {
   return raw;
 }
 
-function readArchitecture(raw: unknown): { maxAliasDepth: number } {
+function readArchitecture(raw: unknown): NonNullable<DsOpsConfig['architecture']> {
   if (raw === undefined) return { ...DEFAULT_CONFIG.architecture! };
   if (
     !raw ||
     typeof raw !== 'object' ||
     Array.isArray(raw) ||
-    !Number.isSafeInteger((raw as Record<string, unknown>).maxAliasDepth) ||
-    Number((raw as Record<string, unknown>).maxAliasDepth) < 0
+    !Number.isSafeInteger(
+      (raw as Record<string, unknown>).maxAliasDepth ?? DEFAULT_CONFIG.architecture!.maxAliasDepth,
+    ) ||
+    Number((raw as Record<string, unknown>).maxAliasDepth ?? DEFAULT_CONFIG.architecture!.maxAliasDepth) < 0
   ) {
     throw new Error('config: architecture.maxAliasDepth must be a non-negative safe integer');
   }
-  return { maxAliasDepth: Number((raw as Record<string, unknown>).maxAliasDepth) };
+  const value = raw as Record<string, unknown>;
+  const pattern = value.scaleStepPattern ?? DEFAULT_CONFIG.architecture!.scaleStepPattern!;
+  if (typeof pattern !== 'string')
+    throw new Error('config: architecture.scaleStepPattern must be a regular expression string');
+  try {
+    new RegExp(`-(?:${pattern})$`);
+  } catch {
+    throw new Error('config: invalid architecture.scaleStepPattern');
+  }
+  return {
+    maxAliasDepth: Number(value.maxAliasDepth ?? DEFAULT_CONFIG.architecture!.maxAliasDepth),
+    scaleStepPattern: pattern,
+  };
 }

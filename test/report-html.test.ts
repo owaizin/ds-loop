@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { audit } from '../src/commands/audit.ts';
 import { historyTrend, renderAuditHtml } from '../src/core/report-html.ts';
+import { htmlPayload } from './html-payload.ts';
 
 const report = () => audit('fixtures/css-audit-example', { silent: true });
 test('HTML is deterministic, contains all verdicts and escapes hostile source text', () => {
@@ -16,8 +17,7 @@ test('HTML is deterministic, contains all verdicts and escapes hostile source te
     assert.ok(html.includes('&lt;/script&gt;'));
     assert.ok(!html.includes('<img src=x'));
     assert.doesNotMatch(html, /(?:src|href)=["']https?:|@import|fetch\(|XMLHttpRequest/);
-    const payload = html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1];
-    assert.equal(JSON.parse(payload).report.findings[0].summary, r.findings[0].summary);
+    assert.equal(htmlPayload(html).report.findings[0].summary, r.findings[0].summary);
   }
 });
 test('inventory keeps every occurrence traceable and large groups mount only three examples', () => {
@@ -32,7 +32,7 @@ test('inventory keeps every occurrence traceable and large groups mount only thr
   const html = renderAuditHtml(r);
   assert.equal((html.match(/class="finding"/g) ?? []).length, 3);
   assert.ok(html.includes('10001 findings'));
-  assert.ok(html.includes('a.css:10001'));
+  assert.equal(htmlPayload(html).report.findings[10000].where, 'a.css:10001');
 });
 test('history never compares a changed instrument or filtered audit', () => {
   const r = report();
@@ -101,9 +101,7 @@ test('overview precedes detail sections and suggestions use a table with safe li
   assert.ok(html.includes('<th>Property / category</th>'));
   assert.ok(html.includes('<th>Delta</th>'));
   assert.ok(html.includes('<summary>Details</summary>'));
-  const data = JSON.parse(
-    html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1],
-  );
+  const data = htmlPayload(html);
   assert.ok(Object.keys(data.swatches).every((s) => /^(#|rgba?\(|hsla?\()/i.test(s) && !s.includes('var(')));
   assert.equal(data.swatches['#12345'], undefined);
   assert.equal(data.swatches['0 0% 0%'], undefined);

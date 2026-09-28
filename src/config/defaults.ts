@@ -13,7 +13,10 @@ import type { DsOpsConfig } from './schema.ts';
  */
 export const DEFAULT_CONFIG: DsOpsConfig = {
   // UNCALIBRATED review threshold, not an alias validity rule.
-  architecture: { maxAliasDepth: 4 },
+  architecture: {
+    maxAliasDepth: 4,
+    scaleStepPattern: '(?:[0-9]+(?:-[0-9]+)?|(?:[0-9]+)?(?:xs|sm|md|lg|xl))',
+  },
   suggestions: {
     // UNCALIBRATED name signals. Numeric comparisons default to exact only.
     unitlessRoles: {

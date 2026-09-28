@@ -106,8 +106,11 @@ export function tokenArchitecture(
 ): TokenArchitecture {
   const evidence = selectorEvidence(values, root);
   const byName = new Map<string, ArchitectureToken>();
+  const step = new RegExp(
+    `-(?:${config.architecture?.scaleStepPattern ?? DEFAULT_ARCHITECTURE.scaleStepPattern})$`,
+  );
   const groupId = (name: string, tier: Tier) =>
-    `${tier}:${name.replace(/^--/, '').split('-').slice(0, 2).join('-')}`;
+    `${tier}:${name.replace(/^--/, '').replace(step, '').split('-').slice(0, 2).join('-')}`;
   for (const v of values) {
     const name = v.provenance.tokenName;
     if (!name) continue;
@@ -282,7 +285,7 @@ export function tokenArchitecture(
     },
     limits: [
       'Counts cover extracted declarations and references in the audited scope, before exceptions and severity filtering. Read-only tokenContexts dependencies are outside this architecture view. Unreferenced does not mean unused elsewhere; undeclared names may exist in dependencies.',
-      'Namespaces group the first two hyphen-separated name segments; they do not establish ownership. Reference arrows point from consumer to referenced token, including fallback references.',
+      'Namespaces remove a configured trailing scale step, then group the first two hyphen-separated name segments; they do not establish ownership. Reference arrows point from consumer to referenced token, including fallback references.',
       'Source order is known only for matched lexical declarations within one file. Cross-file import order, specificity, inheritance, conditions, cascade layers and runtime overrides are not resolved. No computed winner is asserted.',
       'Selector evidence supplements already-extracted declarations using the CSS lexer; unmatched declarations retain legacy selector text and unknown order. No missing tokens are reconstructed.',
       'Alias depth counts whole-value var() chains across all declarations, not a resolved mode. Cycles and chains entering cycles have unresolved depth.',

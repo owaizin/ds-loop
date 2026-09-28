@@ -30,3 +30,6 @@ export { cssRuleBodiesAdapter } from './adapters/css-rule-bodies.ts';
 export type { StyleInventory, CategoryInventory } from './core/style-inventory.ts';
 
 export type { FindingSuggestion, TokenSuggestion, TokenCandidate } from './core/token-suggestions.ts';
+
+export { reportData, expandReportData } from './core/report-data.ts';
+export type { SerializedAuditReport } from './core/report-data.ts';

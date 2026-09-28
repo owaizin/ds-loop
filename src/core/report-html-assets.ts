@@ -1,6 +1,12 @@
 /** Browser code is inline and uses textContent for all engine data. No runtime imports. */
 export const REPORT_SCRIPT = String.raw`
 const payload = JSON.parse(document.getElementById('audit-data').textContent);
+if (payload.report.suggestionIndex) {
+  const index = payload.report.suggestionIndex;
+  const candidates = index.candidates.map(({declarationRefs,...c})=>({...c,declarations:declarationRefs.map(id=>index.declarations[id])}));
+  for (const f of payload.report.findings) if(f.suggestion) for(const s of f.suggestion.values) s.candidates=s.candidates.map(c=>candidates[c.candidateRef]);
+}
+
 const el = (tag, text) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = String(text); return n; };
 const pageSize = 30; // presentation page size, not an analysis threshold
 function inspect(value) {

@@ -146,3 +146,41 @@ test('suggestion table mounts three candidates and expands the remainder on dema
   assert.equal(more.children.length, 9);
   assert.ok(more.children[1].textContent.includes('--space-2'));
 });
+
+test('generated inline loader decompresses and hydrates indexed suggestions before browsing', async () => {
+  const { audit } = await import('../src/commands/audit.ts');
+  const { renderAuditHtml } = await import('../src/core/report-html.ts');
+  const report = audit('fixtures/css-audit-example', { silent: true });
+  // This test exercises report loading; architecture navigation has its own interaction test.
+  report.tokenArchitecture = undefined;
+  const html = renderAuditHtml(report);
+  const data = new Element();
+  data.textContent = html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1];
+  const theme = new Element();
+  const root = new Element();
+  const host = new Element();
+  host.dataset.suggestions = String(report.findings.findIndex((f) => f.suggestion));
+  const disclosure = new Element();
+  disclosure.append(host);
+  const document = {
+    documentElement: root,
+    getElementById: (id: string) => (id === 'audit-data' ? data : theme),
+    createElement: () => new Element(),
+    querySelectorAll: (selector: string) => (selector === '[data-suggestions]' ? [host] : []),
+    querySelector: () => ({ prepend: () => assert.fail('inline loader raised an error') }),
+  };
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)![1];
+  await new Script(script).runInNewContext({
+    document,
+    atob,
+    Uint8Array,
+    Blob,
+    DecompressionStream,
+    Response,
+  });
+  disclosure.open = true;
+  disclosure.listeners.toggle();
+  assert.ok(host.children.length > 0, 'indexed suggestions mount after gzip load');
+  theme.onchange!({ target: { value: 'dark' } });
+  assert.equal(root.dataset.theme, 'dark');
+});

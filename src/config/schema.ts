@@ -19,7 +19,7 @@ export type UnitlessPolicy = { tokenPattern: string; properties: string[]; toler
 
 export type DsOpsConfig = {
   /** Reference-depth review threshold, not a validity limit. */
-  architecture?: { maxAliasDepth: number };
+  architecture?: { maxAliasDepth: number; scaleStepPattern?: string };
   /** UNCALIBRATED matching assumptions; rem conversion is not a measured root size. */
   suggestions: {
     unitlessRoles?: Record<UnitlessRole, UnitlessPolicy>;

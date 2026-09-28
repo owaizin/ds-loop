@@ -9,6 +9,7 @@ import { loadConfig } from '../src/config/load.ts';
 import { hashConfig } from '../src/config/schema.ts';
 import { renderAuditHtml } from '../src/core/report-html.ts';
 import { type TokenSuggestion, displayCandidates, formatSuggestion } from '../src/core/token-suggestions.ts';
+import { htmlPayload } from './html-payload.ts';
 
 function project(files: Record<string, string>, fn: (dir: string) => void) {
   const dir = mkdtempSync(join(tmpdir(), 'ds-loop-suggest-'));
@@ -435,9 +436,7 @@ test('presentation keeps three ranked candidates, expandable overflow and comple
     assert.ok(!text.includes(`${ranked[3].token} (`));
     const html = renderAuditHtml(report);
     assert.ok(html.includes('<summary>+8 more</summary>'));
-    const data = JSON.parse(
-      html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1],
-    );
+    const data = htmlPayload(html);
     assert.equal(
       data.report.findings.find((f: { suggestion?: unknown }) => f.suggestion).suggestion.values[0].candidates
         .length,

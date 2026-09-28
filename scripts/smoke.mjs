@@ -447,7 +447,21 @@ try {
     writeFileSync(join(probe, 'a.css'), '.x{color:rgb(51 51 51)}');
     writeFileSync(join(probe, 'Card.tsx'), '<p className="text-[#333333]" />');
     const report = JSON.parse(run(['audit', '.', '--json'], probe).stdout);
-    const values = report.findings.flatMap((f) => f.suggestion?.values ?? []);
+    const values = report.findings
+      .flatMap((f) => f.suggestion?.values ?? [])
+      .map((value) => ({
+        ...value,
+        candidates: value.candidates.map(({ candidateRef }) => {
+          assert(Number.isInteger(candidateRef), 'suggestion did not use the shared candidate index');
+          const candidate = report.suggestionIndex.candidates[candidateRef];
+          assert(candidate.declarationRefs.length > 0, 'candidate lost declaration provenance');
+          assert(
+            candidate.declarationRefs.every((id) => report.suggestionIndex.declarations[id]?.file),
+            'dangling declaration reference',
+          );
+          return candidate;
+        }),
+      }));
     assert(values.length === 2, 'both style and markup suggestions must ship');
     assert(
       values.every((v) => v.status === 'ambiguous' && v.candidates.every((c) => c.match === 'exact')),

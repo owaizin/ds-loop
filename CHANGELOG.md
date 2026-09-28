@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Unreleased 0.3.0 JSON stores suggestion candidates and declaration provenance
+  once in `suggestionIndex`; use-site `candidateRef` and candidate
+  `declarationRefs` retain every ordered record. Matching and terminal output
+  are unchanged. HTML embeds the complete indexed payload as offline gzip;
+  evidence browsing requires native `DecompressionStream` support.
+- Token architecture removes configurable trailing scale steps with
+  `architecture.scaleStepPattern` before grouping namespaces. This changes the
+  config hash; scorecard comparisons report instrument moved. Fix the use-sites
+  lane label escaping.
+
 - Add a generated Token architecture section to `audit --html`, backed by JSON
   declaration/reference evidence. Includes configured tiers, aggregated links,
   token lookup, cycles, mode redeclarations and `architecture.maxAliasDepth`

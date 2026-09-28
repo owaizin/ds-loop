@@ -12,7 +12,7 @@ export function architectureHtml(a?: TokenArchitecture): string {
   <div class="token-lanes">${lanes
     .map((lane) => {
       const groups = a.groups.filter((g) => g.lane === lane);
-      return `<article class="card"><h3>${lane === 'unknown' ? 'Unclassified' : escape(lane)}</h3><strong class="metric">${groups.reduce((n, g) => n + (lane === 'use sites' ? g.references : g.tokens), 0)}</strong><small> ${lane === 'use sites' ? 'var() reference occurrences' : 'distinct declared names'}</small>${groups
+      return `<article class="card"><h3>${lane === 'unknown' ? 'Unclassified' : escapeHtml(lane)}</h3><strong class="metric">${groups.reduce((n, g) => n + (lane === 'use sites' ? g.references : g.tokens), 0)}</strong><small> ${lane === 'use sites' ? 'var() reference occurrences' : 'distinct declared names'}</small>${groups
         .slice(0, 8)
         .map(
           (g) =>

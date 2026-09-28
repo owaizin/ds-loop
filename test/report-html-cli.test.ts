@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { Script } from 'node:vm';
 import { REPORT_SCRIPT } from '../src/core/report-html-assets.ts';
+import { htmlPayload } from './html-payload.ts';
 
 const cli = resolve('src/cli.ts');
 test('HTML flag preserves real verdicts, JSON, exit codes and audit metadata', () => {
@@ -29,9 +30,7 @@ test('HTML flag preserves real verdicts, JSON, exit codes and audit metadata', (
       assert.equal(report.verdict, verdict);
       assert.ok(result.stderr.includes(output));
       const html = readFileSync(output, 'utf8');
-      const embedded = JSON.parse(
-        html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1],
-      );
+      const embedded = htmlPayload(html);
       assert.deepEqual(embedded.report, report);
     }
     const filtered = JSON.parse(

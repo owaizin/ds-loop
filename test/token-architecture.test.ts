@@ -9,6 +9,7 @@ import { loadConfig } from '../src/config/load.ts';
 import { hashConfig } from '../src/config/schema.ts';
 import type { RawValue } from '../src/core/provenance.ts';
 import { renderAuditHtml } from '../src/core/report-html.ts';
+import { architectureHtml } from '../src/core/token-architecture-html.ts';
 import { tokenArchitecture } from '../src/core/token-architecture.ts';
 
 function value(name: string | null, raw: string, refs: string[] = []): RawValue {
@@ -159,4 +160,34 @@ test('alias depth remains unresolved for consumers entering a cycle; disconnecte
   assert.equal(a.tokens.find((t) => t.name === '--c')?.aliasDepth, null);
   assert.equal(a.tokens.find((t) => t.name === '--c')?.cycle, false);
   assert.equal(a.tokens.find((t) => t.name === '--leaf')?.aliasDepth, 0);
+});
+
+test('scale suffixes collapse namespace groups without guessing brand ownership', () => {
+  const values = [
+    '--amber-1',
+    '--amber-12',
+    '--space-0',
+    '--space-0-5',
+    '--space-24',
+    '--text-xs',
+    '--text-2xl',
+    '--ds-palette-blue-500',
+    '--ds-palette-red-900',
+  ].map((name) => value(name, '1px'));
+  const a = tokenArchitecture(values, DEFAULT_CONFIG, []);
+  assert.equal(new Set(a.tokens.filter((t) => t.name.startsWith('--amber-')).map((t) => t.group)).size, 1);
+  assert.equal(new Set(a.tokens.filter((t) => t.name.startsWith('--space-')).map((t) => t.group)).size, 1);
+  assert.ok(a.tokens.find((t) => t.name === '--space-0-5')!.group.endsWith(':space'));
+  assert.ok(a.tokens.find((t) => t.name === '--text-2xl')!.group.endsWith(':text'));
+  assert.ok(a.tokens.find((t) => t.name === '--ds-palette-blue-500')!.group.endsWith(':ds-palette'));
+  const custom = tokenArchitecture(
+    [value('--amber-soft', '1px')],
+    { ...DEFAULT_CONFIG, architecture: { maxAliasDepth: 4, scaleStepPattern: 'soft' } },
+    [],
+  );
+  assert.ok(custom.tokens[0].group.endsWith(':amber'));
+  const html = architectureHtml(a);
+  const labels = [...html.matchAll(/<h3>(.*?)<\/h3>/g)].map((m) => m[1]);
+  assert.ok(labels.includes('use sites'));
+  assert.ok(labels.every((label) => !label.includes('%')));
 });

@@ -43,7 +43,7 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 ```
   ds-loop audit — Radix Colors · target: all
   2 findings — 0 blocking · 0 high · 0 medium · 2 low
-  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 530e7067
+  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 3c93c488
   14 rules run
 
   scope — what this audit read

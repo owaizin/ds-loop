@@ -9,6 +9,7 @@ import { auditSummary } from '../core/audit-summary.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { surveyTree } from '../core/files.ts';
 import { type NextAction, auditViewActions, formatNext, nextAfterAudit } from '../core/next.ts';
+import { reportData } from '../core/report-data.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { type StyleInventory, styleInventory } from '../core/style-inventory.ts';
 import { type Suppression, applyIgnores } from '../core/suppress.ts';
@@ -237,7 +238,7 @@ export function audit(
 
   const suppressed = opts.silent || (opts.quiet && findings.length === 0);
   if (!suppressed) {
-    if (opts.json) console.log(JSON.stringify(report, null, 2));
+    if (opts.json) console.log(JSON.stringify(reportData(report), null, 2));
     else if (opts.all) printReport(report, { live });
     else console.log(auditSummary(report, targetPath).join('\n'));
   }
@@ -307,7 +308,7 @@ function noAdapterReport(
 
   if (!opts.silent && !opts.quiet) {
     if (opts.json) {
-      console.log(JSON.stringify(report, null, 2));
+      console.log(JSON.stringify(reportData(report), null, 2));
     } else {
       console.log(`\n  ds-loop audit — ${meta.label}`);
       console.log(
@@ -435,7 +436,7 @@ function writeReport(report: AuditReport, meta: { label: string }, outDir: strin
   if (!outDir) return;
   mkdirSync(outDir, { recursive: true });
   const slug = meta.label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  writeFileSync(join(outDir, `${slug}.audit.json`), `${JSON.stringify(report, null, 2)}\n`);
+  writeFileSync(join(outDir, `${slug}.audit.json`), `${JSON.stringify(reportData(report), null, 2)}\n`);
 }
 
 const round = (n: number) => Math.round(n * 1000) / 1000;
