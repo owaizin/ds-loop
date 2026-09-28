@@ -19,11 +19,9 @@ its ratio does not prove the references resolve.
 <!-- verified: audit-css-inventory -->
 ```text
   CSS property inventory — extracted, before exceptions and severity filtering
-    tokenization = reference-only values / (literal + reference + mixed values); not reference resolution
-    color: 2 occurrences · 2 distinct · 1 literal · 1 reference · 0 mixed · 0 unclassified · 0 excluded
-      tokenization: 0.500 · top files: styles.css (2)
-    spacing: 2 occurrences · 2 distinct · 1 literal · 1 reference · 0 mixed · 0 unclassified · 0 excluded
-      tokenization: 0.500 · top files: styles.css (2)
+    tokenization = reference-only / (literal + reference + mixed); not reference resolution
+    color: 2 occurrences · 2 distinct · 1 literal · 1 reference · 0 mixed · 0 unclassified · 0 excluded · tokenization 50.0%
+    spacing: 2 occurrences · 2 distinct · 1 literal · 1 reference · 0 mixed · 0 unclassified · 0 excluded · tokenization 50.0%
 ```
 
 ### A token suggestion
@@ -43,24 +41,10 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 
 <!-- verified: audit-radix -->
 ```
-
-  ds-loop audit — Radix Colors  ·  target: all  ·  fixture
+  ds-loop audit — Radix Colors · target: all
+  2 findings — 0 blocking · 0 high · 0 medium · 2 low
   version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 19650fc3
   14 rules run
-
-  [LOW] color/near-duplicate-primitives
-  │ 20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable just-noticeable difference
-  │ where: --amber-1 ≈ --blue-1 (ΔE 2.252285); --amber-1 ≈ --green-1 (ΔE 1.956419); --amber-1 ≈ --red-1 (ΔE 1.652821); --amber-1 ≈ --slate-1 (ΔE 1.563758); --amber-1 ≈ --slate-2 (ΔE 2.211239); --blue-1 ≈ --blue-2 (ΔE 2.127851); --blue-1 ≈ --green-1 (ΔE 2.29427); --blue-1 ≈ --plum-1 (ΔE 2.192973)
-  │ risk:  Nobody can tell these steps apart on screen, so authors pick between them at random and the ramp stops meaning anything.
-  │ fix:   Confirm each pair is a deliberate ramp step. Collapse the ones that are not.
-
-  [LOW] color/no-intent-plateau
-  │ no ΔE band holds a cluster count within 15% of the 72 shipped primitives
-  │ where: swept ΔE 0.5–12
-  │ risk:  The palette has no natural cluster count, so any threshold this tool picks for it is arbitrary — read the sweep curve before trusting a cluster number here.
-  │ fix:   If this is a hand-authored palette, the missing plateau means adjacent entries are closer than one JND — review whether the ramp is over-fine. If it is a generated scale, that is expected. Run `ds-loop sweep` for the full curve.
-
-  2 findings — 0 blocking · 0 high · 0 medium · 2 low
 
   scope — what this audit read
     css-custom-props@0.5.0
@@ -68,15 +52,16 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
     72 colour value(s) this version cannot convert: color(display-p3 0.995 0.992 0.985), color(display-p3 0.994 0.986 0.921), color(display-p3 0.994 0.969 0.782), color(display-p3 0.989 0.937 0.65)
       excluded from every colour rule — a gap in the engine, not in your code
 
-  scorecard ratios  (a baseline for the next run, not a grade)
-    literal-colors-per-distinct  1
-    colors-per-distinct-in-scope 1
-    ambiguous-share              0.5
+  findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
+  [LOW] color/near-duplicate-primitives · 20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable just-noticeable difference · 1 finding · no file:line recorded
+  [LOW] color/no-intent-plateau · no ΔE band holds a cluster count within 15% of the 72 shipped primitives · 1 finding · no file:line recorded
 
   next
-    decide on the rest                        nothing here is mechanically provable — all 2 findings state their choice on the fix line
-    ds-loop scorecard fixtures/radix-colors   pin these ratios as run 1 — a ratio only says something against a previous row
-    ds-loop guard on                          report high-severity findings after each Claude Code edit (never blocks)
+    ds-loop audit fixtures/radix-colors --all                        full findings, risks, fixes and token suggestions
+    ds-loop audit fixtures/radix-colors --html ds-loop-report.html   save a complete visual report
+    decide on the rest                                               nothing here is mechanically provable — all 2 findings state their choice on the fix line
+    ds-loop scorecard fixtures/radix-colors                          pin these ratios as run 1 — a ratio only says something against a previous row
+    ds-loop guard on                                                 report high-severity findings after each Claude Code edit (never blocks)
 ```
 
 The report includes the display-p3 values the color rules could not convert. A reported finding does not imply full coverage.

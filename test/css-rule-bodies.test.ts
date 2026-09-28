@@ -306,7 +306,7 @@ test('Tailwind finding JSON and human blocks remain byte-identical except the ad
       'Card.tsx': 'const card = <div className="bg-[#1da1f2] p-[13px] text-[14px] bg-white" />;\n',
     },
     (dir) => {
-      const { value: report, output } = capture(() => audit(dir));
+      const { value: report, output } = capture(() => audit(dir, { all: true }));
       const findings = report.findings.filter((f) =>
         ['token/raw-value-in-markup', 'token/stock-palette-utility'].includes(f.ruleId),
       );

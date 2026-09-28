@@ -206,7 +206,7 @@ test('markup and style share suggestions; JSON has all hits and human output add
       const lines: string[] = [];
       console.log = (...args: unknown[]) => lines.push(args.join(' '));
       try {
-        audit(dir);
+        audit(dir, { all: true });
       } finally {
         console.log = original;
       }

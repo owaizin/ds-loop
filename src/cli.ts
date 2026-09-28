@@ -38,11 +38,12 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
   Start here:  ds-loop            verdict for this directory, and what to run next
                ds-loop start      the same, spelled out
 
-  ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--out <dir>] [--html <file>] [--require-coverage]
+  ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--all] [--out <dir>] [--html <file>] [--require-coverage]
                       [--files <a,b>] [--since <ref>] [--min-severity <sev>] [--quiet] [--config <file>]
       Run every deterministic rule against <path>. <path> is a fixture dir
       (has SOURCE.json) or any dir / .css file (live scan of the working tree).
       --files / --since narrow to changed files. Exit 1 on any surviving finding.
+      --all prints full finding details; the default is a summary.
       --html <file> writes a self-contained visual report of this same audit.
       Reads scorecard history from cwd; does not append a row. Exit status is unchanged.
       --require-coverage also exits 1 when part of the source could not be read or
@@ -135,6 +136,7 @@ function main(argv: string[]): void {
       const report = audit(auditPath, {
         target,
         json: has(rest, 'json'),
+        all: has(rest, 'all'),
         outDir: flag(rest, 'out'),
         config,
         severityOverrides: loaded.severityOverrides,

@@ -139,7 +139,10 @@ for (const id of ['audit-css-inventory', 'audit-css-suggestion']) {
   test(`guide: ${id} is a verbatim excerpt of real CSS audit output`, () => {
     const block = verifiedBlocks().get(id);
     assert.ok(block, `missing verified block: ${id}`);
-    const actual = run(['audit', 'fixtures/css-audit-example'], ROOT);
+    const actual = run(
+      ['audit', 'fixtures/css-audit-example', ...(id === 'audit-css-suggestion' ? ['--all'] : [])],
+      ROOT,
+    );
     assert.ok(actual.includes(block.trimEnd()), `${id} must remain a contiguous, verbatim excerpt`);
   });
 }

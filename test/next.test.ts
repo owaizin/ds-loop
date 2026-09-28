@@ -53,9 +53,9 @@ const FIXABLE = {
 /** findings, none of them mechanically provable */
 const JUDGEMENT_ONLY = { 'tokens.css': ':root{--brand:#1da1f2;--accent:#1da1f2}\n' };
 
-test('audit ends on the handover, not on the ratios', () => {
+test('full audit ends on the handover, not on the ratios', () => {
   inTree(JUDGEMENT_ONLY, (dir) => {
-    const { out } = run(['audit', '.'], dir);
+    const { out } = run(['audit', '.', '--all'], dir);
     const blocks = out.trimEnd().split('\n\n');
     const last = blocks.at(-1) ?? '';
     assert.match(last, /^ {2}next$/m, `the last block should be the handover, got:\n${last}`);
@@ -118,7 +118,7 @@ test('the bare command audits this directory instead of printing the manual', ()
   inTree(JUDGEMENT_ONLY, (dir) => {
     const { out, status } = run([], dir);
     assert.match(out, /2 findings —/, `expected a verdict, got:\n${out}`);
-    assert.match(out, /biggest\s+\[HIGH\] color\/semantic-holds-literal/);
+    assert.match(out, /\[HIGH\] color\/semantic-holds-literal/);
     assert.match(out, /^ {2}next$/m);
     assert.doesNotMatch(out, /--require-coverage/, 'the flag manual belongs to --help');
     assert.equal(status, 1, 'findings exist, so the exit code says so');
@@ -224,7 +224,7 @@ test('severity tags carry no escape codes when stdout is not a terminal', () => 
  */
 test('a non-terminal keeps one long line per field, and the gutter is always present', () => {
   inTree({ 'tokens.css': ':root{--color-surface:#ffffff}' }, (dir) => {
-    const { out } = run(['audit', '.'], dir);
+    const { out } = run(['audit', '.', '--all'], dir);
     const risk = out.split('\n').find((l) => l.includes('risk:'));
     assert.ok(risk, 'no risk line');
     assert.ok(risk.length > 100, `risk line was wrapped without a TTY: ${risk.length} cols`);
@@ -242,5 +242,41 @@ test('the wordmark degrades to plain text without a terminal', () => {
     const { out } = run([], dir);
     assert.ok(!out.includes('█'), 'block characters reached a non-terminal');
     assert.match(out, /ds-loop \d+\.\d+\.\d+/, 'the plain name and version must still appear');
+  });
+});
+
+test('summary shows each verbatim finding, coverage first, and both detail routes', () => {
+  inTree(FIXABLE, (dir) => {
+    const report = JSON.parse(run(['audit', '.', '--json'], dir).out);
+    for (const command of [['audit', '.'], ['start', '.'], []]) {
+      const { out, status } = run(command, dir);
+      assert.equal(status, 1);
+      for (const finding of report.findings) {
+        assert.ok(out.includes(finding.summary));
+        assert.ok(out.includes(finding.ruleId));
+      }
+      assert.ok(out.indexOf('scope —') < out.indexOf('[LOW]'));
+      assert.match(out, /audit \. --all/);
+      assert.match(out, /audit \. --html ds-loop-report.html/);
+      assert.doesNotMatch(out, /risk:|where:|scorecard ratios/);
+      assert.match(out.trimEnd().split('\n\n').at(-1) ?? '', /^ {2}next$/m);
+    }
+  });
+});
+
+test('--all does not change JSON, filters, strict coverage, or exit codes', () => {
+  inTree({ ...FIXABLE, 'theme.scss': '$space: 1px' }, (dir) => {
+    for (const flags of [[], ['--min-severity', 'high'], ['--require-coverage']]) {
+      const brief = run(['audit', '.', '--json', ...flags], dir);
+      const full = run(['audit', '.', '--all', '--json', ...flags], dir);
+      const stripTime = (output: string) => {
+        const report = JSON.parse(output);
+        report.manifest.ranAt = undefined;
+        return report;
+      };
+      assert.deepEqual(stripTime(brief.out), stripTime(full.out));
+      assert.equal(brief.status, full.status);
+      assert.equal(run(['audit', '.', ...flags], dir).status, full.status);
+    }
   });
 });

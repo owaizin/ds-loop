@@ -459,7 +459,13 @@ try {
       ),
       'alias preference must retain primitive candidate',
     );
-    assert(run(['audit', '.'], probe).stdout.includes('suggest:'), 'human output omitted suggestion');
+    assert(
+      run(['audit', '.', '--all'], probe).stdout.includes('suggest:'),
+      'full human output omitted suggestion',
+    );
+    const summary = run(['audit', '.'], probe).stdout;
+    assert(summary.includes('--all') && summary.includes('--html'), 'summary omitted detail routes');
+    assert(!summary.includes('suggest:'), 'default view expanded suggestion details');
     assert(
       !run(['fix', '--help'], probe).stdout.includes('--exact-tokens'),
       'unapproved fixer must not ship',

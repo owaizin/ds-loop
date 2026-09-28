@@ -147,3 +147,12 @@ export function formatNext(actions: NextAction[]): string[] {
   const width = Math.max(...actions.map((a) => a.command.length));
   return ['  next', ...actions.map((a) => `    ${a.command.padEnd(width)}   ${a.why}`)];
 }
+
+/** Detail routes belong to the terminal view; the structured report stays unchanged. */
+export function auditViewActions(actions: NextAction[], path: string): NextAction[] {
+  return [
+    { command: `ds-loop audit ${path} --all`, why: 'full findings, risks, fixes and token suggestions' },
+    { command: `ds-loop audit ${path} --html ds-loop-report.html`, why: 'save a complete visual report' },
+    ...actions,
+  ];
+}

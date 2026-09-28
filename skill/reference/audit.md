@@ -132,3 +132,7 @@ findings, recorded scorecard ratios and next commands. It does not review render
 Filters and exit status still apply. Scorecard history is read from cwd; no row is
 written. Keep project reports in the project or its private evidence directory.
 Some rules retain only sample locations; the report cannot recover missing evidence.
+
+The default terminal view puts coverage before one row per finding group. Use
+`ds-loop audit . --all` for risks, fixes, suggestions and scorecard ratios;
+`--json` and `--html <file>` retain the complete audit data.

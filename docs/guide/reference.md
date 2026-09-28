@@ -8,7 +8,7 @@ Run commands from the target project so configuration resolves from its working 
 | --- | --- | --- |
 | `start [path]` / bare `ds-loop` | Verdict for this directory, its biggest finding, what was read, and the next command | No |
 | `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | Only with `--write-contract`, which creates `DESIGN-SYSTEM.md` and never overwrites one |
-| `audit [path]` | Findings, ratios, verdict and coverage | Only with `--out <dir>` |
+| `audit [path]` | Summary and coverage; `--all` for full details and ratios | Only with `--out <dir>` or `--html <file>` |
 | `scan <path>` | Extracted-value taxonomy and palette clusters | No |
 | `sweep <path>` | Clustering curve across the configured ΔE range | Only with `--out <dir>` |
 | `scorecard [path]` | Ratios and comparable deltas | Appends `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews |

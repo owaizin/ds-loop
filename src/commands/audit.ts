@@ -5,9 +5,10 @@ import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { gutter, severityTag, wrapTo } from '../core/ansi.ts';
+import { auditSummary } from '../core/audit-summary.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { surveyTree } from '../core/files.ts';
-import { type NextAction, formatNext, nextAfterAudit } from '../core/next.ts';
+import { type NextAction, auditViewActions, formatNext, nextAfterAudit } from '../core/next.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { type StyleInventory, styleInventory } from '../core/style-inventory.ts';
 import { type Suppression, applyIgnores } from '../core/suppress.ts';
@@ -64,6 +65,7 @@ export function audit(
   opts: {
     target?: RuleTarget | 'all';
     json?: boolean;
+    all?: boolean;
     outDir?: string;
     config?: DsOpsConfig;
     severityOverrides?: Record<string, Finding['severity']>;
@@ -233,7 +235,8 @@ export function audit(
   const suppressed = opts.silent || (opts.quiet && findings.length === 0);
   if (!suppressed) {
     if (opts.json) console.log(JSON.stringify(report, null, 2));
-    else printReport(report, { live });
+    else if (opts.all) printReport(report, { live });
+    else console.log(auditSummary(report, targetPath).join('\n'));
   }
 
   writeReport(report, meta, opts.outDir);
@@ -253,7 +256,14 @@ function noAdapterReport(
   /** the path as the user spelled it, so a suggested command is copy-pasteable */
   path: string,
   config: DsOpsConfig,
-  opts: { json?: boolean; quiet?: boolean; silent?: boolean; outDir?: string; minSeverity?: Severity },
+  opts: {
+    all?: boolean;
+    json?: boolean;
+    quiet?: boolean;
+    silent?: boolean;
+    outDir?: string;
+    minSeverity?: Severity;
+  },
   only?: string[],
 ): AuditReport {
   const coverage = buildCoverage(root, [], [], []);
@@ -311,7 +321,7 @@ function noAdapterReport(
         console.log(`    formats present: ${top.map(([e, n]) => `${n}× ${e}`).join(', ')}`);
       }
       console.log('\n  This is not a clean result. Nothing was judged.');
-      const notCheckedNext = formatNext(report.next);
+      const notCheckedNext = formatNext(opts.all ? report.next : auditViewActions(report.next, path));
       if (notCheckedNext.length > 0) {
         console.log('');
         for (const line of notCheckedNext) console.log(line);

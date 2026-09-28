@@ -4,6 +4,10 @@
 
 Changes planned for 0.3.0; not published.
 
+- Start and audit show coverage and one row per finding group before the compact
+  CSS inventory. `audit --all` retains full terminal details; JSON, HTML, rule
+  severities, counts, guard behavior and scorecard ratios are unchanged.
+
 - Audit selected ordinary CSS rules with `css-rule-bodies@0.2.0`: literals and
   references across seven categories, per-category severity through
   `style.severity`, and the new `token/raw-value-in-style` rule.
