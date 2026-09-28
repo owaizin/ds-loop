@@ -1,4 +1,4 @@
-# scope
+# Keep changes within scope
 
 Apply before changes. Findings identify possible work; they do not expand the task.
 

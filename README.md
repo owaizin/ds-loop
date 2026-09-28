@@ -1,122 +1,107 @@
 # Design System Loop
 
-Your next feature should build on the components you already have. When teams keep rebuilding forms, controls and tables, Design System Loop helps you establish a shared foundation, resolve competing implementations and make the system easier to use and maintain.
+Your tokens and components are only useful when product code uses them. Design System Loop finds hardcoded styles and measures shared-component usage from your code.
 
-Install in your project with Node 22.6 or later:
-
-```sh
-npm install --save-dev ds-loop@0.2.1
-```
-
-Then ask your coding agent to load the skill and describe the problem you want solved:
-
-> Read node_modules/ds-loop/skill/SKILL.md. Our developers keep rebuilding similar components. Investigate a recent example, explain the cause, and recommend a first improvement with a clear finish line. Start read-only.
-
-Replace that example with your own task. Installing the package provides the engine
-and skill files; loading the skill starts the guided work. The agent reads the
-repository, asks about unknowns that affect the plan, and carries out the work you
-authorize. You do not need to choose its internal commands.
-
-[Installation guide](docs/guide/install.md) · [Design-system workflows](docs/guide/workflow.md) · [CLI reference](docs/guide/reference.md)
-
-## Work on your design system
-
-Describe the outcome you need and the product areas it should cover. A precise repair needs a short plan; a first system needs discovery and an agreed delivery scope.
-
-- **Starting a system:** choose a suitable base, build shared foundations and components, and adopt them in the agreed product workflows. Deliver usage and maintenance guidance alongside the code. A first screen is a checkpoint unless you asked only for a pilot.
-- **Improving a partial system:** compare competing implementations with the team's conventions. Reuse the agreed pattern where it fits, and explain differences that need to stay.
-- **Maintaining a system:** review new components and changes against existing conventions. Check affected screens and update the documentation when the team makes a new decision.
-
-The package includes an **agent skill** that guides this work and a **command-line engine** that checks supported token and styling code. Your team chooses the design direction and reviews the result. The engine reports source locations and coverage limits; it runs locally without a model, API key, network access, or runtime dependencies.
-
-The skill's broader reviews require an agent to inspect the code and rendered UI. They are not automated engine checks. See the [workflow guide](docs/guide/workflow.md) for examples and expected results.
-
-## What a setup should leave behind
-
-The setup procedure asks your agent to deliver:
-
-- Editable foundations for type, color, spacing and relevant interaction states.
-- Reusable controls and product patterns connected to real workflows.
-- A reference or style guide using the same components as the product.
-- Instructions for using, customizing, extending and checking the system.
-
-It should reuse a suitable existing library. Design System Loop does not ship a
-universal component kit or require shadcn/ui or Storybook. For deeper Storybook
-work, the agent can hand off to an available specialist; that skill is not bundled.
-
-No foundations worth keeping? Start from [ds-kit](https://github.com/owaizin/ds-kit):
-22 vetted options for typography, spacing, colour, radius, elevation, motion and
-focus, with a specimen page to compare them on real-looking screens. It's MIT and
-separate from this package, so ds-loop works the same without it.
-
-Completion includes checking the affected product and demonstrating how a later
-contributor can find the guidance and make a change. The handoff distinguishes
-what was delivered, what was verified and what remains untested.
-
-## Use it in your project
-
-For a direct engine check, run:
+**Works with:** CSS custom properties, ordinary CSS rules, and Tailwind classes in JavaScript/TypeScript. **Not yet:** SCSS, Vue/Svelte, CSS-in-JS or token JSON.
 
 ```sh
-./node_modules/.bin/ds-loop context .
-./node_modules/.bin/ds-loop audit . --json
+npx ds-loop@0.3.0
 ```
 
-`context` lists configuration, likely sources of design conventions, and supported formats. `audit` runs the code checks. Read the report's `verdict` and `coverage`: exit code 0 can mean nothing was checked. Use `--require-coverage` when CI should fail on reported coverage gaps.
+Run it from your project directory with Node 22.6 or later. You get findings, source locations, what was checked, and the next command. Read `verdict` and `coverage` together.
 
-Ask your coding agent to read `node_modules/ds-loop/skill/SKILL.md`, then describe the area you want to work on. For example:
+The engine checks code locally, without a model, API key or runtime dependencies. The companion skill guides your coding agent to plan and build. Your team decides what should change.
 
-> Compare the forms across our settings screens. Read the shared components and repository guidelines. Identify which differences are accidental and which support different behavior. Propose what to reuse before editing. Once we agree, update the settings screens, check their states and keyboard behavior, and document the decisions beside the components.
+## Read your first results
 
-Keep the whole package installed; the skill needs its launcher and compiled engine. The [installation guide](docs/guide/install.md) also explains how to enable feedback after Claude Code edits and configure CI checks.
+This is real output from the [Example DS CSS fixture](https://github.com/owaizin/ds-loop/tree/main/fixtures/css-audit-example), an independently written test case. From a source checkout, reproduce it with `npm run ds-loop -- start fixtures/css-audit-example`:
 
-## What the engine finds
-
-Token rules already appear in design-system guidance:
-
-> “Never hardcode colors, spacing, or typography values.”
-> — [Fluent UI's agent instructions, rule 1](https://github.com/microsoft/fluentui/blob/master/AGENTS.md#critical-rules-never-violate)
-
-The engine checks for specific ways code can bypass tokens. In this synthetic example, a component hardcodes a color already declared as a token and two lengths:
-
-<!-- verified: audit-markup -->
-```
-  [HIGH] token/raw-value-in-markup · 3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct) · 3 hits · Card.tsx:2, Card.tsx:3
+<!-- verified: start-css-showcase -->
+```text
+  findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
+  [HIGH] token/raw-value-in-style · 1 color property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged · 1 hits · styles.css:7
+  [HIGH] token/raw-value-in-style · 1 spacing property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged · 1 hits · styles.css:9
+  [LOW] token/var-missing-fallback · 2 var() reference(s) have no fallback value · 2 hits · styles.css:8, styles.css:10
 ```
 
-You can also audit literals and token references in ordinary CSS rules, with an inventory by category. CSS and markup findings suggest exact or nearby tokens for review; they never replace code automatically.
+The color and spacing findings point straight to `styles.css:7` and `styles.css:9`. Run `npx ds-loop audit . --all` for risks, fix guidance and candidate tokens.
 
-Before replacing the color, check that the token serves the same purpose in every affected theme. A matching value alone does not establish that.
-
-[View more audit reports](docs/guide/output.md) or [follow a theme fix](docs/guide/example.md) from the original code through browser checks and a documented decision. The [State of AI in Design Systems survey](https://github.com/kaelig/state-of-ai-in-design-systems) provides further examples of how teams guide agents to use their systems.
-
-## Cost and code access
-
-The package and skill are MIT licensed. Your coding agent’s usage costs and data
-handling are separate. The engine runs locally, but the agent may send repository
-context to its provider according to your host’s settings. There is no automatic
-background maintenance.
-
-## Current limits
-
-- CSS adapters read custom-property declarations and selected ordinary rule properties, including nested rules. They do not resolve the cascade or cover every CSS property.
-- The Tailwind adapter reads selected arbitrary values and stock-palette utility names in JavaScript and TypeScript strings. It does not resolve their theme values or check inline styles, CSS-in-JS, Sass maps, or token JSON.
-- The engine does not review layouts, interactions, accessibility, or whether a design choice is appropriate. Check the rendered UI separately.
-- Token naming patterns and color-clustering thresholds are configurable. Adjust them to your system before relying on those checks.
-
-**Supervised alpha:** review changes in an isolated checkout before applying them more widely. A clean audit applies only to the code and checks it covered. [Read the full coverage limits](docs/guide/reference.md#coverage).
-
-## Development
-
-From a repository checkout, run `npm ci`, then:
+In a workspace, see which apps render shared components:
 
 ```sh
-npm test
-npm run check
-npm run type-check
-npm run smoke
+npx ds-loop consumers . --scope @your-org/ui
 ```
 
-See [contribution notes](https://github.com/owaizin/ds-loop/blob/main/CLAUDE.md), and the [methodology](https://github.com/owaizin/ds-loop/blob/main/docs/METHODOLOGY.md).
+From the [Example DS workspace fixture](https://github.com/owaizin/ds-loop/tree/main/fixtures/example-workspace):
 
-Public examples use open-source or synthetic inputs. Client material stays outside this repository. See [LICENSE](LICENSE) for the MIT terms.
+<!-- verified: consumers-example -->
+```text
+  @example/dashboard: shared-component share 75.0% · shared 3 · local 1 · external 0 · unresolved 0 · stories/tests 1 JSX elements
+```
+
+Shared-component share is shared / (shared + local) production JSX elements. External and unresolved elements stay outside that ratio; stories and tests are counted separately. This is a synthetic example, not an adoption benchmark.
+
+## Open a visual report
+
+Save reports you can open locally or share with your team:
+
+```sh
+npx ds-loop audit . --html audit-report.html
+npx ds-loop consumers . --html consumers-report.html
+```
+
+**Audit and token architecture.** Start with findings and coverage, then inspect token layers, references and source locations.
+
+![Audit report for the Example DS CSS fixture, showing coverage, color and spacing findings, and source locations](https://raw.githubusercontent.com/owaizin/ds-loop/main/docs/assets/audit-report.png)
+
+**UI architecture and component usage.** See the workspace import graph and each app's shared-component share.
+
+![Example DS workspace diagram showing dashboard and portal imports, shared-component share bars, and stories counted separately](https://raw.githubusercontent.com/owaizin/ds-loop/main/docs/assets/consumers-report.png)
+
+Both screenshots come from the public fixtures above. [Reproduce the reports](https://github.com/owaizin/ds-loop/blob/main/docs/assets/README.md).
+
+## Ask your agent to help
+
+Install the engine and companion skill in your project:
+
+```sh
+npm install --save-dev ds-loop@0.3.0
+```
+
+Then give your coding agent a problem:
+
+> Read node_modules/ds-loop/skill/SKILL.md. Find why we're rebuilding components instead of using our system. Recommend a first improvement and how we'll verify it. Start read-only.
+
+For a new system, ask it to set up editable foundations, reusable components in real workflows, a reference guide, and contribution instructions. For an existing system, name the feature or inconsistency you want to tackle. The agent inspects the repository, asks about decisions it can't infer, and carries out the scope you authorize.
+
+It can compare foundation options from the MIT [ds-kit](https://github.com/owaizin/ds-kit), reuse your existing library, and produce a visual proposal with the bundled `skill/tools/proposal.mjs`. The handoff records what was delivered, verified and left unchecked. [Choose a workflow](docs/guide/workflow.md).
+
+## Choose your next command
+
+| You want to… | Run |
+|---|---|
+| Get a first reading | `npx ds-loop` or `npx ds-loop start .` |
+| See configuration and convention files | `npx ds-loop context .` |
+| Inspect every finding or export data | `npx ds-loop audit . --all` or `--json` |
+| Map shared imports and component usage | `npx ds-loop consumers .` |
+| Compare measurements over time | `npx ds-loop scorecard .` |
+| Inspect the palette or its clustering threshold | `npx ds-loop scan .` or `npx ds-loop sweep .` |
+| Preview mechanical fallback fixes | `npx ds-loop fix .` |
+| Get feedback after Claude Code edits | `npx ds-loop guard on` |
+
+[Installation](docs/guide/install.md) · [Command reference](docs/guide/reference.md) · [More verified output](docs/guide/output.md)
+
+## Limits
+
+- The adapters read selected CSS properties and Tailwind utilities. They do not resolve the cascade, evaluate every styling expression or check inline styles. A clean result covers only the stated checks and scope; exit 0 alone can also mean nothing was checked. [Coverage details](docs/guide/reference.md#coverage).
+- Token names and clustering thresholds are configurable. Match them to your conventions. Suggested tokens are candidates: equal values do not prove the same role in every theme. `fix` only adds mechanically resolvable `var()` fallbacks; it previews until you pass `--write`.
+- Component share counts static JSX, not runtime renders or adoption quality. Unresolved imports can skew the known-origin ratio. Import diagrams do not prove runtime relationships.
+- Layout, behavior, accessibility and design decisions need agent or human review of the rendered product. **Supervised alpha:** review changes in an isolated checkout. The skill does not bundle a universal component library or a Storybook specialist.
+- Installing the package does not activate your agent or arrange background maintenance. The optional guard reports after edits; it cannot block them. CI gating is a separate team choice.
+- The engine runs locally. Your agent's usage costs and data handling depend on its provider and host settings.
+
+## Contribute
+
+From a source checkout, run `npm ci`, then `npm test`, `npm run check`, `npm run type-check` and `npm run smoke`.
+
+[Contribution notes](https://github.com/owaizin/ds-loop/blob/main/CLAUDE.md) · [Methodology](https://github.com/owaizin/ds-loop/blob/main/docs/METHODOLOGY.md) · [MIT licence](LICENSE)

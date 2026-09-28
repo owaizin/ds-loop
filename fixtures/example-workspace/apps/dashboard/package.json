@@ -1,0 +1,8 @@
+{
+  "name": "@example/dashboard",
+  "private": true,
+  "dependencies": {
+    "@example/ui": "workspace:*",
+    "react-dom": "^19.0.0"
+  }
+}

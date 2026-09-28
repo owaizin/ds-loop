@@ -1,4 +1,4 @@
-# audit
+# Audit tokens and styles
 
 Run the deterministic rule set against a target, verify every finding in context,
 present a severity-ranked report. `audit` documents; it does not fix.

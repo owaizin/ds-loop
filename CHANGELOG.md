@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Lead the README with a runnable first audit, supported formats, verified public
+  fixture output and visual report examples. Separate CLI commands from agent
+  playbooks in the skill. Document 0.3.0 installation and consumers HTML export.
+
 - Consumers counts static JSX component elements by workspace package and shared
   subpath. Shared-component share is shared / (shared + local); external and
   unresolved elements stay outside the ratio, and stories/tests are separate.

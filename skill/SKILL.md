@@ -11,6 +11,13 @@ Help a team solve the design-system problem that brought them here. Carry the wo
 from understanding the problem through delivery, verification and handoff. The
 user should not have to choose an internal playbook or interpret a report alone.
 
+## How to use this skill
+
+Start with [the person's task](#start-with-the-persons-task), choose the relevant
+procedure, and [deliver and close](#deliver-and-close) within the agreed scope.
+Use [CLI commands](#cli-commands) for measurements and [agent procedures](#ask-your-agent)
+for investigation and delivery. The command catalog is a reference, not an interview.
+
 ## Who does what
 
 | Owner | Responsibility |
@@ -137,9 +144,11 @@ source of truth; add another format only for a named consumer. CSS/JSON parity,
 component-file contracts, and MDX validation need separate project checkers.
 Design System Loop does not ship those checks.
 
-## Commands
+## CLI commands
 
-| Command | Built? | Category | Description | Reference |
+Run these in your terminal with `npx ds-loop <command>`.
+
+| Command | Runs in | Category | Description | Reference |
 |---|---|---|---|---|
 | `start [path]` / bare `ds-loop` | **CLI** | Meta | Verdict for this directory, its biggest finding, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
 | `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage. `--write-contract` starts `DESIGN-SYSTEM.md` from measured counts, with the decisions the tool cannot read left as TODO | — |
@@ -149,24 +158,34 @@ Design System Loop does not ship those checks.
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |
 | `guard [on\|off\|status]` | **CLI** | Guard | Install/remove the edit-time `PostToolUse` hook | [reference/guard.md](reference/guard.md) |
 | `fix [target] [--write]` | **CLI** | Guard | Apply the mechanical fixes only — where the edit is provable from the code, no LLM. v0: inserts a `var()` fallback from the target token's literal. Dry run unless `--write` | — |
-| `discover` | playbook | Discover | Read repository evidence, resolve consequential unknowns, record a bounded adoption decision | [reference/discover.md](reference/discover.md) |
-| `census [target]` | playbook | Discover | Scoped component and consumer inventory; validate duplication candidates and prioritize by impact | [reference/census.md](reference/census.md) |
-| `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
-| `establish` | playbook | Build | Set up a usable, editable system for the agreed product scope; verify use, customization and extension | [reference/establish.md](reference/establish.md) |
-| `transform` | playbook | Build | Guide an authorized baseline → decisions → tokens/specs → adoption → completion journey | [reference/transform.md](reference/transform.md) |
-| `foundations` | playbook | Build | Compare and adapt foundation options, record the decision; works with or without a kit | [reference/foundations.md](reference/foundations.md) |
-| `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
-| `scaffold [target]` | playbook | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
-| `extract [target]` | playbook | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
-| `shape <component>` | playbook | Review | Resolve need, contract, consumers and accessibility for a new or substantially changed component | [reference/shape.md](reference/shape.md) |
-| `review <component>` | playbook | Review | Evidence-based component review against applicable contracts; distinguish failures, proposals and unchecked behavior | [reference/review.md](reference/review.md) |
 | `scorecard [path]` | **CLI** | Guard | Append ratios to `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews without writing; CI scheduling is separate | [reference/scorecard.md](reference/scorecard.md) |
-| `doctor` | playbook | Meta | Drift between `DESIGN-SYSTEM.md`, the token files, config, and the guard hook | [reference/doctor.md](reference/doctor.md) |
 
-`CLI` means the engine implements it. Exit behavior is command-specific: `audit` exits 1 on
-surviving findings, while `scorecard` records measurements and is not a CI gate. `playbook` means the agent follows written instructions.
-Attribute its conclusions to your investigation; keep them separate from engine
-output. Do not paraphrase a playbook result as if a rule produced it.
+Exit behavior is command-specific: `audit` exits 1 on surviving findings;
+`scorecard` records measurements and is not a CI gate.
+
+## Ask your agent
+
+These are written procedures, **not CLI commands**. Ask your agent to follow the
+linked playbook. For example: “Review this component using the review playbook.”
+Do not run `ds-loop review` or `ds-loop drift`.
+
+| Request | Runs in | Category | Description | Reference |
+|---|---|---|---|---|
+| `discover` | Agent procedure | Discover | Read repository evidence, resolve consequential unknowns, record a bounded adoption decision | [reference/discover.md](reference/discover.md) |
+| `census [target]` | Agent procedure | Discover | Scoped component and consumer inventory; validate duplication candidates and prioritize by impact | [reference/census.md](reference/census.md) |
+| `drift [target]` | Agent procedure | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
+| `establish` | Agent procedure | Build | Set up a usable, editable system for the agreed product scope; verify use, customization and extension | [reference/establish.md](reference/establish.md) |
+| `transform` | Agent procedure | Build | Guide an authorized baseline → decisions → tokens/specs → adoption → completion journey | [reference/transform.md](reference/transform.md) |
+| `foundations` | Agent procedure | Build | Compare and adapt foundation options, record the decision; works with or without a kit | [reference/foundations.md](reference/foundations.md) |
+| `tokenize [target]` | Agent procedure | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
+| `scaffold [target]` | Agent procedure | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
+| `extract [target]` | Agent procedure | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
+| `shape <component>` | Agent procedure | Review | Resolve need, contract, consumers and accessibility for a new or substantially changed component | [reference/shape.md](reference/shape.md) |
+| `review <component>` | Agent procedure | Review | Evidence-based component review against applicable contracts; distinguish failures, proposals and unchecked behavior | [reference/review.md](reference/review.md) |
+| `doctor` | Agent procedure | Meta | Drift between `DESIGN-SYSTEM.md`, the token files, config, and the guard hook | [reference/doctor.md](reference/doctor.md) |
+
+Attribute playbook conclusions to the agent's investigation. Keep them separate
+from engine output; do not present them as findings from a rule.
 
 
 CLI audit targets (`--target`) are `all`, `tokens`, `color`, `spacing`,

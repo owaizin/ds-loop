@@ -82,8 +82,10 @@ investigation and execution; the team or its delegated owner decides shared poli
 `audit` includes suggestions for supported style/markup literals; suggestions are
 not replacements. Exact-token replacement is not implemented or authorized by this
 playbook. `fix` only inserts mechanically provable fallbacks and preserves upstream
-internals. `map` (A6) and `consumers` (A9) are **not yet available**: write alias
-mappings and inspect imports manually, recording scope and uncertainty. A generated
+internals. `consumers` (A9) reports workspace imports and static JSX
+shared-component share; imports and JSX occurrences are not runtime usage. `map` (A6)
+is **not yet available**: write alias mappings manually, recording scope and
+uncertainty. A generated
 token-reference command is also not shipped. The kit is optional throughout.
 
 An inventory can finish at synthesis. An approved no-op can finish with its reason.
