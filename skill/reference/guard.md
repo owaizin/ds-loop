@@ -83,3 +83,39 @@ Token CSS/JSON parity, component file contracts, and MDX validation require
 project-specific checkers and CI wiring. The hook does not run them or agent
 review judgments. `scorecard` exists as a separate CLI and is not installed by
 `guard on`.
+
+## Add project instructions
+
+For an authorized adoption task, put one scoped design-system block in the team's
+existing AI instruction file, where its normal agent reads it. Preserve unrelated
+instructions; update an existing block instead of appending duplicates. Resolve
+conflicting rules with the recorded project decision. If no instruction file
+exists, choose the host's normal repository entry point and create one, not a
+parallel DS Loop instruction system.
+
+Adapt this example to real paths, naming and the installed launcher; verify each
+path/command before writing it. The alias rule reflects an adopted project model,
+not a universal ban on literals:
+
+```text
+Design system — Example DS
+Before UI changes, read the relevant specs/foundations/ and specs/components/
+contract, plus linked decisions. Canonical tokens: src/styles/tokens.css.
+Consume project aliases; keep upstream mappings and fallbacks in the alias layer.
+A new literal needs a role decision or a recorded exception with its reason and
+scope. Do not create a token solely to silence a finding.
+Before committing, run node_modules/.bin/ds-loop audit . unfiltered and the
+project's documented behavior checks. State unread formats and unjudged rules.
+Update the affected spec and decision when their contract changes.
+```
+
+This example assumes a local npm-compatible install; use the repository's package
+manager/launcher in the actual block. A decision record does not configure the
+engine: set naming/context configuration or a narrowly reasoned `ignore` entry
+separately when appropriate. Verify suppressions and report remaining findings.
+
+Record the team's CI policy independently. For example, a team may choose
+`audit . --min-severity high --require-coverage`; explain what that scope covers
+and demonstrate a known failure through the actual CI path before claiming it
+enforces the policy. Neither that policy nor the edit hook defines engagement
+completion. Verify instruction discovery using [engagement](engagement.md).
