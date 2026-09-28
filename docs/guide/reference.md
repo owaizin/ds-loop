@@ -33,6 +33,8 @@ when the referenced token has a direct color or dimension literal in scope. It d
 not follow alias chains, migrate JSX utilities, or fix other rule classes. `--target`
 belongs to `audit`, not `fix`. A zero-edit result explains whether the scope yielded
 no declarations, no candidates, or references without eligible literal targets.
+It preserves upstream-internal references. Project aliases pointing to upstream
+still need fallbacks; eligible ones appear in the preview.
 It does not establish a clean audit. Use an unfiltered audit afterward.
 
 ### The contract file
@@ -51,13 +53,50 @@ unsupported model as a limitation rather than redesigning it to obtain a clean a
 
 ## Agent procedures
 
-The skill includes `discover`, `census`, `drift`, `establish`, `tokenize`, `scaffold`, `extract`, `shape`, `review` and `doctor`. They instruct an agent to investigate or perform a task. They are not CLI commands and their conclusions are not engine findings. See the [skill entry](../../skill/SKILL.md).
+The skill includes `discover`, `census`, `drift`, `establish`, `transform`, `foundations`, `tokenize`, `scaffold`, `extract`, `shape`, `review` and `doctor`. They instruct an agent to investigate or perform a task. They are not CLI commands and their conclusions are not engine findings. See the [skill entry](../../skill/SKILL.md).
 
 ## Audit options
 
 Use `--json` for structured output, `--out <dir>` to retain reports, `--target` for a rule domain, `--files a,b` or `--since main` to narrow files, and `--min-severity` to filter findings. Targets are `all`, `tokens`, `color`, `spacing`, `typography`, `elevation` and `motion`. `--require-coverage` makes reported coverage gaps fail too.
 
 The audit exits 1 on surviving findings; without strict coverage, `not-checked` can exit 0. Severity filtering does not remove coverage limits from the report.
+
+## CSS inventory and token suggestions
+
+Ordinary CSS rules contribute to seven categories: `color`, `spacing`,
+`typography`, `radius`, `shadow`, `z-index` and `duration`. Audit reports show
+occurrences, distinct expressions, classification counts, tokenization ratios and
+top files. Counts come from extraction, before exceptions or severity filtering;
+a lower finding count does not change this inventory.
+
+Tokenization is references / (literals + references + mixed). Unclassified and
+excluded values stay outside that denominator; a missing denominator is `null`.
+A reference is not proof that the token resolves. Channel-token colours such as
+`hsl(var(--x))`, `hsl(var(--x) / 0.5)` and `rgb(var(--x))` count as references;
+fallback values are retained. Active literal colour channels remain mixed.
+
+Raw-value findings in CSS and markup include token candidates. The engine follows
+whole-value alias chains and normalizes supported equivalent spellings, such as
+`#333`, `#333333` and `rgb(51, 51, 51)`. It converts rem using the configured root
+font size, tries exact matches before proximity matches, and prefers project aliases
+over primitives without dropping other candidates. Multiple preferred candidates
+remain ambiguous. Suggestions are candidates for review, never replacements.
+
+### Fields in `audit --json`
+
+| Field | Contents |
+| --- | --- |
+| `styleInventory.<category>` | `occurrences`, `distinctValues`, `literals`, `references`, `mixed`, `unclassified`, `excluded`, `tokenizationRatio` |
+| `styleInventory.<category>.values[]` | `value`, `property`, `classification`, `occurrences`; full extracted distribution |
+| `styleInventory.<category>.topFiles[]` | `file`, `occurrences`; full ranking, while the human report shows the first five |
+| `findings[].data` for `token/raw-value-in-style` | `category`, `count`, all `hits` with source provenance; unjudged groups also carry `notJudged: true` |
+| `findings[].suggestion` | `basis`, shared `resolutionLimits`, and per-use-site `values` |
+| `suggestion.values[]` | `value`, `file`, `line`, `property`, `status`, `candidates`, `limits`; statuses are `exact`, `nearest`, `ambiguous`, `no-token`, `not-checked` |
+| `candidates[]` | `token`, resolved `value`, `match`, `distance`, `metric` (`identity`, `ΔE`, `px`), `tier`, `aliasChain`, declaration provenance and `preferred` |
+
+CSS rule findings retain every hit in JSON; human locations are grouped and
+abbreviated. Suggestions retain candidates and resolution limits rather than
+selecting a replacement. See [real output examples](output.md#ordinary-css-inventory).
 
 ## Scoped checks and token context
 
@@ -126,6 +165,44 @@ For a project whose actual contract uses `--foundation-*` primitives and `--inte
 
 Use patterns from your own contract. These settings configure existing rules; they do not create new checks. The engine's palette → semantic → component model is an assumption, not a required architecture. If your model cannot be represented faithfully, report the limitation.
 
+### Upstream tokens, category severity and suggestions
+
+Merge the relevant settings into your existing config:
+
+```json
+{
+  "taxonomy": { "upstreamPattern": "^--upstream-" },
+  "style": {
+    "severity": {
+      "color": "high",
+      "spacing": "high",
+      "typography": "medium",
+      "radius": "medium",
+      "shadow": "medium",
+      "z-index": "low",
+      "duration": "low"
+    }
+  },
+  "suggestions": { "rootFontSize": 16, "lengthTolerancePx": 1 },
+  "clustering": { "deltaE": 2.3 }
+}
+```
+
+| Key | Default / effect |
+| --- | --- |
+| `taxonomy.upstreamPattern` | `null` disables upstream classification. Otherwise a case-insensitive regex matches full token names before other tiers. |
+| `style.severity.<category>` | Defaults shown above; `blocking`, `high`, `medium` or `low`. Applies to literal-presence findings; unclassified expressions still report a low-severity judgment limit. |
+| `suggestions.rootFontSize` | `16` px per rem; an explicit assumption, not a measured browser root size. |
+| `suggestions.lengthTolerancePx` | `1` px maximum distance for nearest px/rem candidates. |
+| `clustering.deltaE` | `2.3` maximum colour distance, also used by palette clustering. This is shared configuration, not a suggestions-only setting. |
+
+Upstream declarations may hold literals and reference their own internals without
+project fallback requirements. Project aliases reference upstream with fallbacks;
+components and supported use sites reference project aliases. `token/upstream-bypass`
+reports direct upstream consumption. Palette diagnostics still apply: upstream is
+not a blanket exception. Choose a pattern that identifies the imported source,
+not every project token.
+
 ### Recording an exception
 
 To suppress one verified case, edit the project's existing configuration; avoid
@@ -182,8 +259,14 @@ palette families during detection. Re-measure a baseline before comparing it wit
 
 | Adapter | Reads | Does not read |
 | --- | --- | --- |
-| CSS custom properties | Custom-property declarations in `.css` | Ordinary rule bodies and declarations inside at-rules |
-| Tailwind JSX | Arbitrary-value strings and framework-palette colour utilities in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Utilities naming your own theme tokens, arbitrary variants/bracketed opacity, inline style objects, CSS-in-JS |
+| CSS custom properties 0.4.0 | Custom-property declarations in `.css` | Ordinary rule bodies and declarations inside at-rules |
+| Tailwind JSX 0.4.0 | Arbitrary-value strings and framework-palette colour utilities in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Utilities naming your own theme tokens, arbitrary variants/bracketed opacity, inline style objects, CSS-in-JS |
+| CSS rule bodies 0.2.0 | Selected ordinary CSS properties, literals and `var()` references, including nested at-rules | Custom-property declarations, declaration at-rules such as `@font-face`, preprocessors, import/cascade resolution |
+
+Colour covers colour/background/border-colour properties; spacing covers padding,
+margin and gap; typography covers font size, weight and line height. Radius,
+box shadow, z-index and transition/animation duration properties complete the
+seven categories. This is not every CSS property.
 
 Sass maps, design-token JSON and other unsupported formats remain outside these adapters. Recognized colors that cannot be converted are reported as ambiguous. A file extension is not a promise of full syntax coverage.
 
@@ -192,11 +275,13 @@ Sass maps, design-token JSON and other unsupported formats remain outside these 
 ## Rules
 
 
-Twelve deterministic rules examine supported extracted values. Interpret their
+Fourteen deterministic rules examine supported extracted values. Interpret their
 findings against the applicable project contract and the report's coverage.
 
 | rule | severity | catches |
 | --- | --- | --- |
+| `token/upstream-bypass` | high | components or supported style/markup use sites reference upstream directly instead of a project alias |
+| `token/raw-value-in-style` | configured per category / low | literal presence in ordinary CSS, not a prohibition; low-severity groups identify unclassified expressions |
 | `token/tier-leakage` | high | component → primitive skips and upward references under the configured tier assumption; investigate applicability and theme behavior |
 | `color/semantic-holds-literal` | high | a semantic token holding a literal colour instead of `var(--primitive)` |
 | `token/raw-value-in-markup` | high | a component hardcoding a colour or length at the use site — `bg-[#1da1f2]`, `p-[13px]`. Names the token that already carries the value when one does. |
@@ -213,8 +298,24 @@ findings against the applicable project contract and the report's coverage.
 Route them with `--target color|tokens|spacing|typography|elevation|motion`, narrow with `--files a,b` or `--since main`, raise the floor with `--min-severity high`.
 
 
+## Edit feedback and scorecard comparisons
+
+The guard reports changed-line findings and summarizes unchanged-line finding
+groups in one line. These labels describe overlap with the diff against HEAD,
+not causation; untracked files are unknown. A token change can affect untouched
+lines. Use an unfiltered audit for details instead of expanding the edit's scope.
+
+When adapter versions or configuration change, `scorecard` reports
+`instrument moved` and withholds a delta against the previous row. The new row
+becomes the baseline for later comparable runs. Without a previous row, it records
+a first baseline instead.
+
 ## Limits of the result
 
-A finding is evidence to investigate, not proof of design intent. Ratios describe extracted code, not system maturity. The engine does not observe rendered behavior, accessibility, user comprehension or product outcomes. It uses regex-based extraction with documented ceilings.
+A finding is evidence to investigate, not proof of design intent. Ratios describe extracted code, not system maturity. The engine does not observe rendered behavior, accessibility, user comprehension or product outcomes. It uses regex-based extraction with documented ceilings. Suggestions do not resolve
+the cascade, modes or semantic intent. Alias cycles, missing targets, computed
+expressions and unsupported colour syntax retain limits; fallbacks are not assumed
+active. Colour proximity does not compare different alpha values. A channel-reference
+classification does not make that expression resolvable by the suggestion engine.
 
 [Example reports](output.md) · [Back to the guide](README.md)

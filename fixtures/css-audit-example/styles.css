@@ -1,0 +1,11 @@
+:root {
+  --ds-palette-gray-700: #333333;
+  --ds-color-text: var(--ds-palette-gray-700, #333333);
+  --ds-space-4: 1rem;
+}
+.example {
+  color: #333;
+  background-color: var(--ds-color-text);
+  padding: 16px;
+  gap: var(--ds-space-4);
+}

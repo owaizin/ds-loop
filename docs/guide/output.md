@@ -4,6 +4,39 @@ These excerpts are checked against the engine by `test/readme.test.ts`. Line wra
 
 The `│` gutter groups the lines of one finding and is always emitted. In a terminal, long `where:`, `risk:` and `fix:` lines wrap to the window width and continue under their label; piped or redirected output keeps each on one line, so a captured log and these excerpts stay comparable. Colour follows the same rule — severity tags are coloured only on a terminal, and `NO_COLOR` turns that off.
 
+## Ordinary CSS inventory
+
+From the repository root, run:
+
+```sh
+npm run ds-loop -- audit fixtures/css-audit-example
+```
+
+This independently written Example DS fixture contains a colour literal, a spacing
+literal and two references. The inventory precedes severity and exception filters;
+its ratio does not prove the references resolve.
+
+<!-- verified: audit-css-inventory -->
+```text
+  CSS property inventory — extracted, before exceptions and severity filtering
+    tokenization = reference-only values / (literal + reference + mixed values); not reference resolution
+    color: 2 occurrences · 2 distinct · 1 literal · 1 reference · 0 mixed · 0 unclassified · 0 excluded
+      tokenization: 0.500 · top files: styles.css (2)
+    spacing: 2 occurrences · 2 distinct · 1 literal · 1 reference · 0 mixed · 0 unclassified · 0 excluded
+      tokenization: 0.500 · top files: styles.css (2)
+```
+
+### A token suggestion
+
+The same run finds an exact colour candidate through a project alias. This is a
+review candidate, not permission to replace the value. JSON retains the primitive
+candidate too, plus alias provenance and resolution limits.
+
+<!-- verified: audit-css-suggestion -->
+```text
+  │ suggest:#333: exact — --ds-color-text. Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement. Full candidates, alias provenance and resolution limits in --json.
+```
+
 ## Public fixture: Radix Colors
 
 From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. The frozen source and provenance are in `fixtures/radix-colors/SOURCE.json`. Findings need investigation: proximity between two palette steps does not prove one should be deleted.

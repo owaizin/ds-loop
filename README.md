@@ -82,6 +82,8 @@ The engine checks for specific ways code can bypass tokens. In this synthetic ex
   │ fix:   #1da1f2 is already --palette-blue-500. Swap those first. …
 ```
 
+You can also audit literals and token references in ordinary CSS rules, with an inventory by category. CSS and markup findings suggest exact or nearby tokens for review; they never replace code automatically.
+
 Before replacing the color, check that the token serves the same purpose in every affected theme. A matching value alone does not establish that.
 
 [View more audit reports](docs/guide/output.md) or [follow a theme fix](docs/guide/example.md) from the original code through browser checks and a documented decision. The [State of AI in Design Systems survey](https://github.com/kaelig/state-of-ai-in-design-systems) provides further examples of how teams guide agents to use their systems.
@@ -95,7 +97,7 @@ background maintenance.
 
 ## Current limits
 
-- The CSS adapter reads custom-property declarations. It does not check ordinary CSS rule bodies or at-rules.
+- CSS adapters read custom-property declarations and selected ordinary rule properties, including nested rules. They do not resolve the cascade or cover every CSS property.
 - The Tailwind adapter reads selected arbitrary values and stock-palette utility names in JavaScript and TypeScript strings. It does not resolve their theme values or check inline styles, CSS-in-JS, Sass maps, or token JSON.
 - The engine does not review layouts, interactions, accessibility, or whether a design choice is appropriate. Check the rendered UI separately.
 - Token naming patterns and color-clustering thresholds are configurable. Adjust them to your system before relying on those checks.

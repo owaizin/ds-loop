@@ -40,6 +40,19 @@ may improve documentation or contribution practices instead of adding code.
 
 > Read node_modules/ds-loop/skill/SKILL.md. Investigate why the primary button in src/settings/ differs from the shared Button. Check its states, themes, and existing decisions. If it is unintended drift, fix it within this screen and verify the result. If the difference serves a real need, keep it and record why. Do not change the shared scale or other screens without resolving that wider scope. Link the before/after evidence and the saved decision.
 
+## Transform an existing system
+
+Use the [nine-step transformation procedure](../../skill/reference/transform.md)
+when the goal spans diagnosis, foundation decisions, adoption and maintenance.
+It starts from existing commitments and ends with an evidence-backed completion
+record; it is an agent procedure, not a CLI command. The [foundations procedure](../../skill/reference/foundations.md)
+helps compare choices without assuming the current system should be replaced.
+
+Establish theming areas and their override boundaries early. Before relying on
+Storybook or another preview, verify its CSS sources and order against the app.
+Label deliverables as observed, inferred, proposed or not checked. A scoped review
+can stop with a recommendation; a migration needs its own authorization.
+
 ## Maintain an existing system
 
 **Bring:** a diff or feature, component contracts, and previous decisions.

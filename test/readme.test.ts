@@ -135,9 +135,25 @@ test('README: the scorecard delta is real output', () => {
   assertBlockIsReal('scorecard-delta', block, actual);
 });
 
+for (const id of ['audit-css-inventory', 'audit-css-suggestion']) {
+  test(`guide: ${id} is a verbatim excerpt of real CSS audit output`, () => {
+    const block = verifiedBlocks().get(id);
+    assert.ok(block, `missing verified block: ${id}`);
+    const actual = run(['audit', 'fixtures/css-audit-example'], ROOT);
+    assert.ok(actual.includes(block.trimEnd()), `${id} must remain a contiguous, verbatim excerpt`);
+  });
+}
+
 test('every verified block in the README is registered in this file', () => {
   // an unregistered `verified:` block is an unchecked claim wearing a badge
-  const registered = new Set(['audit-radix', 'audit-markup', 'audit-not-checked', 'scorecard-delta']);
+  const registered = new Set([
+    'audit-radix',
+    'audit-markup',
+    'audit-not-checked',
+    'scorecard-delta',
+    'audit-css-inventory',
+    'audit-css-suggestion',
+  ]);
   for (const id of verifiedBlocks().keys()) {
     assert.ok(registered.has(id), `README block "${id}" is marked verified but nothing checks it`);
   }
