@@ -415,7 +415,7 @@ try {
     assert(result.status === 1, `expected findings, got ${result.status}`);
     const report = JSON.parse(result.stdout);
     assert(
-      report.manifest.adapter.includes('css-rule-bodies@0.1.0'),
+      report.manifest.adapter.includes('css-rule-bodies@0.2.0'),
       'style adapter missing from packed registry',
     );
     const spacing = report.findings.find(

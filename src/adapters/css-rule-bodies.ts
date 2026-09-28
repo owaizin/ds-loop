@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
+import { channelReference } from '../core/channel-reference.ts';
 import { filesInScope } from '../core/files.ts';
 import { isLengthLiteral } from '../core/literals.ts';
 import type { RawValue, ValueCategory, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 const ID = 'css-rule-bodies';
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const EXTS = ['.css'];
 
 /**
@@ -55,7 +56,7 @@ export const cssRuleBodiesAdapter: Adapter = {
             classification,
             reason:
               classification === 'reference'
-                ? 'value consists of var() references; fallbacks are retained, resolution is not checked'
+                ? 'token references supply the value or colour channels; fallbacks are retained, resolution is not checked'
                 : classification === 'mixed'
                   ? 'value contains token references and active literals'
                   : classification === 'ambiguous'
@@ -105,6 +106,8 @@ const NUMBER = /(?:^|[\s,(+*/-])(?:\d*\.\d+|\d+)(?:[a-z%]+)?(?=$|[\s,)/+*-])/i;
 function classify(category: ValueCategory, text: string, refs: string[]): ValueClassification {
   const value = text.trim();
   if (!value || KEYWORDS.test(value)) return 'excluded';
+  const channel = channelReference(value);
+  if (channel !== null) return channel;
   const remainder = removeVars(value).trim();
   if (refs.length && /^[\s,\/]*$/.test(remainder)) return 'reference';
   // Do not interpret arguments of env()/attr()/unknown functions as literals.

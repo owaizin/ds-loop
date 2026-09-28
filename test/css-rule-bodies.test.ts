@@ -65,7 +65,7 @@ test('ordinary CSS: all requested categories, full provenance, no token declarat
       assert.ok(values.every((v) => v.provenance.tokenName === null && v.provenance.surface === 'style'));
       assert.ok(
         values.every(
-          (v) => v.provenance.adapterId === 'css-rule-bodies' && v.provenance.adapterVersion === '0.1.0',
+          (v) => v.provenance.adapterId === 'css-rule-bodies' && v.provenance.adapterVersion === '0.2.0',
         ),
       );
       assert.equal(values[0]?.provenance.line, 3);

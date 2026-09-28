@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
+import { channelReference } from '../core/channel-reference.ts';
 import { filesInScope } from '../core/files.ts';
 import { isLengthLiteral } from '../core/literals.ts';
 import type { RawValue, ValueClassification } from '../core/provenance.ts';
@@ -14,7 +15,7 @@ const ID = 'css-custom-props';
 // 0.3.0: a declaration may end at `}` as well as `;`, so the last declaration in
 // a compact block is no longer missed. Verified to change nothing in any corpus
 // fixture (all of them use trailing semicolons), so 0.2.0 numbers stand.
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 const EXTS = ['.css'];
 
 /**
@@ -90,15 +91,21 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
         };
 
         if (refs.length > 0) {
-          // a reference declaration — the raw value is one or more var() calls.
-          // kept (not skipped) so the tier rules can check reference direction.
+          const channel = channelReference(value);
+          // Retain references for tier analysis; distinguish active literal
+          // channels and unsupported colour expressions from pure references.
           out.push({
             raw: value,
             refs,
             provenance: {
               ...base,
-              classification: 'reference',
-              reason: `references ${refs.length} token(s): ${refs.join(', ')}`,
+              classification: channel ?? 'reference',
+              reason:
+                channel === 'mixed'
+                  ? 'colour expression contains token references and active literal channels'
+                  : channel === 'ambiguous'
+                    ? 'colour expression not fully classified; token resolution is not checked'
+                    : `references ${refs.length} token(s): ${refs.join(', ')}`,
             },
           });
           continue;
