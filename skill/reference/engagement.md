@@ -179,6 +179,24 @@ Lead with whether the requested outcome was achieved. Include:
 - **Continuation:** decision location and how to find it; remaining work with owner
   or owner-needed; next action or explicit stop. Do not imply scheduled follow-up.
 
+For a transformation or adoption engagement, include these fields in that same
+receipt. Mark missing evidence as not checked; do not create measurements to fill
+the template:
+
+| Field | Evidence to retain |
+|---|---|
+| Before/after tokenization by category | From `styleInventory`: references / (literals + references + mixed), the reported ratio and both scopes/revisions, adapter versions and config hashes. It covers supported ordinary CSS use sites, not all markup or native styles. Null/absent means no ratio, not 0% or 100%. If scope, adapters or config changed, state that the instrument moved; rebaseline instead of claiming a delta. |
+| Remaining findings and reasons | Unfiltered findings, disposition and rationale for retained work; distinguish recorded exceptions, deferred repairs and unjudged checks. Suppressing a finding does not remove its extracted inventory. |
+| Decisions and locations | What was decided, by whom or under what delegation, where it lives, and unresolved proposals. |
+| Migration slices | Named consumers/slices done and not done, preserved behavior and any remaining owner/dependency. |
+| Rendered verification | Screens/flows, states, viewport, theme/density, who checked them, result and evidence location. Separate browser observation from source inspection and native checks. |
+| Coverage gaps | Unread formats/files, exclusions, rules unable to judge, and unrun behavior/accessibility checks; explain the claims each gap prevents. |
+
+Relate these observations to the user's original goal. A higher tokenization ratio
+or fewer findings does not by itself demonstrate improved usability. Completion is
+an honest record; a team may choose its own CI threshold, but a passing gate is
+not the definition of a completed engagement.
+
 Store task state in the existing issue/task. Put lasting conventions in the team's
 ADR, component contract, contribution guide or chosen equivalent. Use
 `DESIGN-SYSTEM.md` only if it is the appropriate home. Its existence is not policy
