@@ -1,0 +1,125 @@
+{
+  "title": "Example DS — shared foundations, platform-specific components",
+  "scope": "Invented example. Web and native apps for three roles. Proposal for review; nothing here is adopted.",
+  "lanes": [
+    { "id": "apps", "label": "Role experiences", "note": "Web and native" },
+    { "id": "patterns", "label": "Shared product patterns" },
+    { "id": "primitives", "label": "Platform primitives" },
+    { "id": "tokens", "label": "Token sources" }
+  ],
+  "nodes": [
+    {
+      "id": "admin",
+      "lane": "apps",
+      "label": "Admin",
+      "detail": "Operational, dense tables",
+      "status": "observed",
+      "evidence": [
+        { "report": "ui", "ref": "apps/admin-web imports @example/ui/shadcn (89) and @example/ui (28)" }
+      ]
+    },
+    {
+      "id": "learner",
+      "lane": "apps",
+      "label": "Learner",
+      "detail": "Task-focused",
+      "status": "observed",
+      "evidence": [{ "report": "ui", "ref": "apps/learner-web imports @example/ui/shadcn (10)" }]
+    },
+    {
+      "id": "forms",
+      "lane": "patterns",
+      "label": "Forms and validation",
+      "status": "proposed",
+      "detail": "One field contract shared by both apps",
+      "evidence": [
+        { "report": "audit", "ref": "token/raw-value-in-style: 3 input recipes with different paddings" }
+      ]
+    },
+    {
+      "id": "specialist",
+      "lane": "patterns",
+      "label": "Specialist UI",
+      "detail": "Share only when reuse is proven",
+      "status": "proposed"
+    },
+    {
+      "id": "web",
+      "lane": "primitives",
+      "label": "Recommended web primitives",
+      "detail": "Keep the Radix-based family",
+      "status": "proposed",
+      "replaces": "custom",
+      "evidence": [{ "report": "ui", "ref": "shadcn family imported by every web app" }]
+    },
+    {
+      "id": "custom",
+      "lane": "primitives",
+      "label": "Custom primitives",
+      "detail": "Overlaps Button, Input, Tooltip",
+      "status": "observed",
+      "evidence": [{ "report": "ui", "ref": "packages/ui/src/index.ts exports Button, Input, Tooltip" }]
+    },
+    {
+      "id": "native",
+      "lane": "primitives",
+      "label": "Native primitives",
+      "detail": "Used by one app so far",
+      "status": "inferred",
+      "evidence": [{ "report": "ui", "ref": "@example/ui/native imported by admin-mobile only" }]
+    },
+    {
+      "id": "web-tokens",
+      "lane": "tokens",
+      "label": "Web tokens (CSS)",
+      "status": "observed",
+      "evidence": [{ "report": "tokens", "ref": "packages/theme/theme.css — 312 declarations" }]
+    },
+    {
+      "id": "native-tokens",
+      "lane": "tokens",
+      "label": "Native tokens (JS)",
+      "detail": "Parity with CSS unverified",
+      "status": "not-checked"
+    }
+  ],
+  "edges": [
+    { "from": "admin", "to": "forms", "meaning": "proposed consumption", "status": "proposed" },
+    { "from": "learner", "to": "forms", "meaning": "proposed consumption", "status": "proposed" },
+    { "from": "forms", "to": "web", "meaning": "built from", "status": "proposed" },
+    {
+      "from": "admin",
+      "to": "custom",
+      "meaning": "import",
+      "status": "observed",
+      "evidence": [{ "report": "ui", "ref": "28 imports of @example/ui" }]
+    },
+    {
+      "from": "web",
+      "to": "web-tokens",
+      "meaning": "style dependency",
+      "status": "observed",
+      "evidence": [{ "report": "tokens", "ref": "var() references from packages/ui/shadcn to theme.css" }]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "Which web primitive family is recommended?",
+      "options": ["Radix-based family", "Custom family", "Keep both with a documented split"],
+      "recommendation": "Radix-based family; migrate custom overlaps as screens are touched",
+      "owner": "Frontend lead",
+      "status": "proposed",
+      "record": "specs/decisions/0001-web-primitives.md"
+    }
+  ],
+  "roadmap": [
+    {
+      "stage": "Compare and decide",
+      "entry": "Inventory reviewed with app owners",
+      "nodes": ["custom", "web"]
+    },
+    { "stage": "Pilot one form", "entry": "D1 decided; field contract written", "nodes": ["forms"] },
+    { "stage": "Native parity", "entry": "Token parity check exists and passes", "nodes": ["native-tokens"] }
+  ]
+}

@@ -40,7 +40,9 @@ investigation and execution; the team or its delegated owner decides shared poli
    recommendation, from a kit, existing upstream or independent derivation. Output:
    choice, rationale, source, adaptations and migration consequences in the team's
    decision home (for example `decisions/NNNN-<foundation>.md`). Team or delegated
-   owner decides; proposed choices remain proposed until resolved.
+   owner decides; proposed choices remain proposed until resolved. When the
+   decision changes architecture, show it with the proposal renderer described in
+   [engagement](engagement.md), linked to the `audit --html` report it rests on.
 5. **Token layers.** Input: decided foundation and authorized scope. Follow
    [tokenize](tokenize.md): upstream/local primitives, project aliases with fallbacks,
    then component consumers; component tokens only where needed. Configure naming

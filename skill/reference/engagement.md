@@ -70,6 +70,17 @@ merge app-local components into one shared node or count story-only imports as
 production adoption. A sampled search needs its scope next to the conclusion.
 An attractive diagram cannot supply evidence missing from the inventory.
 
+For a proposal, architecture change or roadmap, write it as JSON in the shape of
+`<skill-base-dir>/templates/proposal.example.json` and render it with
+`node <skill-base-dir>/tools/proposal.mjs render proposal.json --html proposal.html`.
+Run `check` first: it rejects an observed or inferred box without evidence, a link
+without a stated meaning, a decided decision without an owner and a roadmap stage
+without entry criteria. A proposed box with no linked fact renders as unsupported;
+link it to the audit report (`audit --html`) or source it rests on, or keep it
+visibly unsupported. Keep the JSON beside the decision records so the page can be
+regenerated. Facts in the proposal come from engine reports and inspected source;
+the tool checks structure, not truth.
+
 ## Say what a step costs before taking it
 
 Before a step that will run long, read or change many files, or spend the user's
