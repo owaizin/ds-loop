@@ -12,6 +12,8 @@ import type { DsOpsConfig } from './schema.ts';
  * it is a defensible neutral, not because it is correct for any given palette.
  */
 export const DEFAULT_CONFIG: DsOpsConfig = {
+  // UNCALIBRATED review threshold, not an alias validity rule.
+  architecture: { maxAliasDepth: 4 },
   suggestions: {
     // UNCALIBRATED name signals. Numeric comparisons default to exact only.
     unitlessRoles: {
@@ -234,3 +236,6 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
   // exceptions are recorded per project, never shipped as defaults
   ignore: [],
 };
+
+/** UNCALIBRATED review threshold; report configuration, not a tier rule. */
+export const DEFAULT_ARCHITECTURE = DEFAULT_CONFIG.architecture!;

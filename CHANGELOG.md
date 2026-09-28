@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add a generated Token architecture section to `audit --html`, backed by JSON
+  declaration/reference evidence. Includes configured tiers, aggregated links,
+  token lookup, cycles, mode redeclarations and `architecture.maxAliasDepth`
+  (default 4). Cross-file cascade order remains unresolved. The new default
+  changes config hashes; the next scorecard comparison reports instrument moved.
+
 Changes planned for 0.3.0; not published.
 
 - Start and audit show coverage and one row per finding group before the compact

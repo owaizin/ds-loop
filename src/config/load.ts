@@ -80,6 +80,7 @@ export function loadConfig(explicitPath: string | undefined, cwd = process.cwd()
 function mergeConfig(user: Record<string, unknown>): DsOpsConfig {
   const u = user as Partial<DsOpsConfig>;
   return {
+    architecture: readArchitecture(u.architecture),
     suggestions: readSuggestions(user.suggestions),
     style: readStyle(user.style),
     clustering: { ...DEFAULT_CONFIG.clustering, ...u.clustering },
@@ -285,4 +286,18 @@ function readUpstreamPattern(raw: unknown): string | null {
     throw new Error('config: taxonomy.upstreamPattern is not a valid regex');
   }
   return raw;
+}
+
+function readArchitecture(raw: unknown): { maxAliasDepth: number } {
+  if (raw === undefined) return { ...DEFAULT_CONFIG.architecture! };
+  if (
+    !raw ||
+    typeof raw !== 'object' ||
+    Array.isArray(raw) ||
+    !Number.isSafeInteger((raw as Record<string, unknown>).maxAliasDepth) ||
+    Number((raw as Record<string, unknown>).maxAliasDepth) < 0
+  ) {
+    throw new Error('config: architecture.maxAliasDepth must be a non-negative safe integer');
+  }
+  return { maxAliasDepth: Number((raw as Record<string, unknown>).maxAliasDepth) };
 }

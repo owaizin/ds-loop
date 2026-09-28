@@ -122,7 +122,7 @@ function resolver(values: RawValue[]) {
 }
 
 /** A trailing second function or expression is not a whole-value alias. */
-function wholeAlias(value: string): string | null {
+export function wholeAlias(value: string): string | null {
   const opening = value.match(/^var\(\s*(--[\w-]+)\s*(?=[,)])/);
   if (!opening) return null;
   let depth = 0;

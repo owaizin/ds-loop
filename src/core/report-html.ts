@@ -5,6 +5,7 @@ import type { AuditReport } from '../commands/audit.ts';
 import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
+import { TOKEN_CSS, TOKEN_SCRIPT, architectureHtml } from './token-architecture-html.ts';
 import { type TokenSuggestion, displayCandidates, formatSuggestion } from './token-suggestions.ts';
 
 const htmlEscape = (s: unknown): string =>
@@ -262,10 +263,10 @@ export function renderAuditHtml(
         .join(
           '',
         )}</tbody></table></div><p>${htmlEscape(trendRows[0].ranAt)} → ${htmlEscape(trendRows.at(-1)!.ranAt)}</p>${trendRows.some((row) => !row.coverageComplete) ? '<p>Some history rows report incomplete coverage. Those rows do not record detailed coverage limits.</p>' : ''}${inspect(['trend', 'rows'], 'All comparable rows and source revisions')}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>ds-loop audit — ${htmlEscape(r.manifest.fixtureLabel)}</title><style>${REPORT_CSS}</style></head><body><main>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>ds-loop audit — ${htmlEscape(r.manifest.fixtureLabel)}</title><style>${REPORT_CSS}${TOKEN_CSS}</style></head><body><main>
   <div class="toolbar"><span class="kicker">ds-loop / audit report</span><label>Appearance <select id="theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div>
   <h1>${htmlEscape(r.manifest.fixtureLabel)}</h1><p class="muted">Generated from the audit. No rendered UI or design intent was assessed.</p>
-  <nav aria-label="Report sections"><a href="#coverage">Coverage</a><a href="#inventory">Inventory</a><a href="#findings">Findings</a><a href="#trend">Trend</a><a href="#next">Next</a></nav>
+  <nav aria-label="Report sections"><a href="#coverage">Coverage</a><a href="#inventory">Inventory</a><a href="#tokens">Token architecture</a><a href="#findings">Findings</a><a href="#trend">Trend</a><a href="#next">Next</a></nav>
   ${overview(r)}
   <details class="manifest"><summary>Source, adapters and audit scope</summary><dl><dt>Source revision</dt><dd>${htmlEscape(r.manifest.fixtureSha)}</dd><dt>Adapters</dt><dd>${htmlEscape(r.manifest.adapter)}</dd><dt>Config / date</dt><dd>${htmlEscape(r.manifest.configHash)} · ${htmlEscape(r.manifest.ranAt)}</dd><dt>Scope</dt><dd>${htmlEscape(r.manifest.target)} · severity floor ${htmlEscape(r.manifest.minSeverity ?? 'none')}</dd></dl>${inspect(['report', 'manifest'], 'Full manifest')}${inspect(['report', 'rulesRun'], 'Rules run')}</details>
   <section id="coverage"><h2>01 / What was checked</h2><div class="coverage"><article class="card"><h3>Read</h3>${list(
@@ -276,6 +277,7 @@ export function renderAuditHtml(
     'No unread formats reported.',
   )}${list(c.unreadTokenFiles, 'No unread token files reported.')}</article><article class="card"><h3>Could not judge</h3>${list(c.couldNotJudge, 'No rule judgment limits reported.')}<p>Unconvertible colours: ${c.unconvertible.count}</p><p>Unclassified style values: ${c.unclassifiedStyles?.count ?? 0}</p><p>Undecided colour roles: ${c.undecided.count}</p></article></div>${inspect(['report', 'coverage'], 'Coverage evidence and samples')}<p class="muted">Coverage retains samples, not every unread location. Counts without locations cannot be traced further in this report.</p></section>
   <section id="inventory"><h2>02 / CSS property inventory</h2><p>Extracted use sites before exceptions or severity filtering. Token declarations and markup are outside this inventory.</p><div class="grid">${inventory || '<p>No ordinary CSS property values were recorded. This is not a count of all styling in the source.</p>'}</div></section>
+  ${architectureHtml(r.tokenArchitecture)}
   <section id="findings"><h2>03 / Findings</h2><p>${r.findings.length} findings. A finding may group many use sites; finding counts are not occurrence counts.</p>${
     groups
       .map(
@@ -292,7 +294,8 @@ export function renderAuditHtml(
   <section id="trend"><h2>04 / Recorded trend</h2>${trendView}</section>
   <section id="next"><h2>05 / Next commands</h2>${r.next.map((n) => `<article class="card"><code>${htmlEscape(n.command)}</code><p>${htmlEscape(n.why)}</p></article>`).join('') || '<p>No next commands recorded.</p>'}</section>
   <p class="print-note">Printed summary: only expanded evidence is included. Open the HTML file for the full recorded lists.</p><noscript>JavaScript is disabled. The summary and three examples per group remain readable. Enable JavaScript to browse all recorded evidence.</noscript>
-  </main><script id="audit-data" type="application/json">${json({ report: r, groups, trend, swatches, suggestions, locations })}</script><script>${REPORT_SCRIPT}</script></body></html>`;
+  </main><script id="audit-data" type="application/json">${json({ report: r, groups, trend, swatches, suggestions, locations })}</script><script>${REPORT_SCRIPT}
+${TOKEN_SCRIPT}</script></body></html>`;
 }
 
 export function writeAuditHtml(

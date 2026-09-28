@@ -12,12 +12,14 @@ import { type NextAction, auditViewActions, formatNext, nextAfterAudit } from '.
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { type StyleInventory, styleInventory } from '../core/style-inventory.ts';
 import { type Suppression, applyIgnores } from '../core/suppress.ts';
+import { type TokenArchitecture, tokenArchitecture } from '../core/token-architecture.ts';
 import { type TokenContextRead, readTokenContext } from '../core/token-context.ts';
 import { formatSuggestion } from '../core/token-suggestions.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
 
 export type AuditReport = {
+  tokenArchitecture?: TokenArchitecture;
   manifest: {
     tool: 'ds-loop';
     command: 'audit';
@@ -215,6 +217,7 @@ export function audit(
       ...(source.only ? { judgedFiles: source.only } : {}),
       ...(tokenContext.reads.length > 0 ? { tokenContext: tokenContext.reads } : {}),
     },
+    tokenArchitecture: tokenArchitecture(values, config, findings, source.root),
     styleInventory: inventory,
     rulesRun: rules.map((r) => r.id),
     findings,

@@ -172,7 +172,7 @@ function mask(text: string, strings: boolean): string {
 
 type Declaration = { property: string; value: string; selector: string; line: number };
 
-function declarations(text: string): Declaration[] {
+export function declarations(text: string, includeTokens = false): Declaration[] {
   const clean = mask(text, false);
   const syntax = mask(text, true);
   const stack: string[] = [];
@@ -191,11 +191,15 @@ function declarations(text: string): Declaration[] {
     )
       return;
     const segment = clean.slice(start, end);
-    const match = segment.match(/^\s*([a-z][a-z-]*)\s*:\s*([\s\S]+?)\s*$/i);
+    const match = segment.match(
+      includeTokens
+        ? /^\s*(--[\w-]+|[a-z][a-z-]*)\s*:\s*([\s\S]+?)\s*$/i
+        : /^\s*([a-z][a-z-]*)\s*:\s*([\s\S]+?)\s*$/i,
+    );
     if (!match) return;
     const offset = segment.search(/\S/);
     out.push({
-      property: match[1].toLowerCase(),
+      property: match[1].startsWith('--') ? match[1] : match[1].toLowerCase(),
       value: text.slice(start + segment.indexOf(':') + 1, end).trim(),
       selector: stack.join(' > '),
       line: startLine + (segment.slice(0, offset).match(/\n/g)?.length ?? 0),

@@ -18,6 +18,8 @@ export type UnitlessRole = (typeof UNITLESS_ROLES)[number];
 export type UnitlessPolicy = { tokenPattern: string; properties: string[]; tolerance: number };
 
 export type DsOpsConfig = {
+  /** Reference-depth review threshold, not a validity limit. */
+  architecture?: { maxAliasDepth: number };
   /** UNCALIBRATED matching assumptions; rem conversion is not a measured root size. */
   suggestions: {
     unitlessRoles?: Record<UnitlessRole, UnitlessPolicy>;
