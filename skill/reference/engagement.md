@@ -54,6 +54,22 @@ availability; the same explanation must remain usable as text. Do not install a
 visualization dependency, start a server or generate a dashboard for an ordinary
 status update. Never imply the npm engine created an agent-authored view.
 
+## Label the basis of each deliverable
+
+In every diagram, strategy page, spec or summary, label claims **observed**,
+**inferred**, **proposed**, or **not checked** near the claim or a clearly scoped
+section. Observed claims cite source/revision or a rendered check; inferred claims
+name their basis and uncertainty; proposed changes are not current architecture.
+Not checked means no result, never a pass. Keep raw engine output verbatim and
+put interpretation and labels outside it.
+
+A diagram must state what each edge means and its evidence: import, style
+dependency, containment, or proposed consumption are different relationships.
+Use a legend when meanings differ, and label proposed edges separately. Do not
+merge app-local components into one shared node or count story-only imports as
+production adoption. A sampled search needs its scope next to the conclusion.
+An attractive diagram cannot supply evidence missing from the inventory.
+
 ## Say what a step costs before taking it
 
 Before a step that will run long, read or change many files, or spend the user's
