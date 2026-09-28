@@ -1,13 +1,24 @@
-import { resolve } from 'node:path';
+import { writeFileSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
+import { renderConsumersHtml } from '../core/consumers-html.ts';
 import { type ConsumersReport, analyseConsumers } from '../core/consumers.ts';
-
 /**
  * `ds-loop consumers [path] [--scope @org] [--json]` — which workspace package
  * imports which shared package, with counts, named imports and file:line
  * samples, plus exported subpaths nothing imports in production code.
  */
-export function consumers(path: string, opts: { scope?: string; json?: boolean } = {}): ConsumersReport {
+export function consumers(
+  path: string,
+  opts: { scope?: string; json?: boolean; html?: string; now?: string } = {},
+): ConsumersReport {
   const report = analyseConsumers(resolve(path), { scope: opts.scope });
+  if (opts.html) {
+    const label = `${basename(resolve(path))}${opts.scope ? ` · ${opts.scope}` : ''}`;
+    writeFileSync(
+      opts.html,
+      renderConsumersHtml(report, { label, generatedAt: opts.now ?? new Date().toISOString() }),
+    );
+  }
   if (opts.json) {
     console.log(JSON.stringify({ manifest: { tool: 'ds-loop', command: 'consumers' }, ...report }, null, 2));
     return report;
@@ -57,6 +68,7 @@ export function consumers(path: string, opts: { scope?: string; json?: boolean }
     }
     console.log('');
   }
+  if (opts.html) console.log(`  wrote ${opts.html}\n`);
   console.log('  limits');
   for (const l of report.limits) console.log(`    ${l}`);
   console.log('');

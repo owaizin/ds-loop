@@ -94,3 +94,21 @@ test('package.json workspaces with ! exclusions', () => {
     ['a'],
   );
 });
+
+test('html: generated from the map, escaped, deterministic, story-only flagged', async () => {
+  const { renderConsumersHtml } = await import('../src/core/consumers-html.ts');
+  const root = tree({
+    ...MONOREPO,
+    'apps/web/src/evil.ts': "import { X } from '@acme/ui';\n// </script><img src=x>\n",
+  });
+  const r = analyseConsumers(root);
+  const opts = { label: '<b>demo</b>', generatedAt: '2026-01-01T00:00:00Z' };
+  const a = renderConsumersHtml(r, opts);
+  assert.equal(a, renderConsumersHtml(r, opts));
+  assert.ok(!a.includes('<b>demo</b>'), 'label escaped');
+  assert.match(a, /stories\/tests only — not production adoption/);
+  assert.match(a, /@acme\/ui\/exam/);
+  assert.ok(!/https?:\/\//.test(a), 'no external URLs');
+  const empty = renderConsumersHtml(analyseConsumers(tree({ 'package.json': pkg('solo') })), opts);
+  assert.match(empty, /Not checked\./);
+});

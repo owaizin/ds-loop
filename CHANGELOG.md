@@ -8,6 +8,9 @@ Changes planned for 0.3.0; not published.
   package, the shared packages it imports with counts, named imports and file:line
   samples; stories and tests counted apart; exported subpaths no other package
   imports in production code.
+  `--html <file>` draws it as a UI-architecture diagram: apps in platform lanes,
+  the shared packages they import, lines weighted by import count, story-only
+  imports dashed, plus an import matrix.
 
 - Start and audit show coverage and one row per finding group before the compact
   CSS inventory. `audit --all` retains full terminal details; JSON, HTML, rule
