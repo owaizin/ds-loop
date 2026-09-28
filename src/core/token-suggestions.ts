@@ -1,8 +1,10 @@
 import { type Rgba, parseColor, rgbaToLab } from '../color/convert.ts';
 import { ciede2000 } from '../color/delta-e.ts';
-import type { DsOpsConfig } from '../config/schema.ts';
+import { DEFAULT_CONFIG } from '../config/defaults.ts';
+import { type DsOpsConfig, UNITLESS_ROLES, type UnitlessRole } from '../config/schema.ts';
 import { type Tier, classifyTier } from '../rules/tier.ts';
 import type { RuleContext } from '../rules/types.ts';
+import { unitlessNumber } from './literals.ts';
 import type { Provenance, RawValue, ValueCategory } from './provenance.ts';
 import { type CategoryEvidence, categoryResolver, siteCategory } from './suggestion-categories.ts';
 
@@ -11,7 +13,8 @@ export type TokenCandidate = {
   value: string;
   match: 'exact' | 'nearest';
   distance: number;
-  metric: 'ΔE' | 'px' | 'identity';
+  metric: 'ΔE' | 'px' | 'identity' | 'unitless';
+  unitlessRole?: UnitlessRole;
   tier: Tier;
   aliasChain: string[];
   declarations: Provenance[];
@@ -249,12 +252,48 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
     }
     const candidates: TokenCandidate[] = [];
     for (const token of tokens.resolved) {
-      const found = match(site.raw, token.value, ctx.config);
+      const number = unitlessNumber(clean(site.raw));
+      const tokenNumber = unitlessNumber(clean(token.value));
+      let unitlessRole: UnitlessRole | undefined;
+      let found: Pick<TokenCandidate, 'match' | 'distance' | 'metric'> | null;
+      if (number !== null || tokenNumber !== null) {
+        if (number === null || tokenNumber === null) continue;
+        const policies = ctx.config.suggestions.unitlessRoles ?? DEFAULT_CONFIG.suggestions.unitlessRoles!;
+        const roles = UNITLESS_ROLES.filter((role) =>
+          policies[role].properties.includes(site.provenance.property),
+        );
+        if (roles.length !== 1) continue;
+        unitlessRole = roles[0];
+        const policy = policies[unitlessRole];
+        // Read use-site properties before consulting names, following alias chains
+        // only when an alias has no own role evidence. A broad typography match
+        // cannot establish font-weight vs line-height compatibility.
+        let tokenRoles: UnitlessRole[] = [];
+        for (const name of token.aliasChain) {
+          const evidence = categoriesFor(name);
+          const observed = evidence.filter((e) => e.source === 'usage');
+          tokenRoles = UNITLESS_ROLES.filter((role) =>
+            observed.length
+              ? observed.some((e) => policies[role].properties.includes(e.property ?? ''))
+              : new RegExp(policies[role].tokenPattern, 'i').test(name),
+          );
+          if (observed.length || tokenRoles.length) break;
+        }
+        if (!tokenRoles.includes(unitlessRole)) continue;
+        const distance = Math.abs(number - tokenNumber);
+        found =
+          distance === 0
+            ? { match: 'exact', distance, metric: 'identity' }
+            : policy.tolerance > 0 && distance <= policy.tolerance
+              ? { match: 'nearest', distance, metric: 'unitless' }
+              : null;
+      } else found = match(site.raw, token.value, ctx.config);
       if (!found) continue;
       const categoryEvidence = categoriesFor(token.aliasChain[0]);
       const categories = [...new Set(categoryEvidence.map((e) => e.category))];
       if (base.category && categories.length && !categories.includes(base.category)) continue;
       candidates.push({
+        ...(unitlessRole ? { unitlessRole } : {}),
         categories,
         categoryEvidence,
         categoryMatch: base.category && categories.includes(base.category) ? 'same' : 'unknown',
@@ -335,6 +374,18 @@ export function alreadyDeclared(ctx: RuleContext, sites: RawValue[]): { value: s
   });
 }
 
+/** Presentation only: never changes match status, preferred flags or JSON completeness. */
+export function displayCandidates(candidates: TokenCandidate[]): TokenCandidate[] {
+  return [...candidates].sort(
+    (a, b) =>
+      Number(b.match === 'exact') - Number(a.match === 'exact') ||
+      Number(b.preferred || b.aliasChain.length > 1) - Number(a.preferred || a.aliasChain.length > 1) ||
+      a.distance - b.distance ||
+      a.token.localeCompare(b.token) ||
+      JSON.stringify(a.declarations).localeCompare(JSON.stringify(b.declarations)),
+  );
+}
+
 export function formatSuggestion(suggestion: FindingSuggestion): string {
   const groups = new Map<string, TokenSuggestion>();
   for (const value of suggestion.values) {
@@ -345,18 +396,14 @@ export function formatSuggestion(suggestion: FindingSuggestion): string {
   const text = values
     .slice(0, 6)
     .map((v) => {
-      const names = v.candidates
-        .filter(
-          (c) =>
-            c.preferred ||
-            (v.status === 'ambiguous' && c.match === v.candidates[0]?.match) ||
-            c.categoryMatch === 'unknown',
-        )
+      const ranked = displayCandidates(v.candidates);
+      const names = ranked
+        .slice(0, 3)
         .map(
           (c) =>
             `${c.token}${c.categoryMatch === 'unknown' ? ' (category unknown)' : ''}${c.match === 'nearest' ? ` (${c.metric} ${Number(c.distance.toFixed(4))})` : ''}`,
         );
-      return `${v.value}: ${v.status === 'no-token' ? 'no token within supported matching scope/tolerances' : v.status}${names.length ? ` — ${names.join(', ')}` : ''}`;
+      return `${v.value}: ${v.status === 'no-token' ? 'no token within supported matching scope/tolerances' : v.status}${names.length ? ` — ${names.join(', ')}${ranked.length > 3 ? `; +${ranked.length - 3} more` : ''}` : ''}`;
     })
     .join('; ');
   return `${text}${values.length > 6 ? `; +${values.length - 6} value groups` : ''}. ${suggestion.resolutionLimits.length ? 'Some token declarations could not be resolved. ' : ''}${suggestion.basis} Full candidates, alias provenance and resolution limits in --json.`;

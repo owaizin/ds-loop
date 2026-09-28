@@ -14,3 +14,14 @@ const LENGTH = /^-?\d*\.?\d+(px|rem|em|vh|vw)(\s+-?\d*\.?\d+(px|rem|em|vh|vw)){0
 export function isLengthLiteral(value: string): boolean {
   return LENGTH.test(value.trim());
 }
+
+/** CSS number, not a dimension or a channel tuple. */
+export function unitlessNumber(value: string): number | null {
+  const text = value
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/\s*!important\s*$/i, '')
+    .trim();
+  if (!/^[+-]?(?:\d*\.\d+|\d+)(?:e[+-]?\d+)?$/i.test(text)) return null;
+  const number = Number(text);
+  return Number.isFinite(number) ? number : null;
+}

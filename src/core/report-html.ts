@@ -5,7 +5,7 @@ import type { AuditReport } from '../commands/audit.ts';
 import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
-import { type TokenSuggestion, formatSuggestion } from './token-suggestions.ts';
+import { type TokenSuggestion, displayCandidates, formatSuggestion } from './token-suggestions.ts';
 
 const htmlEscape = (s: unknown): string =>
   String(s).replace(
@@ -102,12 +102,37 @@ function examples(f: Finding): string[] {
   if (!result.length) visit(f.suggestion);
   return result;
 }
+function candidateCell(s: TokenSuggestion): string {
+  const ranked = displayCandidates(s.candidates);
+  const label = (c: TokenSuggestion['candidates'][number], extra = false) =>
+    `<div><code>${htmlEscape(c.token)}</code>${c.categoryMatch === 'unknown' ? ' · category unknown' : ''}${c.preferred ? ' · preferred' : ''}${extra ? ` · ${Number(c.distance.toFixed(4))} ${htmlEscape(c.metric)}` : ''}</div>`;
+  return (
+    ranked
+      .slice(0, 3)
+      .map((c) => label(c))
+      .join('') +
+      (ranked.length > 3
+        ? `<details><summary>+${ranked.length - 3} more</summary>${ranked
+            .slice(3)
+            .map((c) => label(c, true))
+            .join('')}</details>`
+        : '') || '—'
+  );
+}
 function suggestionTable(values: TokenSuggestion[]): string {
   return `<div class="table-wrap" tabindex="0" role="region" aria-label="Token suggestions"><table class="suggestions"><thead><tr><th>Value</th><th>Property / category</th><th>Match</th><th>Candidates</th><th>Delta</th></tr></thead><tbody>${values
     .slice(0, 12)
     .map(
       (s) =>
-        `<tr><td>${swatch(s.value)}<code>${htmlEscape(s.value)}</code><small>${htmlEscape(s.file)}:${s.line}</small></td><td>${htmlEscape(s.property)}<small>${htmlEscape(s.category ?? 'unknown')}</small></td><td>${htmlEscape(s.status === 'no-token' ? 'none' : s.status)}</td><td>${s.candidates.map((c) => `<div><code>${htmlEscape(c.token)}</code>${c.categoryMatch === 'unknown' ? ' · category unknown' : ''}${c.preferred ? ' · preferred' : ''}</div>`).join('') || '—'}</td><td>${s.candidates.map((c) => `<div>${htmlEscape(c.token)}: ${Number(c.distance.toFixed(4))} ${htmlEscape(c.metric)}</div>`).join('') || '—'}</td></tr>`,
+        `<tr><td>${swatch(s.value)}<code>${htmlEscape(s.value)}</code><small>${htmlEscape(s.file)}:${s.line}</small></td><td>${htmlEscape(s.property)}<small>${htmlEscape(s.category ?? 'unknown')}</small></td><td>${htmlEscape(s.status === 'no-token' ? 'none' : s.status)}</td><td>${candidateCell(s)}</td><td>${
+          displayCandidates(s.candidates)
+            .slice(0, 3)
+            .map(
+              (c) =>
+                `<div>${htmlEscape(c.token)}: ${Number(c.distance.toFixed(4))} ${htmlEscape(c.metric)}</div>`,
+            )
+            .join('') || '—'
+        }</td></tr>`,
     )
     .join('')}</tbody></table></div>`;
 }

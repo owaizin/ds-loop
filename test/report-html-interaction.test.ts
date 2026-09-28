@@ -85,3 +85,64 @@ test('10,001 findings browse lazily, paginate, search the final hit and preserve
   theme.onchange!({ target: { value: 'dark' } });
   assert.equal(root.dataset.theme, 'dark');
 });
+
+test('suggestion table mounts three candidates and expands the remainder on demand', () => {
+  const data = new Element();
+  const root = new Element();
+  const theme = new Element();
+  const host = new Element();
+  const details = new Element();
+  host.dataset.suggestions = '0';
+  details.append(host);
+  const candidates = Array.from({ length: 11 }, (_, i) => ({
+    token: `--space-${i}`,
+    match: 'nearest',
+    distance: 1,
+    metric: 'px',
+    preferred: false,
+    aliasChain: [`--space-${i}`],
+    declarations: [],
+    categoryMatch: 'same',
+  }));
+  data.textContent = JSON.stringify({
+    report: {
+      findings: [
+        {
+          suggestion: {
+            values: [
+              {
+                value: '13px',
+                file: 'a.css',
+                line: 1,
+                property: 'padding',
+                category: 'spacing',
+                status: 'ambiguous',
+                candidates,
+              },
+            ],
+          },
+        },
+      ],
+    },
+    swatches: {},
+  });
+  const document = {
+    documentElement: root,
+    getElementById: (id: string) => (id === 'audit-data' ? data : theme),
+    createElement: () => new Element(),
+    querySelectorAll: (selector: string) => (selector === '[data-suggestions]' ? [host] : []),
+  };
+  new Script(REPORT_SCRIPT).runInNewContext({ document });
+  details.open = true;
+  details.listeners.toggle();
+  const table = host.children[0].children[0];
+  const cell = table.children[1].children[0].children[3];
+  assert.equal(cell.children.length, 4);
+  const more = cell.children[3];
+  assert.equal(more.children[0].textContent, '+8 more');
+  assert.equal(more.children.length, 1);
+  more.open = true;
+  more.listeners.toggle();
+  assert.equal(more.children.length, 9);
+  assert.ok(more.children[1].textContent.includes('--space-2'));
+});

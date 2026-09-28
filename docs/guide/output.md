@@ -45,7 +45,7 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 ```
 
   ds-loop audit — Radix Colors  ·  target: all  ·  fixture
-  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.4.0   config 95cd4a03
+  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 19650fc3
   14 rules run
 
   [LOW] color/near-duplicate-primitives
@@ -63,7 +63,7 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
   2 findings — 0 blocking · 0 high · 0 medium · 2 low
 
   scope — what this audit read
-    css-custom-props@0.4.0
+    css-custom-props@0.5.0
       reads .css — custom-property declarations (--token: value) — not rule bodies, not at-rules
     72 colour value(s) this version cannot convert: color(display-p3 0.995 0.992 0.985), color(display-p3 0.994 0.986 0.921), color(display-p3 0.994 0.969 0.782), color(display-p3 0.989 0.937 0.65)
       excluded from every colour rule — a gap in the engine, not in your code

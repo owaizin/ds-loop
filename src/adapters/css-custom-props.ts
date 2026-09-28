@@ -4,7 +4,7 @@ import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/conve
 import type { DsOpsConfig } from '../config/schema.ts';
 import { channelReference } from '../core/channel-reference.ts';
 import { filesInScope } from '../core/files.ts';
-import { isLengthLiteral } from '../core/literals.ts';
+import { isLengthLiteral, unitlessNumber } from '../core/literals.ts';
 import type { RawValue, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
@@ -15,7 +15,8 @@ const ID = 'css-custom-props';
 // 0.3.0: a declaration may end at `}` as well as `;`, so the last declaration in
 // a compact block is no longer missed. Verified to change nothing in any corpus
 // fixture (all of them use trailing semicolons), so 0.2.0 numbers stand.
-const VERSION = '0.4.0';
+// 0.5.0: retain unitless numeric declarations for property-specific suggestions.
+const VERSION = '0.5.0';
 const EXTS = ['.css'];
 
 /**
@@ -159,6 +160,11 @@ function classify(
       if (shadowByName) return { classification: 'shadow-internal', reason: 'shadow recipe part' };
       return { classification: 'dimension', reason: 'raw length literal' };
     }
+    if (unitlessNumber(value) !== null)
+      return {
+        classification: 'excluded',
+        reason: 'unitless numeric declaration; property role must be established before matching',
+      };
     return { classification: 'excluded', reason: 'not a color value' };
   }
 

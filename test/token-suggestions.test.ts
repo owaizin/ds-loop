@@ -7,7 +7,8 @@ import { audit } from '../src/commands/audit.ts';
 import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import { loadConfig } from '../src/config/load.ts';
 import { hashConfig } from '../src/config/schema.ts';
-import type { TokenSuggestion } from '../src/core/token-suggestions.ts';
+import { renderAuditHtml } from '../src/core/report-html.ts';
+import { type TokenSuggestion, displayCandidates, formatSuggestion } from '../src/core/token-suggestions.ts';
 
 function project(files: Record<string, string>, fn: (dir: string) => void) {
   const dir = mkdtempSync(join(tmpdir(), 'ds-loop-suggest-'));
@@ -356,5 +357,101 @@ test('unknown-only matches never claim category certainty and configurable signa
     assert.equal(suggestions(dir, { config })[0].status, 'exact');
     writeFileSync(path, JSON.stringify({ suggestions: { categoryPatterns: { spacing: '[' } } }));
     assert.throws(() => loadConfig(path), /regex/);
+  });
+});
+
+test('unitless exact matches isolate weight, line height and z-index', () => {
+  project(
+    {
+      'a.css':
+        ':root{--font-weight-semibold:6e2 /* weight */ !important;--line-height-body:1.5;--z-dialog:600}.a{font-weight:600;line-height:1.50;z-index:600}.b{font-weight:601;line-height:600}',
+    },
+    (dir) => {
+      const values = suggestions(dir);
+      assert.deepEqual(
+        values.find((s) => s.property === 'font-weight' && s.value === '600')!.candidates.map((c) => c.token),
+        ['--font-weight-semibold'],
+      );
+      assert.equal(values.find((s) => s.property === 'font-weight' && s.value === '600')!.status, 'exact');
+      assert.deepEqual(
+        values
+          .find((s) => s.property === 'line-height' && s.value === '1.50')!
+          .candidates.map((c) => c.token),
+        ['--line-height-body'],
+      );
+      assert.deepEqual(
+        values.find((s) => s.property === 'z-index')!.candidates.map((c) => c.token),
+        ['--z-dialog'],
+      );
+      assert.equal(values.find((s) => s.value === '601')!.status, 'no-token');
+      assert.equal(values.find((s) => s.property === 'line-height' && s.value === '600')!.status, 'no-token');
+    },
+  );
+});
+
+test('unitless nearest requires a per-role tolerance and alias usage retains its role', () => {
+  project(
+    {
+      'a.css':
+        ':root{--font-weight-semibold:600;--type-action:var(--font-weight-semibold);--line-height-body:1.5}.a{font-weight:var(--type-action)}.b{font-weight:601;line-height:1.6}',
+    },
+    (dir) => {
+      assert.ok(suggestions(dir).every((s) => s.status === 'no-token'));
+      const path = join(dir, 'config.json');
+      writeFileSync(
+        path,
+        JSON.stringify({ suggestions: { unitlessRoles: { 'font-weight': { tolerance: 2 } } } }),
+      );
+      const values = suggestions(dir, { config: loadConfig(path).config });
+      const weight = values.find((s) => s.property === 'font-weight')!;
+      assert.equal(weight.status, 'ambiguous');
+      assert.ok(
+        weight.candidates.every(
+          (c) => c.match === 'nearest' && c.metric === 'unitless' && c.unitlessRole === 'font-weight',
+        ),
+      );
+      assert.equal(values.find((s) => s.property === 'line-height')!.status, 'no-token');
+      writeFileSync(
+        path,
+        JSON.stringify({ suggestions: { unitlessRoles: { 'font-weight': { tolerance: -1 } } } }),
+      );
+      assert.throws(() => loadConfig(path), /unitless/);
+    },
+  );
+});
+
+test('presentation keeps three ranked candidates, expandable overflow and complete JSON', () => {
+  const declarations = Array.from({ length: 11 }, (_, i) => `--space-${i}:12px;`).join('');
+  project({ 'a.css': `:root{${declarations}}.a{padding:13px}` }, (dir) => {
+    const report = audit(dir, { silent: true });
+    const finding = report.findings.find((f) => f.suggestion)!;
+    const suggestion = finding.suggestion!;
+    const s = suggestion.values[0];
+    assert.equal(s.candidates.length, 11);
+    assert.equal(s.status, 'ambiguous');
+    const ranked = displayCandidates(s.candidates);
+    const text = formatSuggestion(suggestion);
+    assert.ok(text.includes('+8 more'));
+    assert.ok(!text.includes(`${ranked[3].token} (`));
+    const html = renderAuditHtml(report);
+    assert.ok(html.includes('<summary>+8 more</summary>'));
+    const data = JSON.parse(
+      html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1],
+    );
+    assert.equal(
+      data.report.findings.find((f: { suggestion?: unknown }) => f.suggestion).suggestion.values[0].candidates
+        .length,
+      11,
+    );
+    const ordered = displayCandidates([
+      { ...ranked[0], token: '--z', match: 'nearest', preferred: true, distance: 0.1 },
+      { ...ranked[0], token: '--c', match: 'exact', preferred: false, distance: 0 },
+      { ...ranked[0], token: '--b', match: 'exact', preferred: true, distance: 0 },
+      { ...ranked[0], token: '--a', match: 'exact', preferred: true, distance: 0 },
+    ]);
+    assert.deepEqual(
+      ordered.map((c) => c.token),
+      ['--a', '--b', '--c', '--z'],
+    );
   });
 });

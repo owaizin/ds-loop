@@ -13,6 +13,20 @@ import type { DsOpsConfig } from './schema.ts';
  */
 export const DEFAULT_CONFIG: DsOpsConfig = {
   suggestions: {
+    // UNCALIBRATED name signals. Numeric comparisons default to exact only.
+    unitlessRoles: {
+      'font-weight': {
+        tokenPattern: '(^|-)(font-weight|weight)(-|$)',
+        properties: ['font-weight', 'font'],
+        tolerance: 0,
+      },
+      'line-height': {
+        tokenPattern: '(^|-)(line-height|leading)(-|$)',
+        properties: ['line-height', 'leading'],
+        tolerance: 0,
+      },
+      'z-index': { tokenPattern: '(^|-)(z-index|z)(-|$)', properties: ['z-index', 'z'], tolerance: 0 },
+    },
     rootFontSize: 16,
     lengthTolerancePx: 1,
     categoryPatterns: {

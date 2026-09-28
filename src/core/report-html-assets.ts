@@ -45,9 +45,18 @@ function suggestionRows(host, values) {
       const row=el('tr'), value=el('td'), property=el('td'), candidates=el('td'), delta=el('td');
       value.append(inspect(s.value),el('small',s.file+':'+s.line));
       property.append(el('span',s.property),el('small',s.category || 'unknown'));
-      for(const c of s.candidates) {
-        candidates.append(el('div',c.token+(c.categoryMatch==='unknown'?' · category unknown':'')+(c.preferred?' · preferred':'')));
+      const ranked=[...s.candidates].sort((a,b)=>Number(b.match==='exact')-Number(a.match==='exact') || Number(b.preferred || b.aliasChain.length>1)-Number(a.preferred || a.aliasChain.length>1) || a.distance-b.distance || a.token.localeCompare(b.token) || JSON.stringify(a.declarations).localeCompare(JSON.stringify(b.declarations)));
+      const label=c=>c.token+(c.categoryMatch==='unknown'?' · category unknown':'')+(c.preferred?' · preferred':'');
+      for(const c of ranked.slice(0,3)) {
+        candidates.append(el('div',label(c)));
         delta.append(el('div',c.token+': '+Number(c.distance.toFixed(4))+' '+c.metric));
+      }
+      if(ranked.length>3) {
+        const more=el('details'); more.append(el('summary','+'+(ranked.length-3)+' more'));
+        more.addEventListener('toggle',()=>{
+          if(!more.open || more.dataset.loaded) return; more.dataset.loaded='true';
+          for(const c of ranked.slice(3)) more.append(el('div',label(c)+' · '+Number(c.distance.toFixed(4))+' '+c.metric));
+        }); candidates.append(more);
       }
       if(!s.candidates.length) { candidates.textContent='—';delta.textContent='—'; }
       row.append(value,property,el('td',s.status==='no-token'?'none':s.status),candidates,delta);body.append(row);

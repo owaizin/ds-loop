@@ -13,9 +13,14 @@ import type { Severity } from '../rules/types.ts';
  * consumer can override them, but the defaults carry a point of view.
  */
 
+export const UNITLESS_ROLES = ['font-weight', 'line-height', 'z-index'] as const;
+export type UnitlessRole = (typeof UNITLESS_ROLES)[number];
+export type UnitlessPolicy = { tokenPattern: string; properties: string[]; tolerance: number };
+
 export type DsOpsConfig = {
   /** UNCALIBRATED matching assumptions; rem conversion is not a measured root size. */
   suggestions: {
+    unitlessRoles?: Record<UnitlessRole, UnitlessPolicy>;
     rootFontSize: number;
     lengthTolerancePx: number;
     /** UNCALIBRATED name and markup-utility regex signals; usage evidence takes precedence. */

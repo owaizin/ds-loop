@@ -3,7 +3,13 @@ import { join } from 'node:path';
 import { VALUE_CATEGORIES } from '../core/provenance.ts';
 import type { Severity } from '../rules/types.ts';
 import { DEFAULT_CONFIG } from './defaults.ts';
-import type { DsOpsConfig, IgnoreEntry, TokenContextMapping } from './schema.ts';
+import {
+  type DsOpsConfig,
+  type IgnoreEntry,
+  type TokenContextMapping,
+  UNITLESS_ROLES,
+  type UnitlessRole,
+} from './schema.ts';
 import { parseYamlLite } from './yaml-lite.ts';
 
 /**
@@ -204,6 +210,38 @@ function readSuggestions(raw: unknown): DsOpsConfig['suggestions'] {
     throw new Error('config: suggestions must be an object');
   const result = { ...DEFAULT_CONFIG.suggestions };
   for (const [key, value] of Object.entries(raw)) {
+    if (key === 'unitlessRoles') {
+      if (!value || typeof value !== 'object' || Array.isArray(value))
+        throw new Error('config: suggestions.unitlessRoles must be an object');
+      const policies = structuredClone(DEFAULT_CONFIG.suggestions.unitlessRoles!);
+      for (const [role, policy] of Object.entries(value)) {
+        if (
+          !UNITLESS_ROLES.includes(role as UnitlessRole) ||
+          !policy ||
+          typeof policy !== 'object' ||
+          Array.isArray(policy)
+        )
+          throw new Error(`config: invalid unitless role ${role}`);
+        const merged = { ...policies[role as UnitlessRole], ...policy };
+        if (
+          Object.keys(policy).some((k) => !['tokenPattern', 'properties', 'tolerance'].includes(k)) ||
+          typeof merged.tokenPattern !== 'string' ||
+          !Array.isArray(merged.properties) ||
+          merged.properties.some((p) => typeof p !== 'string' || !p) ||
+          !Number.isFinite(merged.tolerance) ||
+          merged.tolerance < 0
+        )
+          throw new Error(`config: invalid unitless policy ${role}`);
+        try {
+          new RegExp(merged.tokenPattern, 'i');
+        } catch {
+          throw new Error(`config: invalid unitless tokenPattern ${role}`);
+        }
+        policies[role as UnitlessRole] = merged;
+      }
+      result.unitlessRoles = policies;
+      continue;
+    }
     if (key === 'categoryPatterns' || key === 'utilityPatterns') {
       if (!value || typeof value !== 'object' || Array.isArray(value))
         throw new Error(`config: invalid suggestions.${key}`);
