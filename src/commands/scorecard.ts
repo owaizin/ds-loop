@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { DsOpsConfig } from '../config/schema.ts';
+import { CONSUMERS_VERSION, analyseConsumers } from '../core/consumers.ts';
 import { audit } from './audit.ts';
 
 /**
@@ -33,6 +34,7 @@ export type ScorecardRow = {
   /** `css-custom-props@0.2.0 + tailwind-jsx@0.2.0` */
   adapters: string;
   configHash: string;
+  consumersVersion?: string;
   ratios: Record<string, number>;
   findings: Record<string, number>;
   findingCount: number;
@@ -48,13 +50,22 @@ export function scorecard(
   // does its own printing
   const report = audit(targetPath, { config: opts.config, silent: true });
 
+  const consumers = analyseConsumers(resolve(targetPath));
+  const adoptionRatios = Object.fromEntries(
+    consumers.consumers.flatMap((c) =>
+      c.usage.production.sharedComponentShare === null
+        ? []
+        : [[`shared-component-share:${c.package}`, c.usage.production.sharedComponentShare]],
+    ),
+  );
   const row: ScorecardRow = {
     ranAt: new Date().toISOString(),
     label: report.manifest.fixtureLabel,
     fixtureSha: report.manifest.fixtureSha,
     adapters: report.manifest.adapter,
     configHash: report.manifest.configHash,
-    ratios: report.ratios,
+    ...(consumers.status === 'checked' ? { consumersVersion: CONSUMERS_VERSION } : {}),
+    ratios: { ...report.ratios, ...adoptionRatios },
     findings: report.findings.reduce<Record<string, number>>((counts, f) => {
       counts[f.ruleId] = (counts[f.ruleId] ?? 0) + countOf(f);
       return counts;
@@ -108,7 +119,9 @@ function readHistory(path: string): ScorecardRow[] {
     });
 }
 
-type Comparability = { clean: true } | { clean: false; reason: string; changed: ('adapter' | 'config')[] };
+type Comparability =
+  | { clean: true }
+  | { clean: false; reason: string; changed: ('adapter' | 'config' | 'consumers')[] };
 
 /**
  * Two rows are comparable only when the instrument did not move between them.
@@ -116,15 +129,17 @@ type Comparability = { clean: true } | { clean: false; reason: string; changed: 
  */
 export function comparability(prev: ScorecardRow | null, next: ScorecardRow): Comparability {
   if (!prev) return { clean: true };
-  const changed: ('adapter' | 'config')[] = [];
+  const changed: ('adapter' | 'config' | 'consumers')[] = [];
   if (prev.adapters !== next.adapters) changed.push('adapter');
   if (prev.configHash !== next.configHash) changed.push('config');
+  if (prev.consumersVersion !== next.consumersVersion) changed.push('consumers');
   if (changed.length === 0) return { clean: true };
   return {
     clean: false,
     changed,
-    reason:
-      changed.length === 2
+    reason: changed.includes('consumers')
+      ? `the consumers analysis changed (${prev.consumersVersion ?? 'not recorded'} -> ${next.consumersVersion ?? 'not recorded'})${changed.length > 1 ? '; adapters or config also changed' : ''}`
+      : changed.length === 2
         ? 'both the adapters and the config changed since the previous row'
         : changed[0] === 'adapter'
           ? `the adapters changed (${prev.adapters} -> ${next.adapters})`

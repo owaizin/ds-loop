@@ -33,6 +33,11 @@ export function consumers(
     `  ${report.packages.length} workspace packages from ${report.workspaceSource}${opts.scope ? ` · scope ${opts.scope}` : ''}\n`,
   );
   for (const c of report.consumers) {
+    const u = c.usage.production;
+    if (u.sharedComponentShare !== null || c.uses.length > 0)
+      console.log(
+        `  ${c.package}: shared-component share ${u.sharedComponentShare === null ? 'not checked (no shared/local JSX)' : `${(u.sharedComponentShare * 100).toFixed(1)}%`} · shared ${u.shared.elements} · local ${u.local.elements} · external ${u.external.elements} · unresolved ${u.unresolved.elements} · stories/tests ${c.usage.storiesAndTests.hits.length} JSX elements`,
+      );
     if (c.uses.length === 0) continue;
     console.log(`  ${c.package}  (${c.platform}, ${c.dir}, ${c.files} source files)`);
     for (const u of c.uses) {

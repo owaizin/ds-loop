@@ -5,6 +5,7 @@ import { parseColor } from '../color/convert.ts';
 import type { AuditReport } from '../commands/audit.ts';
 import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
+import { CONSUMERS_VERSION } from './consumers.ts';
 import { reportData } from './report-data.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
 import { TOKEN_CSS, TOKEN_SCRIPT, architectureHtml } from './token-architecture-html.ts';
@@ -64,9 +65,14 @@ export function historyTrend(
   }
   if (!rows.length) return no('No scorecard rows match this source label.');
   const matches = (r: ScorecardRow) =>
-    r.adapters === report.manifest.adapter && r.configHash === report.manifest.configHash;
+    r.adapters === report.manifest.adapter &&
+    r.configHash === report.manifest.configHash &&
+    r.consumersVersion === rows.at(-1)?.consumersVersion &&
+    (!r.consumersVersion || r.consumersVersion === CONSUMERS_VERSION);
   if (!matches(rows.at(-1)!))
-    return no('No trend: instrument moved — the latest row has different adapters or configuration.');
+    return no(
+      'No trend: instrument moved — the latest row has different adapters, configuration or consumers analysis.',
+    );
   const start = rows.findLastIndex((r) => !matches(r)) + 1;
   const comparable = rows.slice(start);
   if (comparable.length < 2)

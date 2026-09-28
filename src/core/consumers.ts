@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { type ComponentUse, type UsageSummary, componentUses, summarizeUsage } from './component-usage.ts';
 import { listFiles } from './files.ts';
 
 /**
@@ -19,6 +20,8 @@ import { listFiles } from './files.ts';
  * specifiers count). Upgrade path: a TS/Babel parser, which would add a
  * dependency the engine refuses.
  */
+
+export const CONSUMERS_VERSION = '0.2.0';
 
 export type Platform = 'web' | 'native' | 'unknown';
 
@@ -49,10 +52,14 @@ export interface ConsumerEntry {
   dir: string;
   platform: Platform;
   files: number; // source files read
+  usage: { production: UsageSummary; storiesAndTests: UsageSummary };
   uses: SpecifierUse[];
 }
 
 export interface ConsumersReport {
+  analysisVersion: string;
+  status: 'checked' | 'not-checked';
+  scope: string | null;
   root: string;
   workspaceSource: string; // how packages were found
   packages: WorkspacePackage[];
@@ -85,6 +92,23 @@ const readJson = (file: string): Record<string, unknown> | undefined => {
     return undefined;
   }
 };
+
+/**
+ * tsconfig `compilerOptions.paths` keys, as specifier prefixes (`@/*` -> `@/`).
+ * An alias points into the app itself, so its components are local.
+ * ponytail: the package's own tsconfig only; `extends` chains and alias targets
+ * outside the package are not followed.
+ */
+export function pathAliases(file: string): string[] {
+  let text: string;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return [];
+  }
+  const block = text.match(/"paths"\s*:\s*\{([^}]*)\}/)?.[1] ?? '';
+  return [...block.matchAll(/"([^"]+)"\s*:/g)].map((m) => m[1].replace(/\*$/, ''));
+}
 
 /** workspace globs from package.json or pnpm-workspace.yaml */
 function workspaceGlobs(root: string): { globs: string[]; source: string } {
@@ -249,6 +273,15 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
       );
     });
     const uses = new Map<string, SpecifierUse>();
+    const prodHits: ComponentUse[] = [];
+    const otherHits: ComponentUse[] = [];
+    const metadata = readJson(join(root, pkg.dir, 'package.json')) ?? {};
+    const dependencies = Object.keys({
+      ...(metadata.dependencies as object),
+      ...(metadata.devDependencies as object),
+      ...(metadata.peerDependencies as object),
+    });
+    const aliases = pathAliases(join(root, pkg.dir, 'tsconfig.json'));
     for (const file of files) {
       let text: string;
       try {
@@ -258,6 +291,11 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
       }
       const rel = relative(root, file).split(sep).join('/');
       const production = !NON_PRODUCTION.test(rel);
+      if (/\.(?:tsx|jsx|js|mjs|cjs)$/.test(file)) {
+        (production ? prodHits : otherHits).push(
+          ...componentUses(text, rel, pkg.name, names, opts.scope, dependencies, aliases),
+        );
+      }
       let lineAt: ((index: number) => number) | undefined;
       for (const m of text.matchAll(SPECIFIER)) {
         const spec = m[3] ?? m[4] ?? m[5] ?? m[6] ?? m[7];
@@ -286,6 +324,7 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
       dir: pkg.dir,
       platform: pkg.platform,
       files: files.length,
+      usage: { production: summarizeUsage(prodHits), storiesAndTests: summarizeUsage(otherHits) },
       uses: [...uses.values()].sort((a, b) => b.count - a.count || a.specifier.localeCompare(b.specifier)),
     });
   }
@@ -297,13 +336,19 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
     .map((e) => ({ ...e, storyOrTestOnly: (anyUse.get(`${e.package}\0${e.subpath}`) ?? 0) > 0 }));
 
   return {
+    analysisVersion: CONSUMERS_VERSION,
+    status: packages.length ? 'checked' : 'not-checked',
+    scope: opts.scope ?? null,
     root,
     workspaceSource: source,
     packages,
     consumers,
     unconsumedExports,
     limits: [
-      'Import statements, not runtime usage; re-export chains are not followed.',
+      'Import counts and JSX opening-element occurrences are source evidence, not runtime renders or adoption quality. JSX usage reads .tsx/.jsx/.js/.mjs/.cjs files; TypeScript-only files are outside this syntax count.',
+      'Shared-component share = shared / (shared + local) production JSX elements; external and unresolved elements are excluded. No denominator means not checked, not zero. Subpath shares use the same app denominator.',
+      'Relative imports, same-package imports, the package tsconfig `paths` aliases and components declared in the same file count as local; relative imports crossing package boundaries are not resolved. External means a declared dependency outside this workspace. Other aliases and out-of-scope workspace targets remain unresolved.',
+      'Re-export aliases, dynamic components, components passed as props, lexical shadowing, template interpolations and regex literals are not resolved by this regex analysis.',
       'Only package-name specifiers of workspace packages count; tsconfig path aliases and relative imports across packages are not resolved.',
       'Stories, tests and mocks are counted separately and never as production adoption.',
       'Platform comes from declared dependencies; "unknown" is not guessed.',

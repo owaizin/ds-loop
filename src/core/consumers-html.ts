@@ -21,7 +21,9 @@ export function renderConsumersHtml(
   r: ConsumersReport,
   opts: { label: string; generatedAt: string },
 ): string {
-  const apps = r.consumers.filter((c) => c.uses.length > 0);
+  const apps = r.consumers.filter(
+    (c) => c.uses.length > 0 || c.usage.production.sharedComponentShare !== null,
+  );
   // shared targets = specifiers actually imported, grouped by target package
   const targets = new Map<
     string,
@@ -58,8 +60,10 @@ export function renderConsumersHtml(
   );
 
   const appCard = (c: (typeof apps)[number]) => {
+    const usage = c.usage.production;
+    const share = usage.sharedComponentShare;
     const prod = c.uses.reduce((n, u) => n + u.production, 0);
-    return `<button class="node app" id="${idOf(`app:${c.package}`)}" data-node><b>${esc(c.package)}</b><span>${esc(c.dir)} · ${c.files} files</span><span>${prod} production import(s) of shared packages</span></button>`;
+    return `<button class="node app" id="${idOf(`app:${c.package}`)}" data-node><b>${esc(c.package)}</b><span>${esc(c.dir)} · ${c.files} files</span><span>${prod} production import(s) of shared packages</span><span>Shared-component share: ${share === null ? 'not checked — no shared/local JSX' : `${(share * 100).toFixed(1)}%`}</span><span>${usage.shared.elements} shared · ${usage.local.elements} local · ${usage.external.elements} external · ${usage.unresolved.elements} unresolved</span>${share === null ? '' : `<span style="display:block;background:var(--line);height:6px;width:100%" aria-hidden="true"><span style="display:block;background:var(--accent);height:100%;width:${share * 100}%"></span></span>`}</button>`;
   };
   const lanes = PLATFORMS.map((p) => {
     const list = apps.filter((c) => c.platform === p);
