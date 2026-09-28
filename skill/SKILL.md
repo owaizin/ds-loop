@@ -2,7 +2,7 @@
 name: ds-loop
 description: Diagnose design-system problems and guide establishment, adoption, component contributions, and maintenance using repository evidence and the team's commitments. Use when starting a system, resolving inconsistent UI foundations, helping developers reuse a library, or reviewing a shared change. Includes deterministic token checks; not general product strategy or isolated screen styling.
 metadata:
-  version: 0.2.1
+  version: 0.3.0
 ---
 
 # Design System Loop

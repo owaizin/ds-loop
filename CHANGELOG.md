@@ -1,6 +1,26 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-09-28
+
+Highlights: plain-CSS auditing, token suggestions, a visual HTML report (audit and
+token architecture), `ds-loop consumers` with a UI-architecture diagram and
+shared-component share per app, a proposal renderer in the skill, summary-first
+terminal output, much faster audits, and a README that leads with a runnable first
+audit and real output.
+
+- `audit --html <file>` writes a self-contained visual report of the same audit:
+  verdict beside coverage, severity bar, category comparison, top files, finding
+  cards and token-suggestion tables. Generated from the audit data; no network.
+- Token suggestions only offer tokens of the property's category (a font size is
+  never offered a shadow offset). Unitless values (font-weight, line-height,
+  z-index) match within their own role. Human output shows the best three
+  candidates; --json keeps all. `css-custom-props` is now 0.5.0.
+- Audits are about 20x faster on large repositories; results are unchanged.
+- The skill ships `tools/proposal.mjs`: proposals and architecture changes are
+  written as JSON and rendered to one offline page where every box and link is
+  labelled observed, inferred, proposed or not checked. `check` rejects
+  unsupported observed claims and links without a stated meaning.
+- The README and foundations playbook link the open ds-kit (MIT).
 
 - Lead the README with a runnable first audit, supported formats, verified public
   fixture output and visual report examples. Separate CLI commands from agent
@@ -16,7 +36,7 @@
   consumers analysis version. Changed analysis versions mark the instrument
   moved, including the first comparison with a row predating these metrics.
 
-- Unreleased 0.3.0 JSON stores suggestion candidates and declaration provenance
+- JSON stores suggestion candidates and declaration provenance
   once in `suggestionIndex`; use-site `candidateRef` and candidate
   `declarationRefs` retain every ordered record. Matching and terminal output
   are unchanged. HTML embeds the complete indexed payload as offline gzip;
@@ -31,8 +51,6 @@
   token lookup, cycles, mode redeclarations and `architecture.maxAliasDepth`
   (default 4). Cross-file cascade order remains unresolved. The new default
   changes config hashes; the next scorecard comparison reports instrument moved.
-
-Changes planned for 0.3.0; not published.
 
 - `ds-loop consumers [path] [--scope @org] [--json]`: workspace import map. For each
   package, the shared packages it imports with counts, named imports and file:line
