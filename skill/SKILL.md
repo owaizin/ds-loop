@@ -152,6 +152,7 @@ Design System Loop does not ship those checks.
 | `census [target]` | playbook | Discover | Scoped component and consumer inventory; validate duplication candidates and prioritize by impact | [reference/census.md](reference/census.md) |
 | `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
 | `establish` | playbook | Build | Set up a usable, editable system for the agreed product scope; verify use, customization and extension | [reference/establish.md](reference/establish.md) |
+| `transform` | playbook | Build | Guide an authorized baseline → decisions → tokens/specs → adoption → completion journey | [reference/transform.md](reference/transform.md) |
 | `foundations` | playbook | Build | Compare and adapt foundation options, record the decision; works with or without a kit | [reference/foundations.md](reference/foundations.md) |
 | `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
 | `scaffold [target]` | playbook | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
@@ -175,7 +176,7 @@ A component name or category is a scope for an agent playbook, not a CLI target.
 
 `audit` runs the registered token/color rules over supported extracted values;
 `sweep` measures the configured color-clustering curve. `drift`, `census`,
-`shape`, `review`, `discover`, `establish`, `foundations`, `tokenize`, `scaffold`, `extract`, and `doctor`
+`shape`, `review`, `discover`, `establish`, `transform`, `foundations`, `tokenize`, `scaffold`, `extract`, and `doctor`
 are agent procedures, not executable CLI commands.
 
 `guard` runs a file-scoped audit after supported Claude Code edits. It reports
