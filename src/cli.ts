@@ -12,6 +12,7 @@ import { scorecard } from './commands/scorecard.ts';
 import { sweep } from './commands/sweep.ts';
 import { loadConfig } from './config/load.ts';
 import { formatCoverage } from './core/coverage.ts';
+import { writeAuditHtml } from './core/report-html.ts';
 import { KNOWN_TARGETS } from './rules/registry.ts';
 import type { RuleTarget, Severity } from './rules/types.ts';
 
@@ -37,11 +38,13 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
   Start here:  ds-loop            verdict for this directory, and what to run next
                ds-loop start      the same, spelled out
 
-  ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--out <dir>] [--require-coverage]
+  ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--out <dir>] [--html <file>] [--require-coverage]
                       [--files <a,b>] [--since <ref>] [--min-severity <sev>] [--quiet] [--config <file>]
       Run every deterministic rule against <path>. <path> is a fixture dir
       (has SOURCE.json) or any dir / .css file (live scan of the working tree).
       --files / --since narrow to changed files. Exit 1 on any surviving finding.
+      --html <file> writes a self-contained visual report of this same audit.
+      Reads scorecard history from cwd; does not append a row. Exit status is unchanged.
       --require-coverage also exits 1 when part of the source could not be read or
       judged, so a green pipeline means "checked and clean" rather than "silent".
 
@@ -103,11 +106,22 @@ function main(argv: string[]): void {
   }
   const loaded = loadConfig(flag(rest, 'config'));
   const { config } = loaded;
-  const valueFlags = new Set(['--target', '--out', '--files', '--since', '--min-severity', '--config']);
+  const valueFlags = new Set([
+    '--target',
+    '--out',
+    '--html',
+    '--files',
+    '--since',
+    '--min-severity',
+    '--config',
+  ]);
   const positional = rest.filter((a, i) => !a.startsWith('-') && !valueFlags.has(rest[i - 1] ?? ''));
 
   switch (cmd) {
     case 'audit': {
+      if (has(rest, 'html') && (!flag(rest, 'html') || flag(rest, 'html')!.startsWith('-'))) {
+        throw new Error('--html needs a file path, e.g. --html ds-loop-report.html');
+      }
       const auditPath = positional[0] ?? '.'; // no path means "this directory"
       const target = (flag(rest, 'target') ?? 'all') as RuleTarget | 'all';
       if (!KNOWN_TARGETS.includes(target)) {
@@ -129,6 +143,7 @@ function main(argv: string[]): void {
         minSeverity: flag(rest, 'min-severity') as Severity | undefined,
         quiet: has(rest, 'quiet'),
       });
+      if (has(rest, 'html')) console.error(`  HTML report: ${writeAuditHtml(report, flag(rest, 'html'))}`);
       if (report.findings.length > 0) process.exitCode = 1;
       // A zero exit says "no findings", never "sufficiently checked". CI that needs
       // the stronger claim asks for it explicitly, because forcing it would fail

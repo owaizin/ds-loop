@@ -105,3 +105,10 @@ test('both command tables list exactly the commands the CLI implements', () => {
     'docs/guide/reference.md engine-command table is out of date',
   );
 });
+
+test('HTML is an audit view and keeps the command identifier', () => {
+  assert.match(read('src/cli.ts'), /--html <file>/);
+  assert.match(read('skill/SKILL.md'), /--html <file>/);
+  assert.match(read('src/core/report-html.ts'), /<title>ds-loop audit —/);
+  assert.match(read('src/core/report-html.ts'), /ds-loop-report\.html/);
+});

@@ -104,7 +104,16 @@ test('extracted value rows survive suppressions and severity filtering for speci
     });
     assert.deepEqual(after.styleInventory, before.styleInventory);
     assert.deepEqual(after.styleInventory.typography?.values, [
-      { value: '14px', property: 'font-size', classification: 'dimension', occurrences: 2 },
+      {
+        value: '14px',
+        property: 'font-size',
+        classification: 'dimension',
+        occurrences: 2,
+        locations: [
+          { file: 'a.css', line: 1 },
+          { file: 'a.css', line: 1 },
+        ],
+      },
     ]);
     assert.equal(after.styleInventory.spacing?.values.length, 2);
     assert.equal(

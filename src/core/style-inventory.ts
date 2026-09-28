@@ -2,10 +2,16 @@ import { type RawValue, VALUE_CATEGORIES, type ValueCategory } from './provenanc
 
 export type CategoryInventory = {
   /** Full extracted value distribution, before findings, exceptions or severity filters.
-   * Property disambiguates font-size from other typography values. No locations
-   * or declarations are inferred from this ordinary-style use-site inventory.
+   * Property disambiguates font-size from other typography values. Locations
+   * are extracted use sites, never inferred declarations.
    */
-  values: { value: string; property: string; classification: string; occurrences: number }[];
+  values: {
+    value: string;
+    property: string;
+    classification: string;
+    occurrences: number;
+    locations?: { file: string; line: number }[];
+  }[];
   occurrences: number;
   distinctValues: number;
   literals: number;
@@ -40,7 +46,13 @@ export function styleInventory(values: RawValue[]): StyleInventory {
     for (const v of vs) files.set(v.provenance.file, (files.get(v.provenance.file) ?? 0) + 1);
     const distribution = new Map<
       string,
-      { value: string; property: string; classification: string; occurrences: number }
+      {
+        value: string;
+        property: string;
+        classification: string;
+        occurrences: number;
+        locations: { file: string; line: number }[];
+      }
     >();
     for (const v of vs) {
       const key = JSON.stringify([v.raw, v.provenance.property, v.provenance.classification]);
@@ -49,8 +61,10 @@ export function styleInventory(values: RawValue[]): StyleInventory {
         property: v.provenance.property,
         classification: v.provenance.classification,
         occurrences: 0,
+        locations: [] as { file: string; line: number }[],
       };
       row.occurrences++;
+      row.locations.push({ file: v.provenance.file, line: v.provenance.line });
       distribution.set(key, row);
     }
     inventory[category] = {

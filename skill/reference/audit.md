@@ -123,3 +123,12 @@ Recommend a bounded next action and explain why it addresses the goal. The engin
 Agent procedures such as `tokenize` or `review` are not CLI commands. A review-only
 request ends with the diagnosis and next step, not an automatic migration, mandatory
 `drift` invocation, or an unrequested scorecard history.
+
+## Visual report
+
+Use `ds-loop audit . --html ds-loop-report.html` when a browsable summary helps.
+It writes the same audit: coverage beside the verdict, CSS inventory, grouped
+findings, recorded scorecard ratios and next commands. It does not review rendered UI.
+Filters and exit status still apply. Scorecard history is read from cwd; no row is
+written. Keep project reports in the project or its private evidence directory.
+Some rules retain only sample locations; the report cannot recover missing evidence.

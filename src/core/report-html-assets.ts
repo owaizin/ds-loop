@@ -1,0 +1,78 @@
+/** Browser code is inline and uses textContent for all engine data. No runtime imports. */
+export const REPORT_SCRIPT = String.raw`
+const payload = JSON.parse(document.getElementById('audit-data').textContent);
+const el = (tag, text) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = String(text); return n; };
+const pageSize = 30; // presentation page size, not an analysis threshold
+function inspect(value) {
+  if (value === null || typeof value !== 'object') {
+    const n=el('span');
+    const color=payload.swatches[String(value)];
+    if(color) { const s=el('span'); s.className='swatch'; s.setAttribute('aria-hidden','true'); s.style.backgroundColor=color; n.append(s); }
+    n.append(el('code',value===null?'null':value)); return n;
+  }
+  const entries = Object.entries(value), d = el('details');
+  d.append(el('summary', (Array.isArray(value) ? 'Items' : 'Fields') + ' · ' + entries.length));
+  d.addEventListener('toggle', () => {
+    if (!d.open || d.dataset.loaded) return;
+    d.dataset.loaded = 'true';
+    const list = el('div'), controls = el('div'), status = el('span'); status.setAttribute('aria-live','polite');
+    let page = 0;
+    const previous = el('button','Previous'), next = el('button','Next');
+    function draw() {
+      list.replaceChildren();
+      for (const [key, v] of entries.slice(page * pageSize, (page + 1) * pageSize)) {
+        const row = el('div'); row.className = 'datum'; row.append(el('strong', key), inspect(v)); list.append(row);
+      }
+      status.textContent = entries.length ? (page * pageSize + 1) + '–' + Math.min((page+1)*pageSize, entries.length) + ' of ' + entries.length : 'No items';
+      previous.disabled = page === 0; next.disabled = (page + 1) * pageSize >= entries.length;
+    }
+    previous.onclick = () => { page--; draw(); }; next.onclick = () => { page++; draw(); };
+    controls.className='pagination'; controls.append(previous,status,next); d.append(list,controls); draw();
+  });
+  return d;
+}
+for (const host of document.querySelectorAll('[data-inspect]')) {
+  const path = JSON.parse(host.dataset.inspect);
+  let value = payload; for (const key of path) value = value[key];
+  host.append(inspect(value));
+}
+for (const host of document.querySelectorAll('[data-group]')) {
+  host.parentElement.addEventListener('toggle', () => {
+  if (!host.parentElement.open || host.dataset.loaded) return;
+  host.dataset.loaded='true';
+  const indices = payload.groups[Number(host.dataset.group)].indices;
+  const search = el('input'); search.type='search'; search.placeholder='Search this group'; search.setAttribute('aria-label','Search findings in this rule group');
+  const list=el('div'), status=el('p'), controls=el('div'), prev=el('button','Previous'), next=el('button','Next');
+  status.setAttribute('aria-live','polite'); controls.className='pagination';
+  let page=0, matches=indices;
+  const searchable=indices.map(i => JSON.stringify(payload.report.findings[i]).toLowerCase());
+  function draw() {
+    list.replaceChildren();
+    for (const i of matches.slice(page*pageSize,(page+1)*pageSize)) {
+      const f=payload.report.findings[i], article=el('article'); article.className='finding';
+      article.append(el('h4',f.summary),el('p',f.where));
+      if(f.impact) article.append(el('p','risk: '+f.impact));
+      article.append(el('p','fix: '+f.fix));
+      if(payload.suggestions[i]) article.append(el('pre','suggest: '+payload.suggestions[i]));
+      article.append(inspect(f)); list.append(article);
+    }
+    status.textContent=matches.length ? (page*pageSize+1)+'–'+Math.min((page+1)*pageSize,matches.length)+' of '+matches.length+' findings' : 'No matching findings';
+    prev.disabled=page===0; next.disabled=(page+1)*pageSize>=matches.length;
+  }
+  prev.onclick=()=>{page--;draw();}; next.onclick=()=>{page++;draw();};
+  search.oninput=()=>{const q=search.value.toLowerCase(); matches=indices.filter((_,j)=>searchable[j].includes(q));page=0;draw();};
+  controls.append(prev,next); host.append(search,status,list,controls); draw();
+  });
+}
+document.getElementById('theme').onchange = e => { document.documentElement.dataset.theme=e.target.value; };
+`;
+
+export const REPORT_CSS = `
+:root{color-scheme:light dark;--bg:#f4f6f8;--card:#fff;--ink:#182638;--muted:#526277;--line:#c7d0da;--accent:#1756a3;--warn:#8a4014}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--warn:#ffbb8f}}
+:root[data-theme=dark]{--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--warn:#ffbb8f;color-scheme:dark}
+:root[data-theme=light]{color-scheme:light}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,sans-serif}main{max-width:1180px;margin:auto;padding:32px 24px 72px}h1{font-size:clamp(30px,5vw,52px);letter-spacing:-.045em;margin:12px 0}h2{font-size:24px;letter-spacing:-.02em}h3{font-size:18px}h4{font-size:16px;margin:0 0 12px}p{margin:8px 0}a{color:var(--accent)}code,pre{font:13px/1.6 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}section{margin-top:36px;scroll-margin-top:16px}.kicker{text-transform:uppercase;letter-spacing:.15em;font-size:12px;font-weight:700;color:var(--muted)}.toolbar,.pagination{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.toolbar{justify-content:space-between}.hero,.coverage,.grid{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr))}.coverage{grid-template-columns:repeat(3,minmax(0,1fr))}.card,.group{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}.status{font-size:32px;letter-spacing:-.025em;font-weight:700}.limited{border-top:4px solid var(--warn)}.metric{font-size:28px;font-weight:650}.muted,small{color:var(--muted)}dl{margin:12px 0}dt{color:var(--muted);font-size:12px}dd{margin:0 0 10px;overflow-wrap:anywhere}.bar{display:flex;height:18px;border-radius:4px;overflow:hidden;background:var(--line);margin:16px 0 8px}.bar span{min-width:0}.literal{background:#cc704a}.reference{background:#477bc4}.mixed{background:#9676c8}.ambiguous{background:#9f8151}.excluded{background:#8b969f}.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px}.group{margin:14px 0}.finding{padding:18px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.finding p{white-space:pre-wrap}summary{cursor:pointer;color:var(--accent);padding:10px 0;overflow-wrap:anywhere}details{min-width:0}details details{margin-left:12px}.datum{border-top:1px solid var(--line);padding:8px 0;display:grid;gap:4px}.datum>strong{font-size:12px;color:var(--muted)}button,select,input{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px}input{width:100%;margin:12px 0}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}ul{padding-left:20px;overflow-wrap:anywhere}.swatch{display:inline-block;width:22px;height:22px;border:1px solid var(--muted);border-radius:4px;vertical-align:middle;margin-right:8px}.values{list-style:none;padding:0}.values li{margin:10px 0}.table-wrap{overflow:auto}table{border-collapse:collapse;min-width:100%;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}nav{display:flex;gap:16px;flex-wrap:wrap;margin:20px 0}.print-note{display:none}
+@media(max-width:700px){main{padding:20px 16px 48px}.hero,.coverage,.grid{grid-template-columns:1fr}.card,.group{padding:16px}.status{font-size:27px}}
+@media print{:root{--bg:#fff;--card:#fff;--ink:#000;--muted:#444;--line:#bbb;--accent:#000;--warn:#000;color-scheme:light}main{max-width:none;padding:0}button,select,input,nav,.toolbar label,.pagination{display:none}.print-note{display:block}.card,.finding{break-inside:avoid}.hero,.coverage{display:block}.card{margin-bottom:12px}.bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}details:not([open])>summary{color:#444}a{color:#000}h2,h3{break-after:avoid}}
+`;

@@ -143,7 +143,7 @@ Design System Loop does not ship those checks.
 |---|---|---|---|---|
 | `start [path]` / bare `ds-loop` | **CLI** | Meta | Verdict for this directory, its biggest finding, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
 | `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage. `--write-contract` starts `DESIGN-SYSTEM.md` from measured counts, with the decisions the tool cannot read left as TODO | — |
-| `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Severity-ranked findings, scorecard ratios, and a `next` block naming the follow-up command. No LLM, no network | [reference/audit.md](reference/audit.md) |
+| `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Severity-ranked findings, scorecard ratios, and a `next` block naming the follow-up command. `--html <file>` saves the same audit as a self-contained visual report. No LLM, no network | [reference/audit.md](reference/audit.md) |
 | `scan [path]` | **CLI** | Audit | Quick look: classification breakdown + palette clusters at the default ΔE | — |
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |
 | `guard [on\|off\|status]` | **CLI** | Guard | Install/remove the edit-time `PostToolUse` hook | [reference/guard.md](reference/guard.md) |

@@ -466,6 +466,17 @@ try {
     );
   });
 
+  check('installed audit exports standalone HTML without corrupting JSON', () => {
+    const output = join(dir, 'audit.html');
+    const result = run(['audit', 'tokens.css', '--json', '--html', output]);
+    const report = JSON.parse(result.stdout);
+    const html = readFileSync(output, 'utf8');
+    assert(html.includes('<title>ds-loop audit'), 'HTML report missing');
+    assert(html.includes('audit-data'), 'full engine data missing');
+    assert(result.stderr.includes(output), 'output path not printed');
+    assert(result.status === (report.findings.length ? 1 : 0), 'HTML changed audit exit status');
+  });
+
   check('a non-git directory produces no git noise', () => {
     const r = run(['audit', '.']);
     assert(!/fatal:/.test(r.stderr), `git error leaked: ${r.stderr.trim()}`);

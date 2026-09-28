@@ -28,6 +28,7 @@ export type AuditReport = {
     ranAt: string;
     /** File filter and read-only dependencies; context is not included in ratios or judgment. */
     judgedFiles?: string[];
+    minSeverity?: Severity;
     tokenContext?: TokenContextRead[];
   };
   /** Ordinary CSS property inventory before exceptions or severity filtering. */
@@ -208,6 +209,7 @@ export function audit(
       adapter: adapterLabel(adapters),
       configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
+      ...(opts.minSeverity ? { minSeverity: opts.minSeverity } : {}),
       ...(source.only ? { judgedFiles: source.only } : {}),
       ...(tokenContext.reads.length > 0 ? { tokenContext: tokenContext.reads } : {}),
     },
@@ -251,7 +253,7 @@ function noAdapterReport(
   /** the path as the user spelled it, so a suggested command is copy-pasteable */
   path: string,
   config: DsOpsConfig,
-  opts: { json?: boolean; quiet?: boolean; silent?: boolean; outDir?: string },
+  opts: { json?: boolean; quiet?: boolean; silent?: boolean; outDir?: string; minSeverity?: Severity },
   only?: string[],
 ): AuditReport {
   const coverage = buildCoverage(root, [], [], []);
@@ -270,6 +272,7 @@ function noAdapterReport(
       // specific configuration, and a report that lies about which is not evidence
       configHash: hashConfig(config),
       ranAt: new Date().toISOString(),
+      ...(opts.minSeverity ? { minSeverity: opts.minSeverity } : {}),
       ...(only !== undefined ? { judgedFiles: only } : {}),
     },
     styleInventory: {},
