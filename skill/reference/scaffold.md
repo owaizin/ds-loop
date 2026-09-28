@@ -44,6 +44,40 @@ changing it. Generate token documentation from the canonical source where practi
 rather than introducing a second hand-maintained table. Documentation visibility,
 release status and test selection are separate decisions.
 
+## Specs and discovery
+
+Preserve a useful existing documentation home. If there is none, use this layout
+for the agreed scope; create files only when there is content to maintain:
+
+```text
+specs/
+  foundations/
+  tokens/
+  components/
+    atoms/
+    molecules/
+    organisms/
+  patterns/
+```
+
+Foundations hold adopted values, roles, source and decisions; `tokens/` holds the
+reference and usage guidance. The engine does not yet generate a token-reference
+file: assemble it from canonical declarations with name, value, file:line and
+configured tier, marking unresolved aliases/modes and unread formats. Avoid a
+second editable token source. Link refresh instructions when a derived table ships.
+
+Use [shape](shape.md)'s eight-section template for existing components, prioritized
+by observed consumer reach. `consumers` (A9) is **not yet available**; inspect imports
+and public exports, label sampled coverage, and separate real consumers from
+reference stories. Keep a better existing categorization instead of moving code
+to match atoms/molecules/organisms. `patterns/` describes compositions that exist.
+
+Link the relevant foundation, token and component specs from the normal contributor
+entry point. Where stories exist, link them from specs and link back from their
+usage docs. Verify paths and examples actually resolve. Use [engagement](engagement.md)
+for evidence labels and retrieval checks; generated files alone do not prove that
+a later developer or agent finds and applies the contract.
+
 ## Project checks
 
 If a project needs file-contract, token-format parity, or MDX/reference validation,
