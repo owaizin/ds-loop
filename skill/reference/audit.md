@@ -20,10 +20,10 @@ an explicit JSON configuration. Retain the working-tree diff alongside HEAD when
 comparing uncommitted changes.
 
 Always inspect `verdict`, `coverage` and findings together. `not-checked` is not
-clean, and `clean` is limited to the adapters' declared reads. The CSS adapter
-reads custom-property declarations, not ordinary rule bodies; the markup adapter
-reads arbitrary-value strings and named colour utilities off the framework palette,
-not resolved theme utilities or inline styles.
+clean, and `clean` is limited to the adapters' declared reads. Separate CSS adapters
+read custom-property declarations and supported ordinary-rule literals/references.
+The markup adapter reads arbitrary-value strings and named colour utilities off
+the framework palette, not resolved theme utilities or inline styles.
 `--require-coverage` fails on reported gaps; it does not expand those reads.
 
 ## The rule set (v0)
@@ -31,21 +31,26 @@ not resolved theme utilities or inline styles.
 | Rule id | Severity | What it means |
 |---|---|---|
 | `token/raw-value-in-markup` | high | Arbitrary color/length values at markup use sites; investigate against the project's actual convention. |
+| `token/raw-value-in-style` | by category | Literal values in supported ordinary CSS rules. Defaults: color/spacing high; typography/radius/shadow medium; duration/z-index low. Presence is evidence to review, not a prohibition. Configure through `style.severity`. |
+| `token/upstream-bypass` | high | Component/use-site references an upstream token directly instead of a project alias, under configured `taxonomy.upstreamPattern`. |
 | `token/stock-palette-utility` | medium | A colour utility naming the framework's own palette (`bg-white`, `text-slate-900`) rather than a theme token. Review against the actual theme contract and rendered modes. Scoped checks without applicable token context report a low-severity judgment limit. |
 | `token/tier-model-undetectable` | low | Too few referencing tokens match configured tier patterns; a scanner limitation, not an absent system. Silent at zero references. |
 | `token/tier-leakage` | high | A token references across tiers the wrong way — component → primitive skips the semantic tier, or a reference points upward. Check whether that tier model is applicable and whether behavior is affected. |
 | `token/semantic-name-describes-appearance` | medium / low | A semantic token named for a colour or size word (`color.action.blue`). Low when every hit is a category / chart-series token (sanctioned — record it in `DESIGN-SYSTEM.md`). |
-| `color/semantic-holds-literal` | high | A non-primitive token holds a literal colour instead of `var(--primitive)`. Conflicts with the configured layer assumption; verify the project contract. |
-| `token/raw-dimension-in-semantic` | high | A semantic or component token holds a raw length (`16px`, `1rem`, a shorthand) instead of `var(--space-N)`. The other half of `semantic-holds-literal`. Skips primitives, font-weight / z-index / opacity scales, and shadow recipe parts. Bare unitless numbers are not treated as dimensions. |
+| `color/semantic-holds-literal` | high | A non-primitive, non-upstream token holds a literal colour instead of `var(--primitive)`. Conflicts with the configured layer assumption; verify the project contract. |
+| `token/raw-dimension-in-semantic` | high | A semantic or component token holds a raw length (`16px`, `1rem`, a shorthand) instead of `var(--space-N)`. The other half of `semantic-holds-literal`. Skips upstream declarations, primitives, font-weight / z-index / opacity scales, and shadow recipe parts. Bare unitless numbers are not treated as dimensions. |
 | `color/literal-duplicate-tokens` | medium | Two+ tokens declare byte-identical values. Usually a semantic layer re-typing a palette value instead of aliasing it. |
 | `color/near-duplicate-primitives` | low | Two palette primitives are within the configured ΔE; visual and semantic equivalence still need review. |
 | `color/mixed-storage-forms` | medium | Multiple colour storage forms were read. Check whether the mixture is intentional or causes maintenance problems. |
 | `color/no-intent-plateau` | low | No ΔE band holds a cluster count near the shipped primitive count. Hand-authored → ramp may be over-fine; generated scale → expected. |
-| `token/var-missing-fallback` | low | A `var(--token)` with no `, fallback`. If the token is ever undefined (import order, an unloaded token file, a dropped theme value) the property silently resolves to nothing. SLDS requires a fallback on every reference. A var() after a comma — itself a fallback — is not flagged. |
+| `token/var-missing-fallback` | low | A `var(--token)` with no `, fallback`. If the token is ever undefined (import order, an unloaded token file, a dropped theme value) the property silently resolves to nothing. Upstream internals are exempt; project aliases are not. A var() after a comma — itself a fallback — is not flagged. |
 
 Severities are overridable per project via `.ds-loop-config.yml` (`severity:`
 block, Murphy Trueman `design-system-ops` format) — `tier_leakage: critical` maps
 `token/tier-leakage` to `blocking`.
+
+Palette rules, `scan` and `sweep` operate on declarations, not ordinary CSS use-site
+colours. Configured upstream declarations still participate in palette analysis.
 
 Each rule is `domain/kebab-slug`, stable, and scorecards key on it. `--target color`
 also runs the deeper `no-intent-plateau` check; `--target tokens` runs the
@@ -81,6 +86,24 @@ entry skill's evidence and decision-state procedure first. For each:
 that ref's merge base to HEAD in the target repository; it excludes uncommitted
 edits. An empty selection remains `not-checked`; invalid comparisons fail. For a
 working-tree review, inspect the diff and pass its relevant paths with `--files`.
+
+## Inventory and suggestions
+
+`styleInventory` records per-category occurrences, distinct values, full value
+distributions and top files before exceptions or severity filtering. Its
+tokenization ratio is references / (literals + references + mixed); absent/null
+means no ratio. These are extracted ordinary CSS use sites, not a complete markup,
+native or computed-style inventory.
+
+Style and markup literal findings may carry `suggestion`: resolved exact/nearest
+token candidates, ambiguity or no token. Alias-layer candidates are preferred,
+but value equality is not role equivalence. Check consumer intent, supported modes
+and cascade before choosing. Normalization uses `suggestions.rootFontSize`; nearest
+lengths use `suggestions.lengthTolerancePx` and colour uses `clustering.deltaE`.
+These are configurable assumptions, not measured product tolerances. Suggestions
+do not authorize replacement; `fix` only inserts provable fallbacks. Scoped runs
+may lack candidate declarations, so absence of a suggestion does not prove absence
+of a token. Inspect relevant sources and the report's coverage.
 
 ## Explain the result
 
