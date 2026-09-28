@@ -147,9 +147,22 @@ for (const id of ['audit-css-inventory', 'audit-css-suggestion']) {
   });
 }
 
+for (const [id, args] of [
+  ['start-css-showcase', ['start', 'fixtures/css-audit-example']],
+  ['consumers-example', ['consumers', 'fixtures/example-workspace', '--scope', '@example/ui']],
+] as const) {
+  test(`README: ${id} is a contiguous excerpt of the real command`, () => {
+    const block = verifiedBlocks().get(id);
+    assert.ok(block, `missing verified block: ${id}`);
+    assert.ok(run([...args], ROOT).includes(block.trimEnd()), `${id} differs from real output`);
+  });
+}
+
 test('every verified block in the README is registered in this file', () => {
   // an unregistered `verified:` block is an unchecked claim wearing a badge
   const registered = new Set([
+    'start-css-showcase',
+    'consumers-example',
     'audit-radix',
     'audit-markup',
     'audit-not-checked',

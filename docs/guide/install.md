@@ -5,10 +5,16 @@ Use Node 22.6 or later. Install the complete package in the project you want to 
 ## Install from npm
 
 ```sh
-npm install --save-dev ds-loop@0.2.1
+npm install --save-dev ds-loop@0.3.0
 ```
 
 To test local changes, use [source installation](#install-from-source). Both paths install the CLI and companion skill. A local tarball path is specific to your machine; switch to the matching registry release before asking teammates to install it.
+
+## Get a first reading
+
+From your project directory, run `npx ds-loop` (or `npx ds-loop start .`).
+It prints findings, coverage and the next command. For a visual report, run
+`npx ds-loop audit . --html audit-report.html`.
 
 ## Start with your agent
 
@@ -25,8 +31,8 @@ The agent should explain the evidence, recommended intervention, and scope. For 
 You can also use the engine directly, without an agent. From your project directory:
 
 ```sh
-./node_modules/.bin/ds-loop context .
-./node_modules/.bin/ds-loop audit . --json
+npx ds-loop context .
+npx ds-loop audit . --json
 ```
 
 `context` reports configuration, conventional intent-source paths and extraction scope. It runs no rules. The unfiltered audit reports findings and checks that could not judge. Inspect both `verdict` and `coverage`; exit 0 alone does not establish a clean result. These commands provide measurements; they do not conduct the interview or recommend an engagement plan.
@@ -36,8 +42,8 @@ You can also use the engine directly, without an agent. From your project direct
 From the target project, run:
 
 ```sh
-./node_modules/.bin/ds-loop guard on
-./node_modules/.bin/ds-loop guard status
+npx ds-loop guard on
+npx ds-loop guard status
 ```
 
 This installs a Claude Code PostToolUse hook in `.claude/settings.json`. It reports high-severity findings after supported edits and announces project extraction-coverage changes. It never blocks an edit. It does not deliver lower-severity judgment limits; run an unfiltered audit at setup and completion. `guard off` removes its entry while preserving other settings.
@@ -48,7 +54,7 @@ the error. Correct the problem and rerun the audit before relying on its result.
 ## Optional: choose a CI policy
 
 ```sh
-./node_modules/.bin/ds-loop audit . --min-severity high --require-coverage
+npx ds-loop audit . --min-severity high --require-coverage
 ```
 
 This fails on findings at the chosen floor or reported coverage gaps. Its pass applies only to the adapters' stated scope and chosen severity. Review your repository's unsupported formats before enabling it. Run an unfiltered audit separately when you need all findings.
@@ -68,10 +74,10 @@ npm ci
 npm pack
 ```
 
-This builds `ds-loop-0.2.1.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
+This builds `ds-loop-0.3.0.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
 
 ```sh
-npm install --save-dev /absolute/path/to/ds-loop-0.2.1.tgz
+npm install --save-dev /absolute/path/to/ds-loop-0.3.0.tgz
 ```
 
 Continue with [Start with your agent](#start-with-your-agent), or [run the checks yourself](#run-the-checks-yourself). The launcher uses the compiled JavaScript included in the package.

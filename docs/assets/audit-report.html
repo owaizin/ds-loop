@@ -1,0 +1,241 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>ds-loop audit — ds-loop</title><style>
+:root{color-scheme:light dark;--bg:#f4f6f8;--card:#fff;--ink:#182638;--muted:#526277;--line:#c7d0da;--accent:#1756a3;--warn:#8a4014}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--warn:#ffbb8f}}
+:root[data-theme=dark]{--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--warn:#ffbb8f;color-scheme:dark}
+:root[data-theme=light]{color-scheme:light}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,sans-serif}main{max-width:1180px;margin:auto;padding:32px 24px 72px}h1{font-size:clamp(30px,5vw,52px);letter-spacing:-.045em;margin:12px 0}h2{font-size:24px;letter-spacing:-.02em}h3{font-size:18px}h4{font-size:16px;margin:0 0 12px}p{margin:8px 0}a{color:var(--accent)}code,pre{font:13px/1.6 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}section{margin-top:36px;scroll-margin-top:16px}.kicker{text-transform:uppercase;letter-spacing:.15em;font-size:12px;font-weight:700;color:var(--muted)}.toolbar,.pagination{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.toolbar{justify-content:space-between}.hero,.coverage,.grid{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr))}.coverage{grid-template-columns:repeat(3,minmax(0,1fr))}.card,.group{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}.status{font-size:32px;letter-spacing:-.025em;font-weight:700}.limited{border-top:4px solid var(--warn)}.metric{font-size:28px;font-weight:650}.muted,small{color:var(--muted)}dl{margin:12px 0}dt{color:var(--muted);font-size:12px}dd{margin:0 0 10px;overflow-wrap:anywhere}.bar{display:flex;height:18px;border-radius:4px;overflow:hidden;background:var(--line);margin:16px 0 8px}.bar span{min-width:0}.literal{background:#cc704a}.reference{background:#477bc4}.mixed{background:#9676c8}.ambiguous{background:#9f8151}.excluded{background:#8b969f}.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px}.group{margin:14px 0}.finding{padding:18px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.finding p{white-space:pre-wrap}summary{cursor:pointer;color:var(--accent);padding:10px 0;overflow-wrap:anywhere}details{min-width:0}details details{margin-left:12px}.datum{border-top:1px solid var(--line);padding:8px 0;display:grid;gap:4px}.datum>strong{font-size:12px;color:var(--muted)}button,select,input{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px}input{width:100%;margin:12px 0}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}ul{padding-left:20px;overflow-wrap:anywhere}.swatch{display:inline-block;width:22px;height:22px;border:1px solid var(--muted);border-radius:4px;vertical-align:middle;margin-right:8px}.values{list-style:none;padding:0}.values li{margin:10px 0}.table-wrap{overflow:auto}table{border-collapse:collapse;min-width:100%;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}nav{display:flex;gap:16px;flex-wrap:wrap;margin:20px 0}.print-note{display:none}
+@media(max-width:700px){main{padding:20px 16px 48px}.hero,.coverage,.grid{grid-template-columns:1fr}.card,.group{padding:16px}.status{font-size:27px}}
+@media print{:root{--bg:#fff;--card:#fff;--ink:#000;--muted:#444;--line:#bbb;--accent:#000;--warn:#000;color-scheme:light}main{max-width:none;padding:0}button,select,input,nav,.toolbar label,.pagination{display:none}.print-note{display:block}.card,.finding{break-inside:avoid}.hero,.coverage{display:block}.card{margin-bottom:12px}.bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}details:not([open])>summary{color:#444}a{color:#000}h2,h3{break-after:avoid}}
+
+/* Compact overview: charts use recorded counts, never a health score. */
+main{padding-top:20px}h1{font-size:30px;margin:8px 0}h2{font-size:20px}nav{margin:12px 0}.summary-strip{display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}.summary-strip>div>strong{display:block;font-size:24px}.summary-strip .bar{height:10px;margin:6px 0}.scope-note{grid-column:1/-1;font-size:12px;color:var(--muted);margin:0}.overview-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-top:16px}.overview-grid .card{padding:16px}.overview-grid h2{margin:0 0 10px}.chart-label,.chart-row{display:grid;grid-template-columns:100px 1fr 1fr;gap:12px;align-items:center}.chart-label{font-size:11px;color:var(--muted)}.chart-row{padding:5px 0;font-size:12px;text-decoration:none;color:var(--ink)}.mini-track{height:22px;position:relative;background:var(--bg);border-radius:3px;overflow:hidden}.mini-track i{height:100%;display:block;opacity:.3}.mini-track b{position:absolute;inset:0;padding:1px 7px;font-variant-numeric:tabular-nums}.top-files{margin:10px 0 0;padding:0;list-style:none}.top-files li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;border-top:1px solid var(--line);padding:7px 0}.top-files code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}.top-files small{grid-column:1/-1;font-size:11px}.top-files strong{font-size:12px}.blocking{background:#972c40}.high{background:#c45d36}.medium{background:#997024}.low{background:#49789e}.badge.high{background:#9e472b}.badge.medium{background:#765515}.badge.low{background:#315c7d}.badge{padding:2px 7px;border-radius:4px;color:#fff;font-size:11px}.finding-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--muted)}.finding-meta code{font-size:11px}.one-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:8px 0 4px}.locations{font:11px/1.6 ui-monospace,monospace;color:var(--muted)}.finding{padding:12px 0}.finding>details>summary{padding:3px 0}.group{padding:14px;margin:10px 0}.group h3{margin:5px 0}.suggestions{font-size:12px}.suggestions th,.suggestions td{white-space:normal;overflow-wrap:anywhere;vertical-align:top;min-width:100px}.suggestions small{display:block}.suggestions td:nth-child(4),.suggestions td:nth-child(5){min-width:180px}.manifest{font-size:12px}.table-wrap{max-width:100%}
+@media(max-width:700px){.summary-strip{grid-template-columns:1fr 1fr}.severity-chart{grid-column:1/-1}.overview-grid{grid-template-columns:1fr}.chart-label,.chart-row{grid-template-columns:84px 1fr 1fr;gap:8px}.summary-strip>div>strong{font-size:20px}.suggestions{min-width:660px}}
+@media print{.one-line{white-space:normal;overflow:visible}.overview-grid{display:block}.top-files code{white-space:normal}.summary-strip,.overview-grid .card{break-inside:avoid}.mini-track,.bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.token-lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.token-lanes .card{padding:12px}.token-lanes h3{text-transform:capitalize;font-size:14px}.token-lanes p{font-size:11px;overflow-wrap:anywhere}.token-lanes small{display:block}.token-health{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.token-row{border-bottom:1px solid var(--line);padding:10px 0;overflow-wrap:anywhere}.token-row a{margin-right:12px}.token-row.flagged{border-left:4px solid var(--warn);padding-left:10px}.token-weight{display:block;height:5px;background:var(--accent);margin-top:6px;max-width:100%}.token-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#token-detail{margin-top:16px;scroll-margin:20px}#token-detail code{overflow-wrap:anywhere}#token-detail h4{margin-bottom:4px}
+@media(max-width:900px){.token-lanes{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:500px){.token-lanes,.token-health{grid-template-columns:1fr}}@media print{.token-lanes{grid-template-columns:repeat(3,minmax(0,1fr))}.token-health{display:block}.token-weight{print-color-adjust:exact}}
+</style></head><body><main>
+  <div class="toolbar"><span class="kicker">ds-loop / audit report</span><label>Appearance <select id="theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div>
+  <h1>ds-loop</h1><p class="muted">Generated from the audit. No rendered UI or design intent was assessed.</p>
+  <nav aria-label="Report sections"><a href="#coverage">Coverage</a><a href="#inventory">Inventory</a><a href="#tokens">Token architecture</a><a href="#findings">Findings</a><a href="#trend">Trend</a><a href="#next">Next</a></nav>
+  <div class="summary-strip"><div><span class="kicker">Verdict</span><strong>issues</strong></div><div><span class="kicker">Coverage</span><strong>Within declared reads</strong></div><div class="severity-chart"><span class="kicker">3 findings · 14 rules</span><div class="bar" aria-hidden="true"><span class="blocking" style="width:0%"></span><span class="high" style="width:66.66666666666666%"></span><span class="medium" style="width:0%"></span><span class="low" style="width:33.33333333333333%"></span></div><div class="legend"><span>blocking 0</span><span>high 2</span><span>medium 0</span><span>low 1</span></div></div><p class="scope-note">A clean audit only describes the checks and scope it covered.</p></div>
+  <div class="overview-grid"><article class="card"><h2>CSS categories</h2><div class="category-chart"><div class="chart-label"><span>Category</span><span>Tokenization</span><span>Literals</span></div><a class="chart-row" href="#category-color"><strong>color</strong><span class="mini-track"><i class="reference" style="width:50%"></i><b>50.0%</b></span><span class="mini-track"><i class="literal" style="width:100%"></i><b>1</b></span></a><a class="chart-row" href="#category-spacing"><strong>spacing</strong><span class="mini-track"><i class="reference" style="width:50%"></i><b>50.0%</b></span><span class="mini-track"><i class="literal" style="width:100%"></i><b>1</b></span></a></div><small>Reference share and literal occurrences; different units. Expand inventory for locations.</small></article><article class="card"><h2>Top 5 files</h2><small>Extracted CSS occurrences across categories</small><ol class="top-files"><li><code>styles.css</code><strong>4</strong><small>color 2 · spacing 2</small></li></ol></article></div>
+  <details class="manifest"><summary>Source, adapters and audit scope</summary><dl><dt>Source revision</dt><dd>git:0c6999ac32f8</dd><dt>Adapters</dt><dd>css-custom-props@0.5.0 + css-rule-bodies@0.2.0</dd><dt>Config / date</dt><dd>3c93c488 · 2026-09-28T14:52:12.460Z</dd><dt>Scope</dt><dd>all · severity floor none</dd></dl><details><summary>Full manifest</summary><div data-inspect="[&quot;report&quot;,&quot;manifest&quot;]"></div></details><details><summary>Rules run</summary><div data-inspect="[&quot;report&quot;,&quot;rulesRun&quot;]"></div></details></details>
+  <section id="coverage"><h2>01 / What was checked</h2><div class="coverage"><article class="card"><h3>Read</h3><ul><li>css-custom-props@0.5.0 (.css): custom-property declarations (--token: value) — not rule bodies, not at-rules</li><li>css-rule-bodies@0.2.0 (.css): selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous</li></ul></article><article class="card"><h3>Not read</h3><p>No unread formats reported.</p><p>No unread token files reported.</p></article><article class="card"><h3>Could not judge</h3><p>No rule judgment limits reported.</p><p>Unconvertible colours: 0</p><p>Unclassified style values: 0</p><p>Undecided colour roles: 0</p></article></div><details><summary>Coverage evidence and samples</summary><div data-inspect="[&quot;report&quot;,&quot;coverage&quot;]"></div></details><p class="muted">Coverage retains samples, not every unread location. Counts without locations cannot be traced further in this report.</p></section>
+  <section id="inventory"><h2>02 / CSS property inventory</h2><p>Extracted use sites before exceptions or severity filtering. Token declarations and markup are outside this inventory.</p><div class="grid"><article class="card" id="category-color"><h3>color</h3><span class="metric">2</span> occurrences · 2 distinct values
+    <div class="bar" aria-hidden="true"><span class="literal" style="width:50%"></span><span class="reference" style="width:50%"></span><span class="mixed" style="width:0%"></span><span class="ambiguous" style="width:0%"></span><span class="excluded" style="width:0%"></span></div>
+    <div class="legend"><span><i class="literal"></i>literal 1</span><span><i class="reference"></i>reference 1</span><span><i class="mixed"></i>mixed 0</span><span><i class="ambiguous"></i>ambiguous 0</span><span><i class="excluded"></i>excluded 0</span></div>
+    <p>Tokenization: <strong>50.0%</strong></p>
+    <p class="muted">References ÷ (literals + references + mixed). Ambiguous and excluded values are outside this ratio.</p>
+    <h4>Top files</h4><ul><li>styles.css · 2</li></ul>
+    <ul class="values"><li><span class="swatch" aria-hidden="true" style="background:rgba(51,51,51,1)"></span><code>#333</code> · 1<br><small>color · color</small></li><li><code>var(--ds-color-text)</code> · 1<br><small>background-color · reference</small></li></ul>
+    <details><summary>All values, counts and source locations</summary><div data-inspect="[&quot;report&quot;,&quot;styleInventory&quot;,&quot;color&quot;]"></div></details></article><article class="card" id="category-spacing"><h3>spacing</h3><span class="metric">2</span> occurrences · 2 distinct values
+    <div class="bar" aria-hidden="true"><span class="literal" style="width:50%"></span><span class="reference" style="width:50%"></span><span class="mixed" style="width:0%"></span><span class="ambiguous" style="width:0%"></span><span class="excluded" style="width:0%"></span></div>
+    <div class="legend"><span><i class="literal"></i>literal 1</span><span><i class="reference"></i>reference 1</span><span><i class="mixed"></i>mixed 0</span><span><i class="ambiguous"></i>ambiguous 0</span><span><i class="excluded"></i>excluded 0</span></div>
+    <p>Tokenization: <strong>50.0%</strong></p>
+    <p class="muted">References ÷ (literals + references + mixed). Ambiguous and excluded values are outside this ratio.</p>
+    <h4>Top files</h4><ul><li>styles.css · 2</li></ul>
+    <ul class="values"><li><code>16px</code> · 1<br><small>padding · dimension</small></li><li><code>var(--ds-space-4)</code> · 1<br><small>gap · reference</small></li></ul>
+    <details><summary>All values, counts and source locations</summary><div data-inspect="[&quot;report&quot;,&quot;styleInventory&quot;,&quot;spacing&quot;]"></div></details></article></div></section>
+  <section id="tokens"><p class="kicker">Observed token architecture</p><h2>Layers and the references between them</h2><p>3 declared names · 3 declarations · 3 var() references. Layers use configured naming patterns. Lane order is not a reference edge.</p>
+  <div class="token-lanes"><article class="card"><h3>upstream</h3><strong class="metric">0</strong><small> distinct declared names</small></article><article class="card"><h3>primitive</h3><strong class="metric">2</strong><small> distinct declared names</small><p><code>--ds-palette-*</code><br>1 names / 1 declarations</p><p><code>--ds-space-*</code><br>1 names / 1 declarations</p></article><article class="card"><h3>semantic</h3><strong class="metric">1</strong><small> distinct declared names</small><p><code>--ds-color-*</code><br>1 names / 1 declarations</p></article><article class="card"><h3>component</h3><strong class="metric">0</strong><small> distinct declared names</small></article><article class="card"><h3>use sites</h3><strong class="metric">2</strong><small> var() reference occurrences</small><p><code>style color</code><br>1 references</p><p><code>style spacing</code><br>1 references</p></article><article class="card"><h3>Unclassified</h3><strong class="metric">0</strong><small> distinct declared names</small></article></div>
+  <details class="group"><summary>All namespace groups · 5</summary><div id="token-groups"></div></details>
+  <h3>Reference flow</h3><p>Consumer → referenced group. Weight = observed var() occurrences, including fallbacks. Highlight = at least one recorded tier finding; it does not mark every occurrence as a violation.</p><div id="token-edges"></div>
+  <h3>Health observations</h3><div class="token-health"><details class="card"><summary>Declared, no reference observed · 0</summary><div data-token-health="unreferenced"></div></details><details class="card"><summary>Referenced, no declaration observed · 0</summary><div data-token-health="undeclared"></div></details><details class="card"><summary>Semantic tokens holding literals · 0</summary><div data-token-health="semanticLiterals"></div></details><details class="card"><summary>Alias chains deeper than 4 · 0</summary><div data-token-health="deepAliases"></div></details><details class="card"><summary>Tokens in alias cycles · 0</summary><div data-token-health="cycles"></div></details><details class="card"><summary>Mode redeclarations · 0</summary><div data-token-health="redeclarations"></div></details></div>
+  <h3>Find a token</h3><label for="token-search">Token name (case-sensitive names, case-insensitive search)</label><input id="token-search" type="search" placeholder="Search declared or referenced token names"><div id="token-results"></div><div id="token-detail" class="card" tabindex="-1" aria-live="polite"><p>Select a token to inspect its declarations and follow references in either direction.</p></div>
+  <details class="group"><summary>Scope and interpretation limits</summary><ul><li>Counts cover extracted declarations and references in the audited scope, before exceptions and severity filtering. Read-only tokenContexts dependencies are outside this architecture view. Unreferenced does not mean unused elsewhere; undeclared names may exist in dependencies.</li><li>Namespaces remove a configured trailing scale step, then group the first two hyphen-separated name segments; they do not establish ownership. Reference arrows point from consumer to referenced token, including fallback references.</li><li>Source order is known only for matched lexical declarations within one file. Cross-file import order, specificity, inheritance, conditions, cascade layers and runtime overrides are not resolved. No computed winner is asserted.</li><li>Selector evidence supplements already-extracted declarations using the CSS lexer; unmatched declarations retain legacy selector text and unknown order. No missing tokens are reconstructed.</li><li>Alias depth counts whole-value var() chains across all declarations, not a resolved mode. Cycles and chains entering cycles have unresolved depth.</li><li>Highlighted edges link only to recorded findings in this report. Filtered findings and capped rule samples may leave other problematic edges unhighlighted.</li></ul></details><p class="print-note">Print shows the aggregate lanes. Open the HTML for complete searchable and paginated evidence.</p></section>
+  <section id="findings"><h2>03 / Findings</h2><p>3 findings. A finding may group many use sites; finding counts are not occurrence counts.</p><section class="group"><div class="kicker">high · 2 findings</div><h3>token/raw-value-in-style</h3><article class="finding"><div class="finding-meta"><span class="badge high">high</span><code>token/raw-value-in-style</code><span>1 reported occurrences</span></div><h4 class="one-line" title="1 color property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged">1 color property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged</h4><p class="locations">styles.css:7</p><details><summary>Details</summary><p>1 color property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged</p><p><strong>where:</strong> color: #333 at styles.css:7</p><p><strong>risk:</strong> Literal parts do not follow token changes; whether that matters depends on this property and the project contract.</p><p><strong>fix:</strong> Review these values against the project token contract. Where a shared role applies, choose its token and verify affected states. Retain intentional literals with a recorded reason; this finding does not establish a policy violation.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Token suggestions"><table class="suggestions"><thead><tr><th>Value</th><th>Property / category</th><th>Match</th><th>Candidates</th><th>Delta</th></tr></thead><tbody><tr><td><span class="swatch" aria-hidden="true" style="background:rgba(51,51,51,1)"></span><code>#333</code><small>styles.css:7</small></td><td>color<small>color</small></td><td>ambiguous</td><td><div><code>--ds-color-text</code> · preferred</div><div><code>--ds-palette-gray-700</code></div></td><td><div>--ds-color-text: 0 identity</div><div>--ds-palette-gray-700: 0 identity</div></td></tr></tbody></table></div><p>Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement.</p><details><summary>All 1 suggestion rows</summary><div data-suggestions="0"></div></details><details><summary>Verbatim suggestion text</summary><pre>suggest: #333: ambiguous — --ds-color-text, --ds-palette-gray-700. Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement. Full candidates, alias provenance and resolution limits in --json.</pre></details><details><summary>All recorded evidence</summary><div data-inspect="[&quot;report&quot;,&quot;findings&quot;,0]"></div></details></details></article><article class="finding"><div class="finding-meta"><span class="badge high">high</span><code>token/raw-value-in-style</code><span>1 reported occurrences</span></div><h4 class="one-line" title="1 spacing property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged">1 spacing property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged</h4><p class="locations">styles.css:9</p><details><summary>Details</summary><p>1 spacing property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged</p><p><strong>where:</strong> padding: 16px at styles.css:9</p><p><strong>risk:</strong> Literal parts do not follow token changes; whether that matters depends on this property and the project contract.</p><p><strong>fix:</strong> Review these values against the project token contract. Where a shared role applies, choose its token and verify affected states. Retain intentional literals with a recorded reason; this finding does not establish a policy violation.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Token suggestions"><table class="suggestions"><thead><tr><th>Value</th><th>Property / category</th><th>Match</th><th>Candidates</th><th>Delta</th></tr></thead><tbody><tr><td><code>16px</code><small>styles.css:9</small></td><td>padding<small>spacing</small></td><td>exact</td><td><div><code>--ds-space-4</code> · preferred</div></td><td><div>--ds-space-4: 0 identity</div></td></tr></tbody></table></div><p>Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement.</p><details><summary>All 1 suggestion rows</summary><div data-suggestions="1"></div></details><details><summary>Verbatim suggestion text</summary><pre>suggest: 16px: exact — --ds-space-4. Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement. Full candidates, alias provenance and resolution limits in --json.</pre></details><details><summary>All recorded evidence</summary><div data-inspect="[&quot;report&quot;,&quot;findings&quot;,1]"></div></details></details></article><details><summary>All 2 findings and recorded evidence</summary><div data-group="0"></div></details></section><section class="group"><div class="kicker">low · 1 findings</div><h3>token/var-missing-fallback</h3><article class="finding"><div class="finding-meta"><span class="badge low">low</span><code>token/var-missing-fallback</code><span>2 reported occurrences</span></div><h4 class="one-line" title="2 var() reference(s) have no fallback value">2 var() reference(s) have no fallback value</h4><p class="locations">See recorded location in Details</p><details><summary>Details</summary><p>2 var() reference(s) have no fallback value</p><p><strong>where:</strong> (inline): var(--ds-color-text) at styles.css:8; (inline): var(--ds-space-4) at styles.css:10</p><p><strong>risk:</strong> If the token is ever undefined — wrong import order, a consumer that never loaded the token file — the property resolves to nothing and the element renders unstyled.</p><p><strong>fix:</strong> Add a fallback: var(--token, &lt;value&gt;) — the base-theme value, so a missing token degrades to something sane instead of nothing.</p><details><summary>All recorded evidence</summary><div data-inspect="[&quot;report&quot;,&quot;findings&quot;,2]"></div></details></details></article><details><summary>All 1 findings and recorded evidence</summary><div data-group="1"></div></details></section><details><summary>Recorded exceptions · 0</summary><div data-inspect="[&quot;report&quot;,&quot;suppressions&quot;]"></div></details><p class="muted">Summaries, risks, fixes and suggestions are engine output. Candidates are not replacements. Some rules retain only example locations; expanding shows all evidence the rule recorded.</p></section>
+  <section id="trend"><h2>04 / Recorded trend</h2><p>No scorecard history was found. This report does not write a scorecard row.</p></section>
+  <section id="next"><h2>05 / Next commands</h2><article class="card"><code>decide on the rest</code><p>nothing here is mechanically provable — all 3 findings state their choice on the fix line</p></article><article class="card"><code>ds-loop scorecard fixtures/css-audit-example</code><p>pin these ratios as run 1 — a ratio only says something against a previous row</p></article><article class="card"><code>ds-loop guard on</code><p>report high-severity findings after each Claude Code edit (never blocks)</p></article></section>
+  <p class="print-note">Printed summary: only expanded evidence is included. Open the HTML file for the full recorded lists.</p><noscript>JavaScript is disabled. The summary and three examples per group remain readable. Enable JavaScript to browse all recorded evidence.</noscript>
+  </main><script id="audit-data" type="application/json">{"encoding":"gzip-base64","data":"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"}</script><script>(async () => {
+try {
+const packed = JSON.parse(document.getElementById('audit-data').textContent);
+const bytes = Uint8Array.from(atob(packed.data), c => c.charCodeAt(0));
+const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+const decoded = await new Response(stream).text();
+document.getElementById('audit-data').textContent = decoded;
+
+const payload = JSON.parse(document.getElementById('audit-data').textContent);
+if (payload.report.suggestionIndex) {
+  const index = payload.report.suggestionIndex;
+  const candidates = index.candidates.map(({declarationRefs,...c})=>({...c,declarations:declarationRefs.map(id=>index.declarations[id])}));
+  for (const f of payload.report.findings) if(f.suggestion) for(const s of f.suggestion.values) s.candidates=s.candidates.map(c=>candidates[c.candidateRef]);
+}
+
+const el = (tag, text) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = String(text); return n; };
+const pageSize = 30; // presentation page size, not an analysis threshold
+function inspect(value) {
+  if (value === null || typeof value !== 'object') {
+    const n=el('span');
+    const color=payload.swatches[String(value)];
+    if(color) { const s=el('span'); s.className='swatch'; s.setAttribute('aria-hidden','true'); s.style.backgroundColor=color; n.append(s); }
+    n.append(el('code',value===null?'null':value)); return n;
+  }
+  const entries = Object.entries(value), d = el('details');
+  d.append(el('summary', (Array.isArray(value) ? 'Items' : 'Fields') + ' · ' + entries.length));
+  d.addEventListener('toggle', () => {
+    if (!d.open || d.dataset.loaded) return;
+    d.dataset.loaded = 'true';
+    const list = el('div'), controls = el('div'), status = el('span'); status.setAttribute('aria-live','polite');
+    let page = 0;
+    const previous = el('button','Previous'), next = el('button','Next');
+    function draw() {
+      list.replaceChildren();
+      for (const [key, v] of entries.slice(page * pageSize, (page + 1) * pageSize)) {
+        const row = el('div'); row.className = 'datum'; row.append(el('strong', key), inspect(v)); list.append(row);
+      }
+      status.textContent = entries.length ? (page * pageSize + 1) + '–' + Math.min((page+1)*pageSize, entries.length) + ' of ' + entries.length : 'No items';
+      previous.disabled = page === 0; next.disabled = (page + 1) * pageSize >= entries.length;
+    }
+    previous.onclick = () => { page--; draw(); }; next.onclick = () => { page++; draw(); };
+    controls.className='pagination'; controls.append(previous,status,next); d.append(list,controls); draw();
+  });
+  return d;
+}
+function suggestionRows(host, values) {
+  let page=0;
+  const wrapper=el('div'), table=el('table'), head=el('thead'), body=el('tbody'), header=el('tr');
+  wrapper.className='table-wrap'; wrapper.tabIndex=0; wrapper.setAttribute('role','region'); wrapper.setAttribute('aria-label','Token suggestions'); table.className='suggestions';
+  for(const text of ['Value','Property / category','Match','Candidates','Delta']) header.append(el('th',text));
+  head.append(header); table.append(head,body); wrapper.append(table);
+  const previous=el('button','Previous'), next=el('button','Next'), status=el('span'), controls=el('div');
+  controls.className='pagination'; status.setAttribute('aria-live','polite');
+  function draw() {
+    body.replaceChildren();
+    for(const s of values.slice(page*pageSize,(page+1)*pageSize)) {
+      const row=el('tr'), value=el('td'), property=el('td'), candidates=el('td'), delta=el('td');
+      value.append(inspect(s.value),el('small',s.file+':'+s.line));
+      property.append(el('span',s.property),el('small',s.category || 'unknown'));
+      const ranked=[...s.candidates].sort((a,b)=>Number(b.match==='exact')-Number(a.match==='exact') || Number(b.preferred || b.aliasChain.length>1)-Number(a.preferred || a.aliasChain.length>1) || a.distance-b.distance || a.token.localeCompare(b.token) || JSON.stringify(a.declarations).localeCompare(JSON.stringify(b.declarations)));
+      const label=c=>c.token+(c.categoryMatch==='unknown'?' · category unknown':'')+(c.preferred?' · preferred':'');
+      for(const c of ranked.slice(0,3)) {
+        candidates.append(el('div',label(c)));
+        delta.append(el('div',c.token+': '+Number(c.distance.toFixed(4))+' '+c.metric));
+      }
+      if(ranked.length>3) {
+        const more=el('details'); more.append(el('summary','+'+(ranked.length-3)+' more'));
+        more.addEventListener('toggle',()=>{
+          if(!more.open || more.dataset.loaded) return; more.dataset.loaded='true';
+          for(const c of ranked.slice(3)) more.append(el('div',label(c)+' · '+Number(c.distance.toFixed(4))+' '+c.metric));
+        }); candidates.append(more);
+      }
+      if(!s.candidates.length) { candidates.textContent='—';delta.textContent='—'; }
+      row.append(value,property,el('td',s.status==='no-token'?'none':s.status),candidates,delta);body.append(row);
+    }
+    status.textContent=values.length ? (page*pageSize+1)+'–'+Math.min((page+1)*pageSize,values.length)+' of '+values.length+' suggestions' : 'No suggestions';
+    previous.disabled=page===0;next.disabled=(page+1)*pageSize>=values.length;
+  }
+  previous.onclick=()=>{page--;draw();};next.onclick=()=>{page++;draw();};
+  controls.append(previous,status,next);host.append(wrapper,controls);draw();
+}
+for(const host of document.querySelectorAll('[data-suggestions]')) {
+  host.parentElement.addEventListener('toggle',()=>{
+    if(!host.parentElement.open || host.dataset.loaded) return;
+    host.dataset.loaded='true';suggestionRows(host,payload.report.findings[Number(host.dataset.suggestions)].suggestion.values);
+  });
+}
+for (const host of document.querySelectorAll('[data-inspect]')) {
+  const path = JSON.parse(host.dataset.inspect);
+  let value = payload; for (const key of path) value = value[key];
+  host.append(inspect(value));
+}
+for (const host of document.querySelectorAll('[data-group]')) {
+  host.parentElement.addEventListener('toggle', () => {
+  if (!host.parentElement.open || host.dataset.loaded) return;
+  host.dataset.loaded='true';
+  const indices = payload.groups[Number(host.dataset.group)].indices;
+  const search = el('input'); search.type='search'; search.placeholder='Search this group'; search.setAttribute('aria-label','Search findings in this rule group');
+  const list=el('div'), status=el('p'), controls=el('div'), prev=el('button','Previous'), next=el('button','Next');
+  status.setAttribute('aria-live','polite'); controls.className='pagination';
+  let page=0, matches=indices;
+  const searchable=indices.map(i => JSON.stringify(payload.report.findings[i]).toLowerCase());
+  function draw() {
+    list.replaceChildren();
+    for (const i of matches.slice(page*pageSize,(page+1)*pageSize)) {
+      const f=payload.report.findings[i], article=el('article'); article.className='finding';
+      const meta=el('div',f.severity+' · '+f.ruleId+' · '+(typeof f.data?.count==='number'?f.data.count+' reported occurrences':'1 finding'));
+      meta.className='finding-meta'; const heading=el('h4',f.summary);heading.className='one-line';heading.title=f.summary;
+      const detail=el('details');detail.append(el('summary','Details'));
+      detail.addEventListener('toggle',()=>{
+        if(!detail.open || detail.dataset.loaded) return; detail.dataset.loaded='true';
+        detail.append(el('p',f.summary),el('p','where: '+f.where));
+        if(f.impact) detail.append(el('p','risk: '+f.impact));
+        detail.append(el('p','fix: '+f.fix));
+        if(f.suggestion) { suggestionRows(detail,f.suggestion.values);detail.append(el('p',f.suggestion.basis)); }
+        detail.append(inspect(f));
+      });
+      const places=el('p',(payload.locations?.[i] || []).join(' · ') || 'See recorded location in Details'); places.className='locations';
+      article.append(meta,heading,places,detail);list.append(article);
+    }
+    status.textContent=matches.length ? (page*pageSize+1)+'–'+Math.min((page+1)*pageSize,matches.length)+' of '+matches.length+' findings' : 'No matching findings';
+    prev.disabled=page===0; next.disabled=(page+1)*pageSize>=matches.length;
+  }
+  prev.onclick=()=>{page--;draw();}; next.onclick=()=>{page++;draw();};
+  search.oninput=()=>{const q=search.value.toLowerCase(); matches=indices.filter((_,j)=>searchable[j].includes(q));page=0;draw();};
+  controls.append(prev,next); host.append(search,status,list,controls); draw();
+  });
+}
+document.getElementById('theme').onchange = e => { document.documentElement.dataset.theme=e.target.value; };
+
+
+(() => {
+ const a = payload.report.tokenArchitecture;
+ if (!a) return;
+ const tokens = new Map(a.tokens.map(t => [t.name, t]));
+ const groups = new Map(a.groups.map(g => [g.id, g]));
+ const outgoing = new Map(), incoming = new Map();
+ for (const r of a.references) {
+   if (r.from !== null) { const out = outgoing.get(r.from) || []; out.push(r); outgoing.set(r.from, out); }
+   const into = incoming.get(r.to) || []; into.push(r); incoming.set(r.to, into);
+ }
+ const page = (host, rows, draw) => {
+   host.replaceChildren(); let offset = 0;
+   const status = el('p'), body = el('div'), controls = el('div'); controls.className = 'token-actions';
+   const previous = el('button', 'Previous'), next = el('button', 'Next'); previous.type = next.type = 'button';
+   controls.append(previous, next); host.append(status, body, controls);
+   const render = () => { status.textContent = rows.length ? (offset+1) + '–' + Math.min(offset+30, rows.length) + ' of ' + rows.length : 'None observed in scope'; body.replaceChildren(...rows.slice(offset, offset+30).map(draw)); previous.disabled = offset === 0; next.disabled = offset+30 >= rows.length; };
+   previous.addEventListener('click', () => { offset = Math.max(0,offset-30); render(); }); next.addEventListener('click', () => { offset += 30; render(); }); render();
+ };
+ const tokenButton = (name) => { const b = el('button',name); b.type='button'; b.addEventListener('click', () => select(name)); return b; };
+ const chain = (name, direction) => {
+   const seen = new Set([name]), queue = [name], rows = [];
+   for (let i=0; i<queue.length; i++) for (const r of (direction === 'up' ? outgoing : incoming).get(queue[i]) || []) {
+     rows.push(r); const next = direction === 'up' ? r.to : r.from;
+     if (next !== null && !seen.has(next)) { seen.add(next); queue.push(next); }
+   }
+   return rows;
+ };
+ const referenceRow = (r) => {
+   const row=el('div'); row.className='token-row';
+   if (r.from) row.append(tokenButton(r.from)); else row.append(el('strong', 'Use site: '+r.property));
+   row.append(el('span', ' → '), tokenButton(r.to), el('p', r.file+':'+r.line)); return row;
+ };
+ function select(name) {
+   const host=document.getElementById('token-detail');host.replaceChildren(el('h3',name));
+   const t=tokens.get(name);
+   host.append(el('p',t ? 'Layer: '+(t.tier==='unknown'?'unclassified':t.tier)+' · alias depth: '+(t.aliasDepth===null?'unresolved (cycle or chain into cycle)':t.aliasDepth)+(t.cycle?' · alias cycle':'') : 'No declaration observed in this scope. This does not prove the token is absent at runtime.'));
+   if(t){const declarations=el('div');host.append(el('h4','Declarations and modes'),el('p','Order not resolved across files. Same-file positions do not establish a computed winner.'),declarations);
+     page(declarations,t.declarations,d=>{const row=el('div');row.className='token-row';row.append(el('code',d.value),el('p',d.file+':'+d.line+' · '+(d.selector??'selector not recorded')),el('small',(d.mode?'Mode selector · ':'')+(d.sourceOrder===null?'order not resolved':'within-file source position '+(d.sourceOrder+1))));return row;});}
+   for(const [direction,title] of [['up','References followed toward dependencies'],['down','Consumers followed toward use sites']]) {const details=el('details'),summary=el('summary',title),body=el('div');details.append(summary,body);host.append(details);let loaded=false;details.addEventListener('toggle',()=>{if(details.open&&!loaded){loaded=true;page(body,chain(name,direction),referenceRow);}});}
+   host.scrollIntoView({block:'nearest'});host.focus({preventScroll:true});
+ }
+ page(document.getElementById('token-groups'),a.groups,g=>{const row=el('div');row.className='token-row';row.append(el('strong',g.lane+' · '+g.label),el('p',g.lane === 'use sites' ? g.references+' references' : g.tokens+' names / '+g.declarations+' declarations'));return row;});
+ const edges=[...a.edges].sort((a,b)=>b.count-a.count||a.from.localeCompare(b.from)||a.to.localeCompare(b.to));
+ const max=Math.max(1,...edges.map(e=>e.count));
+ page(document.getElementById('token-edges'),edges,e=>{const row=el('div');row.className='token-row'+(e.findings.length?' flagged':'');row.append(el('strong',(groups.get(e.from)?.label??e.from)+' → '+(groups.get(e.to)?.label??e.to)+' · '+e.count+' references'));
+   for(const i of e.findings){const link=el('a',payload.report.findings[i].ruleId);link.href='#findings';link.addEventListener('click',()=>{const detail=document.getElementById('token-edge-finding');if(detail)detail.remove();const box=el('article');box.id='token-edge-finding';box.className='card';const f=payload.report.findings[i];box.append(el('h3',f.ruleId),el('p',f.summary),el('p',f.where));document.getElementById('findings').prepend(box);});row.append(link);}
+   const weight=el('i');weight.className='token-weight';weight.style.width=(e.count/max*100)+'%';row.append(weight);
+   const details=el('details'),summary=el('summary','Source references'),body=el('div');details.append(summary,body);let loaded=false;details.addEventListener('toggle',()=>{if(details.open&&!loaded){loaded=true;page(body,a.references.filter(r=>r.fromGroup===e.from&&r.toGroup===e.to),referenceRow);}});row.append(details);return row;});
+ for(const host of document.querySelectorAll('[data-token-health]')){let loaded=false;host.parentElement.addEventListener('toggle',()=>{if(host.parentElement.open&&!loaded){loaded=true;page(host,a.health[host.dataset.tokenHealth],tokenButton);}});}
+ const search=document.getElementById('token-search');const names=[...new Set([...tokens.keys(),...a.health.undeclared])];
+ const searchResults=()=>page(document.getElementById('token-results'),names.filter(name=>name.toLowerCase().includes(search.value.toLowerCase())),tokenButton);
+ search.addEventListener('input',searchResults);searchResults();
+})();
+
+} catch (error) {
+const notice = document.createElement('p'); notice.setAttribute('role', 'alert');
+notice.textContent = 'Evidence browser could not load. Open this report in a browser with gzip DecompressionStream support. The printed summary remains available; audit --json provides the full evidence.';
+document.querySelector('main').prepend(notice);
+}
+})();</script></body></html>

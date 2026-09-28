@@ -1,0 +1,8 @@
+{
+  "name": "@example/ui",
+  "private": true,
+  "exports": {
+    ".": "./index.tsx",
+    "./forms": "./forms.tsx"
+  }
+}

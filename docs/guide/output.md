@@ -35,6 +35,15 @@ candidate too, plus alias provenance and resolution limits.
   │ suggest:#333: ambiguous — --ds-color-text, --ds-palette-gray-700. Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement. Full candidates, alias provenance and resolution limits in --json.
 ```
 
+## Markup use sites
+
+This independently written JSX example contains three literals.
+
+<!-- verified: audit-markup -->
+```
+  [HIGH] token/raw-value-in-markup · 3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct) · 3 hits · Card.tsx:2, Card.tsx:3
+```
+
 ## Public fixture: Radix Colors
 
 From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. The frozen source and provenance are in `fixtures/radix-colors/SOURCE.json`. Findings need investigation: proximity between two palette steps does not prove one should be deleted.
