@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { audit } from '../src/commands/audit.ts';
+import { fix, planFixes } from '../src/commands/fix.ts';
 import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import { loadConfig } from '../src/config/load.ts';
 import { hashConfig } from '../src/config/schema.ts';
@@ -117,4 +118,33 @@ test('a JavaScript API caller missing the new field does not classify everything
   const legacy = structuredClone(DEFAULT_CONFIG);
   Reflect.deleteProperty(legacy.taxonomy, 'upstreamPattern');
   assert.equal(classifyTier('--color-text', legacy), 'semantic');
+});
+
+test('upstream internal fallback exemption also governs fix planning and next actions', () => {
+  project(':root{--ds-white:#ffffff;--ds-on-neutral:var(--ds-white)}', (dir) => {
+    const report = audit(dir, { config, silent: true });
+    assert.ok(!report.findings.some((f) => f.ruleId === 'token/var-missing-fallback'));
+    assert.deepEqual(planFixes(dir, config), []);
+    assert.ok(!report.next.some((a) => a.command.startsWith('ds-loop fix ')));
+  });
+});
+
+test('project alias to upstream still gets a fallback finding and fix, without editing upstream', () => {
+  const css = ':root{--ds-white:#ffffff;--ds-on-neutral:var(--ds-white);--color-text:var(--ds-white)}';
+  project(css, (dir) => {
+    const report = audit(dir, { config, silent: true });
+    assert.equal(report.findings.find((f) => f.ruleId === 'token/var-missing-fallback')?.data?.count, 1);
+    const edits = planFixes(dir, config);
+    assert.equal(edits.length, 1);
+    assert.equal(edits[0].token, '--color-text');
+    assert.ok(
+      report.next.some((a) => a.command.startsWith('ds-loop fix ') && a.why.startsWith('1 mechanical')),
+    );
+    fix(dir, { config, write: true });
+    assert.equal(
+      readFileSync(join(dir, 'a.css'), 'utf8'),
+      css.replace('--color-text:var(--ds-white)', '--color-text:var(--ds-white, #ffffff)'),
+    );
+    assert.deepEqual(planFixes(dir, config), []);
+  });
 });

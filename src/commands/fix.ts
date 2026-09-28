@@ -3,6 +3,7 @@ import { cssCustomPropsAdapter } from '../adapters/css-custom-props.ts';
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { resolveSource } from '../core/source.ts';
+import { isUpstreamName } from '../rules/tier.ts';
 
 /**
  * The "Execute" step of the loop (MAPE-K). Applies only the mechanical fixes
@@ -48,6 +49,7 @@ function inspectFixes(targetPath: string, config: DsOpsConfig) {
   let skipped = 0;
   for (const v of values) {
     if (v.provenance.classification !== 'reference') continue;
+    if (isUpstreamName(v.provenance.tokenName, config)) continue;
     for (const m of v.raw.matchAll(/var\(\s*(--[\w-]+)\s*\)/g)) {
       const ref = m[1]!;
       const before = v.raw.slice(0, m.index).trimEnd();
@@ -120,8 +122,15 @@ export function fix(targetPath: string, opts: { write?: boolean; config?: DsOpsC
     for (const [abs, fileEdits] of byFile) {
       let text = readFileSync(abs, 'utf8');
       for (const e of fileEdits) {
-        // first fallback-less occurrence of exactly this var() call
-        text = text.replace(e.from, e.to);
+        // Bind the edit to its planned declaration. A global first match can
+        // otherwise modify an exempt upstream declaration using the same var().
+        const lines = text.split('\n');
+        const declaration = new RegExp(`(${e.token}\\s*:\\s*)([^;}]+)`);
+        lines[e.line - 1] = lines[e.line - 1]!.replace(
+          declaration,
+          (_, prefix, value) => prefix + value.replace(e.from, e.to),
+        );
+        text = lines.join('\n');
       }
       writeFileSync(abs, text);
     }
