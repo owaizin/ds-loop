@@ -17,7 +17,8 @@ environment. If Storybook is appropriate and setup is authorized:
    the existing toolchain just to host examples.
 2. Connect only the providers, styles and theme controls the representative component
    requires. Use the project's actual theme mechanism; do not assume a `.dark` class
-   or a `data-theme` attribute.
+   or a `data-theme` attribute. Verify [preview rendering parity](review.md#verify-preview-rendering-parity)
+   before treating the reference as evidence of app rendering.
 3. Add one useful component example with representative content, supported states,
    import guidance, usage constraints and relevant behavior checks. Preserve existing
    stories and tests. A static preview is not a production consumer test.

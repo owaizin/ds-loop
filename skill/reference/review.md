@@ -17,6 +17,17 @@ consumers. A new or substantially changed API may need [shape](shape.md), includ
 on an existing component. An explicit source-only review is valid but cannot claim
 rendered or behavioral verification. A “full review” still has a named scope.
 
+## Verify preview rendering parity
+
+Before using Storybook or another preview as app-review evidence, trace the app
+and preview CSS entry points. Confirm they load the same sources in the same
+order for the theming area under review, including duplicate imports, extra theme
+files and scoped overrides. Check emitted stylesheet order and representative
+computed values in supported modes when browser access exists; matching filenames
+alone do not establish parity. Record intentional differences and what they prevent
+the preview from proving. If parity is unknown or differs, verify in the app or
+report that limit before claiming the app renders correctly.
+
 ## Inspect relevant obligations
 
 | Area | What to establish | Useful evidence |

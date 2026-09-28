@@ -53,7 +53,8 @@ investigation and execution; the team or its delegated owner decides shared poli
    exist. Output: source-backed contracts discoverable from the normal entry point.
    Agent drafts and checks; the existing maintainer owns the adopted contract.
 7. **Bounded migration.** Input: a decided mapping and named consumer slice. Capture
-   rendered behavior first. Inspect audit token suggestions; choose replacements by
+   rendered behavior first; apply the [preview rendering-parity check](review.md#verify-preview-rendering-parity)
+   before using preview evidence. Inspect audit token suggestions; choose replacements by
    role, mode and compatibility, keeping ambiguity visible. Preview `fix <path>` for
    mechanical fallback edits only; `--write` remains scoped. Record intentional
    exceptions with reasons; verify config suppressions separately from prose. Run an
