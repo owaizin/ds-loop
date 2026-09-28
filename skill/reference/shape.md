@@ -33,3 +33,32 @@ acceptance checks are sufficient to build responsibly. Unresolved questions bloc
 only dependent work. State assumptions and deferred decisions explicitly, then use
 the project's component workflow or [scaffold](scaffold.md); review the result with
 [review](review.md). No mandatory interview length or fixed number of consumers.
+
+## Record the existing component's spec
+
+For documentation work, cover components that actually exist. Order by observed
+consumer reach, then compatibility risk and relevance to the task; use
+[census](census.md) for source/import evidence. `consumers` (A9) is **not yet
+available**. A local zero-use search cannot clear external consumers of a published
+API. A newly proposed component stays a proposal until implemented; do not invent
+components to fill documentation categories.
+
+Use the existing spec format, or these eight sections under the layout in
+[scaffold](scaffold.md):
+
+| Section | Record |
+|---|---|
+| 1. Metadata | Status, owner, actual source/export, revision and review date. |
+| 2. Overview | Task served; when to use and when not to use. |
+| 3. Anatomy | Parts and composition relationships; distinguish implementation from proposal. |
+| 4. Tokens used | Actual aliases, upstream mapping and use-site evidence; proposed changes separately. |
+| 5. Props/API | Actual imports, props, defaults, events/ref behavior and compatibility obligations. |
+| 6. States | Default, hover, active, focus, disabled, error; loading/empty where relevant. Explain not-applicable states; label unsupported or unchecked behavior. |
+| 7. Code example | A usage example checked against the current implementation. |
+| 8. Cross-references | Foundation/decision specs, known consumers, tests and existing stories or reference. |
+
+Check tokens against source and the unfiltered audit, never memory. Findings can
+corroborate a use site but are not a complete list of references; a clean audit
+cannot prove a spec complete. Trace imports, theme overrides and unsupported
+formats manually when needed, and name the limit. Link the actual Storybook story
+when one exists; do not invent a story URL or install Storybook just to fill a cell.
