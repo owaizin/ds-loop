@@ -33,7 +33,7 @@ The skill's broader reviews require an agent to inspect the code and rendered UI
 
 ## What a setup should leave behind
 
-The 0.2.1 setup procedure asks your agent to deliver:
+The setup procedure asks your agent to deliver:
 
 - Editable foundations for type, color, spacing and relevant interaction states.
 - Reusable controls and product patterns connected to real workflows.
@@ -43,6 +43,11 @@ The 0.2.1 setup procedure asks your agent to deliver:
 It should reuse a suitable existing library. Design System Loop does not ship a
 universal component kit or require shadcn/ui or Storybook. For deeper Storybook
 work, the agent can hand off to an available specialist; that skill is not bundled.
+
+No foundations worth keeping? Start from [ds-kit](https://github.com/owaizin/ds-kit):
+22 vetted options for typography, spacing, colour, radius, elevation, motion and
+focus, with a specimen page to compare them on real-looking screens. It's MIT and
+separate from this package, so ds-loop works the same without it.
 
 Completion includes checking the affected product and demonstrating how a later
 contributor can find the guidance and make a change. The handoff distinguishes

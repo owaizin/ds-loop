@@ -2,7 +2,9 @@
 
 Agent procedure for a foundation decision, with or without a kit. Use the goal and
 constraints already gathered by [discover](discover.md). A kit is optional input,
-not an npm dependency, required purchase or substitute for product judgment.
+not an npm dependency, required purchase or substitute for product judgment. The
+open [ds-kit](https://github.com/owaizin/ds-kit) (MIT) is one such kit; clone it only
+when the team agrees to consider its options.
 
 1. Recover product type, density, audience, brand constraints, supported platforms
    and modes. Inspect representative content and the existing upstream before
