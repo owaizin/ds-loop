@@ -24,6 +24,7 @@ investigation and execution; the team or its delegated owner decides shared poli
    and exports for consumer evidence. Output: attributable baseline with unread and
    unjudged areas. Agent records facts; team confirms unresolved scope. No code means
    no code baseline, not a zero-defect system.
+   Resolve [discovery](discover.md)'s theming-area question: override permissions and scopes belong in the baseline.
 2. **Problem list.** Input: baseline, representative source and rendered behavior.
    Group by foundation using category counts, distinct values, top files and ratios;
    distinguish observed facts from inferred user/maintainer impact. State evidence,

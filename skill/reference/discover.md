@@ -26,6 +26,7 @@ whose answers could change the next action:
 | Affected people | Who gets stuck, and what do they do to recover? | Product-user harm versus contributor effort or aesthetic preference. |
 | Desired outcome | What should become possible or easier after this work? | Acceptance independent of tools installed or finding counts. |
 | Existing solution | What should developers use today, and what prevents that? | Missing capability versus adoption, compatibility, or discovery. |
+| Theming areas | Which areas share the app theme, and which are customer-branded/white-label or documents/print? Which tokens may each override, and where are those overrides scoped? | Establish override boundaries early so app changes do not erase customer branding or document behavior. |
 | Constraints | What must stay compatible, and who owns shared decisions? | Scope, rollout, and material decisions needing an owner. |
 | First demonstration | Which flow would be useful to prove this in? | Pilot consumer, states, and access needed for verification. |
 
