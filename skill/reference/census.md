@@ -3,6 +3,8 @@
 Agent procedure; no component scanner/clusterer CLI is shipped. Use when a scoped
 inventory will answer the user's question, not as mandatory onboarding overhead.
 
+## Gather and compare evidence
+
 1. Define the relevant packages and consumer area. Identify component entry points,
    re-exports, local wrappers and generated/vendor code. Explain exclusions.
 2. Record component source, intended job, known consumers, owner if known, and useful

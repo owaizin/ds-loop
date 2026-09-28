@@ -16,6 +16,18 @@ is still written. No fixture dependency installation is needed.
 
 ## Capture list
 
+The committed PNGs were captured with headless Chrome at 2× scale, light theme, with
+the viewport height framing each image:
+
+```sh
+C="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+cd docs/assets
+"$C" --headless=new --hide-scrollbars --force-device-scale-factor=2 --blink-settings=preferredColorScheme=1 \
+  --window-size=1440,1880 --virtual-time-budget=4000 --screenshot="$PWD/audit-report.png" "file://$PWD/audit-report.html"
+"$C" --headless=new --hide-scrollbars --force-device-scale-factor=2 --blink-settings=preferredColorScheme=1 \
+  --window-size=1440,850 --virtual-time-budget=4000 --screenshot="$PWD/consumers-report.png" "file://$PWD/consumers-report.html"
+```
+
 Use a 1440px-wide desktop viewport, light theme, 100% browser zoom. Serve these
 files over local HTTP if the browser automation cannot open file URLs. Wait for
 the audit evidence loader and the consumers diagram edges to finish rendering.
@@ -23,7 +35,7 @@ the audit evidence loader and the consumers diagram edges to finish rendering.
 - **audit-report.png** from **audit-report.html**: frame the title, verdict,
   severity summary, coverage, category comparison and the color/spacing finding
   cards with `styles.css:7` and `styles.css:9`. Use a full-page capture cropped to
-  relevant sections if those cards fall below token architecture. Keep source
+  relevant sections; findings now follow coverage. Keep source
   locations legible; do not alter the rendered text or hide the coverage panel.
 - **consumers-report.png** from **consumers-report.html**: frame the title, web
   lane with dashboard and portal cards, their 75%/50% share bars, shared-package

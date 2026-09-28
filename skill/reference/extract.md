@@ -1,4 +1,4 @@
-# extract
+# Move a repeated pattern into the system
 
 Move a pattern that consumer code has re-implemented into the system, then
 migrate the call sites.

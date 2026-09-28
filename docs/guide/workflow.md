@@ -2,6 +2,10 @@
 
 Design System Loop combines an agent skill for design-system work with an engine that checks supported code. Start with the problem or outcome you need help with. The agent investigates and recommends a route; you do not need to classify your company or select a playbook. Scanner silence does not tell you whether a design system exists.
 
+Choose the closest task: [start a system](#start-a-design-system),
+[improve one](#improve-a-partial-system), [transform it](#transform-an-existing-system),
+or [maintain it](#maintain-an-existing-system). If the problem is unclear, start below.
+
 ## If you do not know where to start
 
 Tell the agent what brought you here. It should inspect existing evidence, ask only

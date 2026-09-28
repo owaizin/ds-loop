@@ -39,6 +39,17 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
   Start here:  ds-loop            verdict for this directory, and what to run next
                ds-loop start      the same, spelled out
 
+  Orient yourself
+
+  ds-loop context [<path>] [--write-contract]
+      What this session is working with: which config loaded, whether the project
+      declares a design system, which adapters recognise the tree. No analysis.
+      --write-contract starts DESIGN-SYSTEM.md from what the adapters measured,
+      with the decisions ds-loop cannot read off code left as TODO. Never
+      overwrites an existing file.
+
+  Inspect code and component usage
+
   ds-loop audit <path> [--target ${KNOWN_TARGETS.join('|')}] [--json] [--all] [--out <dir>] [--html <file>] [--require-coverage]
                       [--files <a,b>] [--since <ref>] [--min-severity <sev>] [--quiet] [--config <file>]
       Run every deterministic rule against <path>. <path> is a fixture dir
@@ -50,34 +61,31 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
       --require-coverage also exits 1 when part of the source could not be read or
       judged, so a green pipeline means "checked and clean" rather than "silent".
 
-  ds-loop sweep <path> [--out <dir>] [--config <file>]
-      Sweep the CIEDE2000 ΔE cutoff across the configured range. Full curve.
-
-  ds-loop scan  <path> [--config <file>]
-      Quick look: taxonomy breakdown + palette clusters at the default ΔE.
-
   ds-loop consumers [<path>] [--scope <@org>] [--json] [--html <file>]
       Which workspace package imports which shared package: specifiers, named
       imports, counts and file:line samples; stories and tests counted apart.
       Also lists exported subpaths no other package imports in production code.
       --html <file> writes the same map as a self-contained architecture diagram.
 
-  ds-loop guard <on|off|status>
-      Install / remove a PostToolUse hook in ./.claude/settings.json that runs
-      \`ds-loop audit\` on the file after any Edit/Write to a style file and
-      surfaces high-severity findings. Preserves other hooks.
+  Compare measurements
 
-  ds-loop context [<path>] [--write-contract]
-      What this session is working with: which config loaded, whether the project
-      declares a design system, which adapters recognise the tree. No analysis.
-      --write-contract starts DESIGN-SYSTEM.md from what the adapters measured,
-      with the decisions ds-loop cannot read off code left as TODO. Never
-      overwrites an existing file.
+  ds-loop scan  <path> [--config <file>]
+      Quick look: taxonomy breakdown + palette clusters at the default ΔE.
+
+  ds-loop sweep <path> [--out <dir>] [--config <file>]
+      Sweep the CIEDE2000 ΔE cutoff across the configured range. Full curve.
 
   ds-loop scorecard [<path>] [--dry-run] [--json]
       Append one row of ratios to .ds-scorecard/history.jsonl and print the change
       since the last row. A delta is only called a delta when the adapters and the
       config match on both sides — otherwise the instrument moved, not the code.
+
+  Add edit feedback or preview a fix
+
+  ds-loop guard <on|off|status>
+      Install / remove a PostToolUse hook in ./.claude/settings.json that runs
+      \`ds-loop audit\` on the file after any Edit/Write to a style file and
+      surfaces high-severity findings. Preserves other hooks.
 
 ${FIX_USAGE}
 `;

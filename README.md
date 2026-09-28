@@ -12,7 +12,7 @@ Run it from your project directory with Node 22.6 or later. You get findings, so
 
 The engine checks code locally, without a model, API key or runtime dependencies. The companion skill guides your coding agent to plan and build. Your team decides what should change.
 
-## What you see
+## Read your first results
 
 This is real output from the [Example DS CSS fixture](https://github.com/owaizin/ds-loop/tree/main/fixtures/css-audit-example), an independently written test case. From a source checkout, reproduce it with `npm run ds-loop -- start fixtures/css-audit-example`:
 
@@ -41,7 +41,7 @@ From the [Example DS workspace fixture](https://github.com/owaizin/ds-loop/tree/
 
 Shared-component share is shared / (shared + local) production JSX elements. External and unresolved elements stay outside that ratio; stories and tests are counted separately. This is a synthetic example, not an adoption benchmark.
 
-## See the system
+## Open a visual report
 
 Save reports you can open locally or share with your team:
 
@@ -60,7 +60,7 @@ npx ds-loop consumers . --html consumers-report.html
 
 Both screenshots come from the public fixtures above. [Reproduce the reports](https://github.com/owaizin/ds-loop/blob/main/docs/assets/README.md).
 
-## Work with your agent
+## Ask your agent to help
 
 Install the engine and companion skill in your project:
 
@@ -76,7 +76,7 @@ For a new system, ask it to set up editable foundations, reusable components in 
 
 It can compare foundation options from the MIT [ds-kit](https://github.com/owaizin/ds-kit), reuse your existing library, and produce a visual proposal with the bundled `skill/tools/proposal.mjs`. The handoff records what was delivered, verified and left unchecked. [Choose a workflow](docs/guide/workflow.md).
 
-## Commands
+## Choose your next command
 
 | You want to… | Run |
 |---|---|

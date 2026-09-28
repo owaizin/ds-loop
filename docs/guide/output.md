@@ -4,6 +4,11 @@ These excerpts are checked against the engine by `test/readme.test.ts`. Line wra
 
 The `│` gutter groups the lines of one finding and is always emitted. In a terminal, long `where:`, `risk:` and `fix:` lines wrap to the window width and continue under their label; piped or redirected output keeps each on one line, so a captured log and these excerpts stay comparable. Colour follows the same rule — severity tags are coloured only on a terminal, and `NO_COLOR` turns that off.
 
+Use these examples to read [CSS inventory](#ordinary-css-inventory),
+[token suggestions](#a-token-suggestion), [coverage gaps](#public-fixture-radix-colors),
+[unsupported sources](#unsupported-source), and [changes over time](#comparing-runs).
+All marked output is checked against a real command run.
+
 ## Ordinary CSS inventory
 
 From the repository root, run:

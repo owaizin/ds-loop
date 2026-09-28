@@ -2,6 +2,10 @@
 
 Run commands from the target project so configuration resolves from its working directory. Paths select the source to inspect.
 
+Jump to [commands](#engine-commands), [audit options](#audit-options),
+[configuration](#configuration), [coverage](#coverage), or [rules](#rules).
+Use the [installation guide](install.md) for your first run.
+
 ## Engine commands
 
 | Command | Result | Writes? |

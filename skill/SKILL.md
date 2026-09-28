@@ -11,6 +11,13 @@ Help a team solve the design-system problem that brought them here. Carry the wo
 from understanding the problem through delivery, verification and handoff. The
 user should not have to choose an internal playbook or interpret a report alone.
 
+## How to use this skill
+
+Start with [the person's task](#start-with-the-persons-task), choose the relevant
+procedure, and [deliver and close](#deliver-and-close) within the agreed scope.
+Use [CLI commands](#cli-commands) for measurements and [agent procedures](#ask-your-agent)
+for investigation and delivery. The command catalog is a reference, not an interview.
+
 ## Who does what
 
 | Owner | Responsibility |

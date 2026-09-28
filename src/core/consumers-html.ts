@@ -117,18 +117,21 @@ ul{padding-left:20px}li{margin:3px 0;overflow-wrap:anywhere}.cols{display:grid;g
 @media(max-width:600px){.targets{margin-top:40px}svg.wires{display:none}}@media print{svg.wires{display:none}.node{break-inside:avoid}}
 </style></head><body><main>
 <p class="kicker">ds-loop / UI architecture · generated ${esc(opts.generatedAt)}</p><h1>${esc(opts.label)}</h1>
-<p class="muted">Generated from import statements (${esc(r.workspaceSource)}). Lines are import counts, not runtime usage. Dashed means stories or tests only.</p>
+<p class="muted">Read the package cards for shared-component share, then follow import links to shared packages. Source: ${esc(r.workspaceSource)}.</p>
+<p class="muted"><b>Legend:</b> Lines count imports; dashed lines mean stories or tests only. Card bars show shared / (shared + local) production JSX elements. External and unresolved elements are excluded. Neither measure is runtime usage.</p>
 ${
   apps.length === 0
-    ? '<p><b>Not checked.</b> No workspace packages or no workspace imports were found; this is not the same as "nothing is shared".</p>'
+    ? r.packages.length === 0
+      ? '<p><b>Not checked.</b> No workspace packages were found. Run from a workspace root with package.json workspaces or pnpm-workspace.yaml. This does not mean nothing is shared.</p>'
+      : '<p>No shared imports were found in this scope. Check the selected scope and the limits below before drawing a conclusion about reuse.</p>'
     : `<section class="diagram" id="diagram"><svg class="wires" aria-hidden="true"></svg><div class="lanes">${lanes}</div><div class="targets"><h3>Shared packages imported</h3><div class="row">${targetList.map(targetCard).join('')}</div></div></section>
 <h2>Import matrix</h2><p class="muted">Rows import columns. Numbers are import statements; "st" counts those in stories or tests. Hover a cell for named imports and file:line samples.</p>
 <div class="table" tabindex="0" role="region" aria-label="Import matrix"><table><thead><tr><th scope="col">Package</th>${matrixCols}</tr></thead><tbody>${matrixRows}</tbody></table></div>`
 }
-<h2>Flags</h2><div class="cols">
-<div class="card"><h3>Exported, no production import</h3>${unused.length ? `<ul>${unused.map((e) => `<li><code>${esc(e.package)}${e.subpath === '.' ? '' : esc(e.subpath.slice(1))}</code>${e.storyOrTestOnly ? ' — stories/tests only' : ''}</li>`).join('')}</ul>` : '<p class="muted">None.</p>'}</div>
-<div class="card"><h3>Packages importing no shared package</h3>${idle.length ? `<p class="muted">${idle.length}: ${idle.map(esc).join(', ')}</p>` : '<p class="muted">None.</p>'}</div>
-<div class="card"><h3>Limits</h3><ul>${r.limits.map((l) => `<li>${esc(l)}</li>`).join('')}</ul></div>
+<h2>Review these gaps</h2><div class="cols">
+<div class="card"><h3>Exported, no production import</h3>${unused.length ? `<ul>${unused.map((e) => `<li><code>${esc(e.package)}${e.subpath === '.' ? '' : esc(e.subpath.slice(1))}</code>${e.storyOrTestOnly ? ' — stories/tests only' : ''}</li>`).join('')}</ul>` : '<p class="muted">No entries in this list. Review the scope and limits below.</p>'}</div>
+<div class="card"><h3>Packages importing no shared package</h3>${idle.length ? `<p class="muted">${idle.length}: ${idle.map(esc).join(', ')}</p>` : '<p class="muted">No entries in this list. Review the scope and limits below.</p>'}</div>
+<div class="card"><h3>What this report can establish</h3><ul>${r.limits.map((l) => `<li>${esc(l)}</li>`).join('')}</ul></div>
 </div>
 </main><script>
 const edges=${JSON.stringify(edges).replace(/</g, '\\u003c')};

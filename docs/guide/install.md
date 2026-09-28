@@ -16,6 +16,10 @@ From your project directory, run `npx ds-loop` (or `npx ds-loop start .`).
 It prints findings, coverage and the next command. For a visual report, run
 `npx ds-loop audit . --html audit-report.html`.
 
+## Check the installation
+
+You should receive a report containing a verdict, adapter coverage and findings or their absence. If the result is `not-checked`, consult [coverage](reference.md#coverage); reinstalling will not add an adapter for an unsupported format.
+
 ## Start with your agent
 
 Ask your agent to read `node_modules/ds-loop/skill/SKILL.md`. Keep the complete package installed: its launcher requires the adjacent `bin/` and `dist/` directories. Copying just the skill folder is not a standalone installation. Your agent's automatic skill discovery depends on its own setup; direct loading makes the entry point explicit.
@@ -58,10 +62,6 @@ npx ds-loop audit . --min-severity high --require-coverage
 ```
 
 This fails on findings at the chosen floor or reported coverage gaps. Its pass applies only to the adapters' stated scope and chosen severity. Review your repository's unsupported formats before enabling it. Run an unfiltered audit separately when you need all findings.
-
-## Check the installation
-
-You should receive a report containing a verdict, adapter coverage and findings or their absence. If the result is `not-checked`, consult [coverage](reference.md#coverage); reinstalling will not add an adapter for an unsupported format.
 
 ## Install from source
 

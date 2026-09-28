@@ -1,4 +1,4 @@
-# guard
+# Set up feedback after edits
 
 Install a hook so ds-loop audits a style file the moment it is edited, and
 surfaces high-severity findings back to the agent.
