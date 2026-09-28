@@ -90,3 +90,24 @@ test('history does not bridge instrument changes or accept another source', () =
   r.manifest.minSeverity = 'high';
   assert.match(historyTrend(r, JSON.stringify(row)).reason!, /filtered/);
 });
+
+test('overview precedes detail sections and suggestions use a table with safe literal swatches', () => {
+  const r = report();
+  r.findings[0].data = { probes: ['#12345', '0 0% 0%', 'var(--x)', '#333', 'hsl(0 0% 50%)'] };
+  const html = renderAuditHtml(r);
+  assert.ok(html.indexOf('class="summary-strip"') < html.indexOf('id="coverage"'));
+  assert.ok(html.includes('Top 5 files'));
+  assert.ok(html.includes('class="chart-row"'));
+  assert.ok(html.includes('<th>Property / category</th>'));
+  assert.ok(html.includes('<th>Delta</th>'));
+  assert.ok(html.includes('<summary>Details</summary>'));
+  const data = JSON.parse(
+    html.match(/<script id="audit-data" type="application\/json">([\s\S]*?)<\/script>/)![1],
+  );
+  assert.ok(Object.keys(data.swatches).every((s) => /^(#|rgba?\(|hsla?\()/i.test(s) && !s.includes('var(')));
+  assert.equal(data.swatches['#12345'], undefined);
+  assert.equal(data.swatches['0 0% 0%'], undefined);
+  assert.equal(data.swatches['var(--x)'], undefined);
+  assert.ok(data.swatches['#333']);
+  for (const f of r.findings) assert.ok(html.includes(f.summary));
+});

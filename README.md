@@ -79,7 +79,7 @@ The engine checks for specific ways code can bypass tokens. In this synthetic ex
   [HIGH] token/raw-value-in-markup
   │ 3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct …
   │ where: bg-[#1da1f2] at Card.tsx:2; p-[13px] at Card.tsx:2; text-[14px] at Card.tsx:3
-  │ fix:   #1da1f2 is already --palette-blue-500. Swap those first. …
+  │ fix:   Replace each with the scale step or token that covers it — a utility that names the scale (bg-surface, p-4) or var(--token) via an arbitrary value. If no token matches the value, add one to the system first; a bracket is the system being bypassed, not extended.
 ```
 
 You can also audit literals and token references in ordinary CSS rules, with an inventory by category. CSS and markup findings suggest exact or nearby tokens for review; they never replace code automatically.

@@ -204,6 +204,26 @@ function readSuggestions(raw: unknown): DsOpsConfig['suggestions'] {
     throw new Error('config: suggestions must be an object');
   const result = { ...DEFAULT_CONFIG.suggestions };
   for (const [key, value] of Object.entries(raw)) {
+    if (key === 'categoryPatterns' || key === 'utilityPatterns') {
+      if (!value || typeof value !== 'object' || Array.isArray(value))
+        throw new Error(`config: invalid suggestions.${key}`);
+      const patterns = { ...result[key] };
+      for (const [category, pattern] of Object.entries(value)) {
+        if (
+          !VALUE_CATEGORIES.includes(category as (typeof VALUE_CATEGORIES)[number]) ||
+          typeof pattern !== 'string'
+        )
+          throw new Error(`config: invalid suggestions.${key}.${category}`);
+        try {
+          new RegExp(pattern, 'i');
+        } catch {
+          throw new Error(`config: invalid suggestions.${key}.${category} regex`);
+        }
+        patterns[category as (typeof VALUE_CATEGORIES)[number]] = pattern;
+      }
+      result[key] = patterns;
+      continue;
+    }
     if (
       !['rootFontSize', 'lengthTolerancePx'].includes(key) ||
       typeof value !== 'number' ||
@@ -212,7 +232,7 @@ function readSuggestions(raw: unknown): DsOpsConfig['suggestions'] {
       (key === 'rootFontSize' && value === 0)
     )
       throw new Error(`config: invalid suggestions.${key}`);
-    result[key as keyof typeof result] = value;
+    result[key as 'rootFontSize' | 'lengthTolerancePx'] = value;
   }
   return result;
 }

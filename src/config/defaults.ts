@@ -12,7 +12,28 @@ import type { DsOpsConfig } from './schema.ts';
  * it is a defensible neutral, not because it is correct for any given palette.
  */
 export const DEFAULT_CONFIG: DsOpsConfig = {
-  suggestions: { rootFontSize: 16, lengthTolerancePx: 1 },
+  suggestions: {
+    rootFontSize: 16,
+    lengthTolerancePx: 1,
+    categoryPatterns: {
+      color: '(^|-)(color|palette|fg|bg|accent|neutral|brand)(-|$)',
+      spacing: '(^|-)(space|spacing|padding|margin|gap)(-|$)',
+      typography: '(^|-)(type|font|line-height|letter-spacing)(-|$)',
+      radius: '(^|-)(radius|rounded)(-|$)',
+      shadow: '(^|-)(shadow|elevation|glow)(-|$)',
+      'z-index': '(^|-)(z|z-index)(-|$)',
+      duration: '(^|-)(duration|delay|motion|transition|animation)(-|$)',
+    },
+    utilityPatterns: {
+      spacing: '^(p[xytrblse]?|m[xytrblse]?|gap(-[xy])?|space-[xy]|indent)$',
+      typography: '^(text|font|leading|tracking)$',
+      radius: '^rounded($|-)',
+      shadow: '^shadow$',
+      'z-index': '^z$',
+      duration: '^(duration|delay)$',
+      color: '^(bg|fill|stroke|caret|accent|placeholder|decoration|from|via|to)$',
+    },
+  },
   style: {
     // UNCALIBRATED review priorities, not proof that a literal violates policy.
     severity: {

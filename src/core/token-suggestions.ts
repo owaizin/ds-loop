@@ -3,7 +3,8 @@ import { ciede2000 } from '../color/delta-e.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { type Tier, classifyTier } from '../rules/tier.ts';
 import type { RuleContext } from '../rules/types.ts';
-import type { Provenance, RawValue } from './provenance.ts';
+import type { Provenance, RawValue, ValueCategory } from './provenance.ts';
+import { type CategoryEvidence, categoryResolver, siteCategory } from './suggestion-categories.ts';
 
 export type TokenCandidate = {
   token: string;
@@ -15,12 +16,16 @@ export type TokenCandidate = {
   aliasChain: string[];
   declarations: Provenance[];
   preferred: boolean;
+  categories: ValueCategory[];
+  categoryMatch: 'same' | 'unknown';
+  categoryEvidence: CategoryEvidence[];
 };
 export type TokenSuggestion = {
   value: string;
   file: string;
   line: number;
   property: string;
+  category: ValueCategory | null;
   status: 'exact' | 'nearest' | 'ambiguous' | 'no-token' | 'not-checked';
   candidates: TokenCandidate[];
   limits: string[];
@@ -212,13 +217,22 @@ function match(
 
 export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSuggestion {
   const cache = new Map<string, ReturnType<typeof resolver>>();
+  const categoryCache = new Map<string, ReturnType<typeof categoryResolver>>();
   const values: TokenSuggestion[] = sites.map((site) => {
     const base = {
       value: site.raw,
       file: site.provenance.file,
       line: site.provenance.line,
       property: site.provenance.property,
+      category: siteCategory(site, ctx.config),
     };
+    if (!base.category)
+      return {
+        ...base,
+        status: 'not-checked',
+        candidates: [],
+        limits: ['Use-site category is unknown; no category-safe token comparison was made.'],
+      };
     const source = declarationsFor(ctx, site);
     if (source.limits.length)
       return { ...base, status: 'not-checked', candidates: [], limits: source.limits };
@@ -228,11 +242,22 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
       tokens = resolver(source.values);
       cache.set(key, tokens);
     }
+    let categoriesFor = categoryCache.get(key);
+    if (!categoriesFor) {
+      categoriesFor = categoryResolver([...ctx.values, ...source.values], ctx.config);
+      categoryCache.set(key, categoriesFor);
+    }
     const candidates: TokenCandidate[] = [];
     for (const token of tokens.resolved) {
       const found = match(site.raw, token.value, ctx.config);
       if (!found) continue;
+      const categoryEvidence = categoriesFor(token.aliasChain[0]);
+      const categories = [...new Set(categoryEvidence.map((e) => e.category))];
+      if (base.category && categories.length && !categories.includes(base.category)) continue;
       candidates.push({
+        categories,
+        categoryEvidence,
+        categoryMatch: base.category && categories.includes(base.category) ? 'same' : 'unknown',
         token: token.aliasChain[0],
         value: token.value,
         ...found,
@@ -244,22 +269,25 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
     }
     candidates.sort(
       (a, b) =>
+        Number(b.categoryMatch === 'same') - Number(a.categoryMatch === 'same') ||
         Number(b.match === 'exact') - Number(a.match === 'exact') ||
         a.distance - b.distance ||
         a.token.localeCompare(b.token) ||
         JSON.stringify(a.declarations).localeCompare(JSON.stringify(b.declarations)),
     );
-    const exact = candidates.filter((c) => c.match === 'exact');
-    const pool = exact.length ? exact : candidates.filter((c) => c.distance === candidates[0]?.distance);
+    const known = candidates.filter((c) => c.categoryMatch === 'same');
+    const ranked = known.length ? known : candidates;
+    const exact = ranked.filter((c) => c.match === 'exact');
+    const pool = exact.length ? exact : ranked.filter((c) => c.distance === ranked[0]?.distance);
     const aliases = pool.filter(
       (c) =>
         c.tier === 'semantic' || (c.aliasChain.length > 1 && c.tier !== 'component' && c.tier !== 'upstream'),
     );
     const preferred = aliases.length ? aliases : pool;
-    for (const c of preferred) c.preferred = true;
+    for (const c of preferred) c.preferred = c.categoryMatch === 'same';
     // A single matching definition does not authorize choosing it over other
     // modes/overrides of the same name, including unresolved definitions.
-    const conditional = preferred.some((c) =>
+    const conditional = pool.some((c) =>
       c.aliasChain.some((name) => (tokens!.byName.get(name)?.length ?? 0) > 1),
     );
     return {
@@ -267,11 +295,14 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
       status:
         preferred.length === 0
           ? 'no-token'
-          : preferred.length > 1 || conditional
+          : pool.length > 1 || conditional || pool[0].categoryMatch === 'unknown'
             ? 'ambiguous'
             : preferred[0].match,
       candidates,
       limits: [
+        ...(candidates.some((c) => c.categoryMatch === 'unknown')
+          ? ['Unknown category candidates are lower-ranked; category fit is not established.']
+          : []),
         ...(tokens.limits.length ? ['Some declarations unresolved; see suggestion.resolutionLimits.'] : []),
         ...(conditional
           ? ['Multiple declarations along the candidate alias chain; cascade/mode unresolved.']
@@ -298,11 +329,9 @@ export function suggestTokens(ctx: RuleContext, sites: RawValue[]): FindingSugge
 
 /** Backward-compatible direct-value view; collisions never overwrite or select a token. */
 export function alreadyDeclared(ctx: RuleContext, sites: RawValue[]): { value: string; token: string }[] {
-  return sites.flatMap((site) => {
-    const ds = declarationsFor(ctx, site).values.filter(
-      (v) => v.provenance.classification !== 'reference' && literalKey(v.raw) === literalKey(site.raw),
-    );
-    return ds.length === 1 ? [{ value: site.raw, token: ds[0].provenance.tokenName! }] : [];
+  return suggestTokens(ctx, sites).values.flatMap((s) => {
+    const exact = s.candidates.filter((c) => c.match === 'exact' && c.categoryMatch === 'same');
+    return s.status === 'exact' && exact.length === 1 ? [{ value: s.value, token: exact[0].token }] : [];
   });
 }
 
@@ -317,12 +346,17 @@ export function formatSuggestion(suggestion: FindingSuggestion): string {
     .slice(0, 6)
     .map((v) => {
       const names = v.candidates
-        .filter((c) => c.preferred)
+        .filter(
+          (c) =>
+            c.preferred ||
+            (v.status === 'ambiguous' && c.match === v.candidates[0]?.match) ||
+            c.categoryMatch === 'unknown',
+        )
         .map(
           (c) =>
-            `${c.token}${c.match === 'nearest' ? ` (${c.metric} ${Number(c.distance.toFixed(4))})` : ''}`,
+            `${c.token}${c.categoryMatch === 'unknown' ? ' (category unknown)' : ''}${c.match === 'nearest' ? ` (${c.metric} ${Number(c.distance.toFixed(4))})` : ''}`,
         );
-      return `${v.value}: ${v.status === 'no-token' ? 'no token within supported matching scope/tolerances' : v.status}${names.length ? ` — ${names.slice(0, 6).join(', ')}${names.length > 6 ? `; +${names.length - 6} candidates` : ''}` : ''}`;
+      return `${v.value}: ${v.status === 'no-token' ? 'no token within supported matching scope/tolerances' : v.status}${names.length ? ` — ${names.join(', ')}` : ''}`;
     })
     .join('; ');
   return `${text}${values.length > 6 ? `; +${values.length - 6} value groups` : ''}. ${suggestion.resolutionLimits.length ? 'Some token declarations could not be resolved. ' : ''}${suggestion.basis} Full candidates, alias provenance and resolution limits in --json.`;

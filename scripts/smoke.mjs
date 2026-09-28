@@ -450,7 +450,7 @@ try {
     const values = report.findings.flatMap((f) => f.suggestion?.values ?? []);
     assert(values.length === 2, 'both style and markup suggestions must ship');
     assert(
-      values.every((v) => v.status === 'exact'),
+      values.every((v) => v.status === 'ambiguous' && v.candidates.every((c) => c.match === 'exact')),
       'equivalent color spellings should match',
     );
     assert(

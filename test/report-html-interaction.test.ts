@@ -67,13 +67,16 @@ test('10,001 findings browse lazily, paginate, search the final hit and preserve
   const [search, status, list, controls] = host.children;
   assert.equal(list.children.length, 30);
   assert.equal(status.textContent, '1–30 of 10001 findings');
-  assert.equal(list.children[0].children[0].textContent, findings[0].summary);
+  assert.equal(list.children[0].children[1].textContent, findings[0].summary);
   controls.children[1].onclick!();
   assert.equal(status.textContent, '31–60 of 10001 findings');
   search.value = 'a.css:10001';
   search.oninput!();
   assert.equal(list.children.length, 1);
-  assert.equal(list.children[0].children[1].textContent, 'a.css:10001');
+  const details = list.children[0].children[3];
+  details.open = true;
+  details.listeners.toggle();
+  assert.ok(details.children.some((n) => n.textContent === 'where: a.css:10001'));
   assert.equal(status.textContent, '1–1 of 1 findings');
   search.value = 'no matching source';
   search.oninput!();

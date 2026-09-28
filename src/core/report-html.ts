@@ -5,7 +5,7 @@ import type { AuditReport } from '../commands/audit.ts';
 import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
-import { formatSuggestion } from './token-suggestions.ts';
+import { type TokenSuggestion, formatSuggestion } from './token-suggestions.ts';
 
 const htmlEscape = (s: unknown): string =>
   String(s).replace(
@@ -74,6 +74,11 @@ export function historyTrend(
 }
 
 function swatch(value: string): string {
+  if (
+    !/^(#[0-9a-f]{3}(?:[0-9a-f]|[0-9a-f]{3}|[0-9a-f]{5})?|(?:rgb|hsl)a?\([^)]*\))$/i.test(value.trim()) ||
+    /var\(/i.test(value)
+  )
+    return '';
   const c = parseColor(value);
   if (!c || !Object.values(c).every(Number.isFinite)) return '';
   // Only numeric output from the engine's colour parser enters a CSS attribute.
@@ -97,9 +102,51 @@ function examples(f: Finding): string[] {
   if (!result.length) visit(f.suggestion);
   return result;
 }
-function finding(f: Finding): string {
+function suggestionTable(values: TokenSuggestion[]): string {
+  return `<div class="table-wrap" tabindex="0" role="region" aria-label="Token suggestions"><table class="suggestions"><thead><tr><th>Value</th><th>Property / category</th><th>Match</th><th>Candidates</th><th>Delta</th></tr></thead><tbody>${values
+    .slice(0, 12)
+    .map(
+      (s) =>
+        `<tr><td>${swatch(s.value)}<code>${htmlEscape(s.value)}</code><small>${htmlEscape(s.file)}:${s.line}</small></td><td>${htmlEscape(s.property)}<small>${htmlEscape(s.category ?? 'unknown')}</small></td><td>${htmlEscape(s.status === 'no-token' ? 'none' : s.status)}</td><td>${s.candidates.map((c) => `<div><code>${htmlEscape(c.token)}</code>${c.categoryMatch === 'unknown' ? ' · category unknown' : ''}${c.preferred ? ' · preferred' : ''}</div>`).join('') || '—'}</td><td>${s.candidates.map((c) => `<div>${htmlEscape(c.token)}: ${Number(c.distance.toFixed(4))} ${htmlEscape(c.metric)}</div>`).join('') || '—'}</td></tr>`,
+    )
+    .join('')}</tbody></table></div>`;
+}
+function finding(f: Finding, index: number): string {
   const locations = examples(f);
-  return `<article class="finding"><h4>${htmlEscape(f.summary)}</h4><p><strong>where:</strong> ${htmlEscape(f.where)}</p>${locations.length ? `<p class="muted">Example locations: ${locations.map(htmlEscape).join(' · ')}</p>` : ''}${f.impact ? `<p><strong>risk:</strong> ${htmlEscape(f.impact)}</p>` : ''}<p><strong>fix:</strong> ${htmlEscape(f.fix)}</p>${f.suggestion ? `<pre>suggest: ${htmlEscape(formatSuggestion(f.suggestion))}</pre>` : ''}</article>`;
+  const count = typeof f.data?.count === 'number' ? `${f.data.count} reported occurrences` : '1 finding';
+  return `<article class="finding"><div class="finding-meta"><span class="badge ${f.severity}">${f.severity}</span><code>${htmlEscape(f.ruleId)}</code><span>${count}</span></div><h4 class="one-line" title="${htmlEscape(f.summary)}">${htmlEscape(f.summary)}</h4><p class="locations">${locations.map(htmlEscape).join(' · ') || 'See recorded location in Details'}</p><details><summary>Details</summary><p>${htmlEscape(f.summary)}</p><p><strong>where:</strong> ${htmlEscape(f.where)}</p>${f.impact ? `<p><strong>risk:</strong> ${htmlEscape(f.impact)}</p>` : ''}<p><strong>fix:</strong> ${htmlEscape(f.fix)}</p>${f.suggestion ? `${suggestionTable(f.suggestion.values)}<p>${htmlEscape(f.suggestion.basis)}</p><details><summary>All ${f.suggestion.values.length} suggestion rows</summary><div data-suggestions="${index}"></div></details><details><summary>Verbatim suggestion text</summary><pre>suggest: ${htmlEscape(formatSuggestion(f.suggestion))}</pre></details>` : ''}${inspect(['report', 'findings', index], 'All recorded evidence')}</details></article>`;
+}
+
+function overview(r: AuditReport): string {
+  const severities = Object.keys(SEVERITY_ORDER) as Finding['severity'][];
+  const counts = severities.map((severity) => ({
+    severity,
+    count: r.findings.filter((f) => f.severity === severity).length,
+  }));
+  const categories = Object.entries(r.styleInventory);
+  const largest = Math.max(1, ...categories.map(([, row]) => row.literals));
+  const files = new Map<string, { total: number; categories: Record<string, number> }>();
+  for (const [category, row] of categories)
+    for (const file of row.topFiles) {
+      const record = files.get(file.file) ?? { total: 0, categories: {} };
+      record.total += file.occurrences;
+      record.categories[category] = file.occurrences;
+      files.set(file.file, record);
+    }
+  const top = [...files].sort((a, b) => b[1].total - a[1].total || a[0].localeCompare(b[0])).slice(0, 5);
+  return `<div class="summary-strip"><div><span class="kicker">Verdict</span><strong>${htmlEscape(r.verdict)}</strong></div><div><span class="kicker">Coverage</span><strong>${r.coverage.complete ? 'Within declared reads' : 'Incomplete'}</strong></div><div class="severity-chart"><span class="kicker">${r.findings.length} findings · ${r.rulesRun.length} rules</span><div class="bar" aria-hidden="true">${counts.map((x) => `<span class="${x.severity}" style="width:${r.findings.length ? (x.count / r.findings.length) * 100 : 0}%"></span>`).join('')}</div><div class="legend">${counts.map((x) => `<span>${x.severity} ${x.count}</span>`).join('')}</div></div><p class="scope-note">${r.verdict === 'not-checked' ? 'Nothing was judged. This is not a clean result.' : 'A clean audit only describes the checks and scope it covered.'}</p></div>
+  <div class="overview-grid"><article class="card"><h2>CSS categories</h2><div class="category-chart"><div class="chart-label"><span>Category</span><span>Tokenization</span><span>Literals</span></div>${categories.map(([category, row]) => `<a class="chart-row" href="#category-${category}"><strong>${htmlEscape(category)}</strong><span class="mini-track"><i class="reference" style="width:${(row.tokenizationRatio ?? 0) * 100}%"></i><b>${row.tokenizationRatio === null ? 'n/a' : `${(row.tokenizationRatio * 100).toFixed(1)}%`}</b></span><span class="mini-track"><i class="literal" style="width:${(row.literals / largest) * 100}%"></i><b>${row.literals}</b></span></a>`).join('') || '<p>No ordinary CSS inventory recorded.</p>'}</div><small>Reference share and literal occurrences; different units. Expand inventory for locations.</small></article><article class="card"><h2>Top 5 files</h2><small>Extracted CSS occurrences across categories</small><ol class="top-files">${
+    top
+      .map(
+        ([file, row]) =>
+          `<li><code>${htmlEscape(file)}</code><strong>${row.total}</strong><small>${Object.entries(
+            row.categories,
+          )
+            .map(([k, n]) => `${htmlEscape(k)} ${n}`)
+            .join(' · ')}</small></li>`,
+      )
+      .join('') || '<li>No ordinary CSS use sites recorded.</li>'
+  }</ol></article></div>`;
 }
 
 /** Pure view: no scanning, rule execution, clock reads or scorecard writes. */
@@ -128,13 +175,18 @@ export function renderAuditHtml(
   const trend = options.historyError
     ? { rows: [], reason: options.historyError }
     : historyTrend(r, options.history ?? '');
+  const locations = r.findings.map(examples);
   const suggestions = Object.fromEntries(
     r.findings.flatMap((f, i) => (f.suggestion ? [[i, formatSuggestion(f.suggestion)]] : [])),
   );
   const swatches: Record<string, string> = Object.create(null);
   function collectSwatches(value: unknown): void {
     if (typeof value === 'string') {
-      const color = parseColor(value);
+      const color =
+        /^(#[0-9a-f]{3}(?:[0-9a-f]|[0-9a-f]{3}|[0-9a-f]{5})?|(?:rgb|hsl)a?\([^)]*\))$/i.test(value.trim()) &&
+        !/var\(/i.test(value)
+          ? parseColor(value)
+          : null;
       if (color && Object.values(color).every(Number.isFinite))
         swatches[value] = `rgba(${color.r},${color.g},${color.b},${color.a})`;
     } else if (value && typeof value === 'object') {
@@ -153,7 +205,7 @@ export function renderAuditHtml(
         ['ambiguous', row.unclassified],
         ['excluded', row.excluded],
       ] as const;
-      return `<article class="card"><h3>${htmlEscape(category)}</h3><span class="metric">${row.occurrences}</span> occurrences · ${row.distinctValues} distinct values
+      return `<article class="card" id="category-${category}"><h3>${htmlEscape(category)}</h3><span class="metric">${row.occurrences}</span> occurrences · ${row.distinctValues} distinct values
     <div class="bar" aria-hidden="true">${parts.map(([name, n]) => `<span class="${name}" style="width:${row.occurrences ? (n / row.occurrences) * 100 : 0}%"></span>`).join('')}</div>
     <div class="legend">${parts.map(([name, n]) => `<span><i class="${name}"></i>${name} ${n}</span>`).join('')}</div>
     <p>Tokenization: <strong>${row.tokenizationRatio === null ? 'not measured' : `${(row.tokenizationRatio * 100).toFixed(1)}%`}</strong></p>
@@ -189,7 +241,8 @@ export function renderAuditHtml(
   <div class="toolbar"><span class="kicker">ds-loop / audit report</span><label>Appearance <select id="theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div>
   <h1>${htmlEscape(r.manifest.fixtureLabel)}</h1><p class="muted">Generated from the audit. No rendered UI or design intent was assessed.</p>
   <nav aria-label="Report sections"><a href="#coverage">Coverage</a><a href="#inventory">Inventory</a><a href="#findings">Findings</a><a href="#trend">Trend</a><a href="#next">Next</a></nav>
-  <div class="hero"><div class="card"><span class="kicker">Verdict</span><div class="status">${htmlEscape(r.verdict)}</div><p>${r.findings.length} findings · ${r.rulesRun.length} rules run</p><p>A clean audit only describes the checks and scope it covered.</p>${inspect(['report', 'rulesRun'], 'Rules run')}${inspect(['report', 'manifest'], 'Full manifest and scope')}</div><div class="card ${c.complete ? '' : 'limited'}"><span class="kicker">Coverage</span><div class="status">${c.complete ? 'Complete within declared reads' : 'Incomplete'}</div><p>${r.verdict === 'not-checked' ? 'Nothing was judged. This is not a clean result.' : 'Read the limits below before acting on this verdict.'}</p><dl><dt>Source revision</dt><dd>${htmlEscape(r.manifest.fixtureSha)}</dd><dt>Adapters</dt><dd>${htmlEscape(r.manifest.adapter)}</dd><dt>Configuration · date</dt><dd>${htmlEscape(r.manifest.configHash)} · ${htmlEscape(r.manifest.ranAt)}</dd><dt>Scope</dt><dd>${htmlEscape(r.manifest.target)} · severity floor: ${htmlEscape(r.manifest.minSeverity ?? 'none')} · ${r.manifest.judgedFiles === undefined ? 'no file filter' : `${r.manifest.judgedFiles.length} selected files`}</dd></dl></div></div>
+  ${overview(r)}
+  <details class="manifest"><summary>Source, adapters and audit scope</summary><dl><dt>Source revision</dt><dd>${htmlEscape(r.manifest.fixtureSha)}</dd><dt>Adapters</dt><dd>${htmlEscape(r.manifest.adapter)}</dd><dt>Config / date</dt><dd>${htmlEscape(r.manifest.configHash)} · ${htmlEscape(r.manifest.ranAt)}</dd><dt>Scope</dt><dd>${htmlEscape(r.manifest.target)} · severity floor ${htmlEscape(r.manifest.minSeverity ?? 'none')}</dd></dl>${inspect(['report', 'manifest'], 'Full manifest')}${inspect(['report', 'rulesRun'], 'Rules run')}</details>
   <section id="coverage"><h2>01 / What was checked</h2><div class="coverage"><article class="card"><h3>Read</h3>${list(
     c.partialReads.map((p) => `${p.adapter} (${p.extensions.join(', ')}): ${p.reads}`),
     'No adapter reads this source.',
@@ -204,7 +257,7 @@ export function renderAuditHtml(
         (g, i) =>
           `<section class="group"><div class="kicker">${g.severity} · ${g.indices.length} findings</div><h3>${htmlEscape(g.rule)}</h3>${g.indices
             .slice(0, 3)
-            .map((index) => finding(r.findings[index]))
+            .map((index) => finding(r.findings[index], index))
             .join(
               '',
             )}<details><summary>All ${g.indices.length} findings and recorded evidence</summary><div data-group="${i}"></div></details></section>`,
@@ -214,7 +267,7 @@ export function renderAuditHtml(
   <section id="trend"><h2>04 / Recorded trend</h2>${trendView}</section>
   <section id="next"><h2>05 / Next commands</h2>${r.next.map((n) => `<article class="card"><code>${htmlEscape(n.command)}</code><p>${htmlEscape(n.why)}</p></article>`).join('') || '<p>No next commands recorded.</p>'}</section>
   <p class="print-note">Printed summary: only expanded evidence is included. Open the HTML file for the full recorded lists.</p><noscript>JavaScript is disabled. The summary and three examples per group remain readable. Enable JavaScript to browse all recorded evidence.</noscript>
-  </main><script id="audit-data" type="application/json">${json({ report: r, groups, trend, swatches, suggestions })}</script><script>${REPORT_SCRIPT}</script></body></html>`;
+  </main><script id="audit-data" type="application/json">${json({ report: r, groups, trend, swatches, suggestions, locations })}</script><script>${REPORT_SCRIPT}</script></body></html>`;
 }
 
 export function writeAuditHtml(

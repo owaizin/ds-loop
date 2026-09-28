@@ -56,14 +56,14 @@ test('one alias is preferred without losing its primitive; rem uses the configur
     { 'tokens.css': ':root{--space-2:0.5rem;--space-control:var(--space-2)}', 'a.css': '.x{padding:8px}' },
     (dir) => {
       const [s] = suggestions(dir);
-      assert.equal(s.status, 'exact');
+      assert.equal(s.status, 'ambiguous');
       assert.deepEqual(preferred(s), ['--space-control']);
       assert.equal(s.candidates.length, 2);
       assert.match(s.limits.join(' '), /rootFontSize=16/);
       const config = { ...DEFAULT_CONFIG, suggestions: { rootFontSize: 20, lengthTolerancePx: 1 } };
       assert.equal(suggestions(dir, { config })[0].status, 'no-token');
       writeFileSync(join(dir, 'a.css'), '.x{padding:10px}');
-      assert.equal(suggestions(dir, { config })[0].status, 'exact');
+      assert.equal(suggestions(dir, { config })[0].status, 'ambiguous');
     },
   );
 });
@@ -291,4 +291,70 @@ test('suggestions are uncapped even when legacy markup hits are capped at forty'
       assert.equal(f.suggestion?.values[64].line, 65);
     },
   );
+});
+
+test('suggestions separate typography, spacing and shadow values in CSS and markup', () => {
+  project(
+    {
+      'tokens.css':
+        ':root{--space-3:12px;--type-sm:12px;--shadow-y:12px} .a{font-size:12px} .b{padding:12px}',
+      'a.tsx': 'const x="p-[12px] text-[12px]";',
+    },
+    (dir) => {
+      const all = suggestions(dir);
+      for (const s of all) {
+        assert.deepEqual(
+          s.candidates.map((c) => c.token),
+          [s.property === 'font-size' || s.property === 'text' ? '--type-sm' : '--space-3'],
+        );
+        assert.equal(s.status, 'exact');
+      }
+      assert.equal(all.length, 4);
+    },
+  );
+});
+test('unknown categories are labelled and lower ranked; equal known candidates remain ambiguous', () => {
+  project({ 'a.css': ':root{--mystery:12px;--space-3:12px;--space-control:12px}.a{padding:12px}' }, (dir) => {
+    const [s] = suggestions(dir);
+    assert.equal(s.status, 'ambiguous');
+    assert.equal(s.candidates.at(-1)?.token, '--mystery');
+    assert.equal(s.candidates.at(-1)?.categoryMatch, 'unknown');
+    assert.equal(s.candidates.at(-1)?.preferred, false);
+  });
+});
+test('observed property use propagates through aliases and overrides name heuristics', () => {
+  project(
+    {
+      'a.css':
+        ':root{--space-misnamed:12px;--unknown:var(--space-misnamed)}.a{font-size:var(--unknown)}.b{font-size:12px;padding:12px}',
+    },
+    (dir) => {
+      const all = suggestions(dir);
+      const type = all.find((s) => s.property === 'font-size')!;
+      assert.equal(type.status, 'ambiguous');
+      assert.ok(type.candidates.every((c) => c.categories.includes('typography')));
+      assert.ok(
+        type.candidates.every((c) =>
+          c.categoryEvidence.some((e) => e.source === 'usage' && e.file === 'a.css'),
+        ),
+      );
+      assert.equal(all.find((s) => s.property === 'padding')!.status, 'no-token');
+    },
+  );
+});
+
+test('unknown-only matches never claim category certainty and configurable signals are validated', () => {
+  project({ 'a.css': ':root{--mystery:12px}.a{padding:12px}' }, (dir) => {
+    const [unknown] = suggestions(dir);
+    assert.equal(unknown.status, 'ambiguous');
+    assert.equal(unknown.candidates[0].categoryMatch, 'unknown');
+    assert.equal(unknown.candidates[0].preferred, false);
+    const path = join(dir, 'config.json');
+    writeFileSync(path, JSON.stringify({ suggestions: { categoryPatterns: { spacing: 'mystery' } } }));
+    const config = loadConfig(path).config;
+    assert.notEqual(hashConfig(config), hashConfig(DEFAULT_CONFIG));
+    assert.equal(suggestions(dir, { config })[0].status, 'exact');
+    writeFileSync(path, JSON.stringify({ suggestions: { categoryPatterns: { spacing: '[' } } }));
+    assert.throws(() => loadConfig(path), /regex/);
+  });
 });

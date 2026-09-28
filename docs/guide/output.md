@@ -34,7 +34,7 @@ candidate too, plus alias provenance and resolution limits.
 
 <!-- verified: audit-css-suggestion -->
 ```text
-  │ suggest:#333: exact — --ds-color-text. Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement. Full candidates, alias provenance and resolution limits in --json.
+  │ suggest:#333: ambiguous — --ds-color-text, --ds-palette-gray-700. Value candidates only; cascade, mode, semantic role and replacement safety are not established. No automatic replacement. Full candidates, alias provenance and resolution limits in --json.
 ```
 
 ## Public fixture: Radix Colors
@@ -45,7 +45,7 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 ```
 
   ds-loop audit — Radix Colors  ·  target: all  ·  fixture
-  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.4.0   config 652d0f5e
+  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.4.0   config 95cd4a03
   14 rules run
 
   [LOW] color/near-duplicate-primitives

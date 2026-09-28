@@ -15,7 +15,13 @@ import type { Severity } from '../rules/types.ts';
 
 export type DsOpsConfig = {
   /** UNCALIBRATED matching assumptions; rem conversion is not a measured root size. */
-  suggestions: { rootFontSize: number; lengthTolerancePx: number };
+  suggestions: {
+    rootFontSize: number;
+    lengthTolerancePx: number;
+    /** UNCALIBRATED name and markup-utility regex signals; usage evidence takes precedence. */
+    categoryPatterns?: Partial<Record<ValueCategory, string>>;
+    utilityPatterns?: Partial<Record<ValueCategory, string>>;
+  };
   /** UNCALIBRATED category policy for observed literals in ordinary CSS. */
   style: { severity: Record<ValueCategory, Severity> };
   clustering: {
