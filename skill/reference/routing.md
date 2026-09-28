@@ -1,7 +1,10 @@
 # Route the request
 
 The user describes an outcome; the agent chooses the procedure. Use this reference
-after the entry skill's orientation. Offer the command catalog only when asked
+before the first deliverable, after enough orientation to understand the task.
+This includes inventories, diagrams and recommendations. State the selected work
+and its finish line; do not produce an artifact and choose its route afterwards.
+Offer the command catalog only when asked
 what is available. These playbook names are not terminal commands.
 
 | Request | First action | Relevant procedure |
@@ -10,6 +13,7 @@ what is available. These playbook names are not terminal commands.
 | “Build us a design system” | Recover product scope and existing assets; choose a compatible base and deliver a usable, editable system across the agreed workflows. | [discover](discover.md) for unresolved intent, then [establish](establish.md) |
 | “Our UI is inconsistent” / “people keep rebuilding components” | Diagnose whether the cause is missing capability, drift, poor discovery, or a deliberate difference. | [discover](discover.md); [census](census.md) only when an inventory answers the question |
 | “Audit our tokens” | Run the requested measurement, explain relevant findings and limits. A review request does not authorize all repairs. | [audit](audit.md) |
+| “Choose our typography / spacing / color foundations” | Recover constraints, compare viable options and retain the choice before dependent changes. | [foundations](foundations.md), then [tokenize](tokenize.md) |
 | “Build or extend this shared component” | Check existing contracts, consumers and the actual gap; implement within scope. | [shape](shape.md), project build flow, [review](review.md) |
 | “Review this component” | Review its behavior and contract without restarting company discovery. | [review](review.md) |
 | “Review this diff” | Establish the actual base ref and relevant consumers. Use unfiltered `audit . --since <ref> --json`, plus review of behavior and dependency context. | [review](review.md); findings are scoped evidence, not a whole-product certification |

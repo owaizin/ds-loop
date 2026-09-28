@@ -30,6 +30,11 @@ Resolve the skill path before running commands and keep cwd at the target projec
 
 ## Start with the person's task
 
+Read [routing.md](reference/routing.md) before the first deliverable, including an
+inventory, diagram or recommendation. Select the route from the requested outcome
+and evidence; do not make the user choose a playbook. Orientation and necessary
+questions can happen first. Load only the relevant procedure, not the whole catalog.
+
 1. Recover the user's goal and any prior task/decision record. Say what you will
    investigate or deliver in one sentence. For a bare invocation, ask what brought
    them here while doing a small read-only orientation. Reuse a supplied goal;
@@ -50,8 +55,8 @@ Resolve the skill path before running commands and keep cwd at the target projec
    over without its coverage invites a conclusion the run cannot support.
 3. Ask about unknowns that could change the next action. For broad pain, uncertain intent, or a
    first system, read [discover.md](reference/discover.md): diagnose before choosing
-   a route. For a specific authorized task, use [routing.md](reference/routing.md)
-   to go directly to the relevant work. A returning task resumes from retained
+   a route. For a specific authorized task, the selected route goes directly to the relevant
+   work. A returning task resumes from retained
    context after checking what changed; it does not repeat the initial interview.
    "Guide me" is a request for you to lead discovery. Establish the outcome or
    propose a bounded investigation before ranking repairs; audit severity does not
@@ -85,7 +90,9 @@ scanner assumptions. Missing `DESIGN-SYSTEM.md` does not mean missing intent.
 `context --write-contract` is an optional measured draft with unresolved decisions,
 not an authoritative policy or proof of retrieval.
 
-The CSS adapter reads custom-property declarations, not ordinary rule bodies.
+The CSS adapters read custom-property declarations and supported literal/reference
+values in ordinary rule bodies. The audit's `styleInventory` covers extracted CSS
+use sites by category; it is not computed CSS or a complete product inventory.
 The Tailwind adapter reads selected arbitrary values and stock-palette utility
 names in strings, without resolving the framework's theme. Inspect effective
 values and project permission separately. For scoped palette checks, map the
@@ -116,7 +123,10 @@ claim; an ordinary edit need not create a new pilot or document set.
 
 ## Token models are project decisions
 
-Palette → semantic → component is the engine's configurable tier assumption, not
+The engine supports an optional `taxonomy.upstreamPattern` alongside its
+primitive → semantic → component model. Upstream internals are exempt; project
+aliases mediate consumption. [tokenize](reference/tokenize.md) maps that delivery
+pattern to the four-layer design model. These are configurable assumptions, not
 a universal adoption requirement. State variants may use the project's own
 structure; the engine does not validate a fourth state tier. Preserve a valid
 existing model. If it cannot be represented by this engine, say the tier checks
@@ -142,6 +152,7 @@ Design System Loop does not ship those checks.
 | `census [target]` | playbook | Discover | Scoped component and consumer inventory; validate duplication candidates and prioritize by impact | [reference/census.md](reference/census.md) |
 | `drift [target]` | playbook | Audit | Compare a fresh `audit` against a committed baseline by hand; report what regressed | [reference/drift.md](reference/drift.md) |
 | `establish` | playbook | Build | Set up a usable, editable system for the agreed product scope; verify use, customization and extension | [reference/establish.md](reference/establish.md) |
+| `foundations` | playbook | Build | Compare and adapt foundation options, record the decision; works with or without a kit | [reference/foundations.md](reference/foundations.md) |
 | `tokenize [target]` | playbook | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
 | `scaffold [target]` | playbook | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
 | `extract [target]` | playbook | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
@@ -164,7 +175,7 @@ A component name or category is a scope for an agent playbook, not a CLI target.
 
 `audit` runs the registered token/color rules over supported extracted values;
 `sweep` measures the configured color-clustering curve. `drift`, `census`,
-`shape`, `review`, `discover`, `establish`, `tokenize`, `scaffold`, `extract`, and `doctor`
+`shape`, `review`, `discover`, `establish`, `foundations`, `tokenize`, `scaffold`, `extract`, and `doctor`
 are agent procedures, not executable CLI commands.
 
 `guard` runs a file-scoped audit after supported Claude Code edits. It reports
