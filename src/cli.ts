@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { audit } from './commands/audit.ts';
+import { consumers } from './commands/consumers.ts';
 import { context } from './commands/context.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
@@ -54,6 +55,11 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
 
   ds-loop scan  <path> [--config <file>]
       Quick look: taxonomy breakdown + palette clusters at the default ΔE.
+
+  ds-loop consumers [<path>] [--scope <@org>] [--json]
+      Which workspace package imports which shared package: specifiers, named
+      imports, counts and file:line samples; stories and tests counted apart.
+      Also lists exported subpaths no other package imports in production code.
 
   ds-loop guard <on|off|status>
       Install / remove a PostToolUse hook in ./.claude/settings.json that runs
@@ -167,6 +173,10 @@ function main(argv: string[]): void {
     }
     case 'scan': {
       scan(positional[0] ?? '.', config);
+      break;
+    }
+    case 'consumers': {
+      consumers(positional[0] ?? '.', { scope: flag(rest, 'scope'), json: has(rest, 'json') });
       break;
     }
     case 'guard': {

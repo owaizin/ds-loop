@@ -4,6 +4,11 @@
 
 Changes planned for 0.3.0; not published.
 
+- `ds-loop consumers [path] [--scope @org] [--json]`: workspace import map. For each
+  package, the shared packages it imports with counts, named imports and file:line
+  samples; stories and tests counted apart; exported subpaths no other package
+  imports in production code.
+
 - Start and audit show coverage and one row per finding group before the compact
   CSS inventory. `audit --all` retains full terminal details; JSON, HTML, rule
   severities, counts, guard behavior and scorecard ratios are unchanged.
