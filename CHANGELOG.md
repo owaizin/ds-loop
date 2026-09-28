@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Consumers counts static JSX component elements by workspace package and shared
+  subpath. Shared-component share is shared / (shared + local); external and
+  unresolved elements stay outside the ratio, and stories/tests are separate.
+  Relative imports, the package's tsconfig `paths` aliases and components
+  declared in the same file count as local.
+  JSON includes source locations; terminal and HTML show per-package shares.
+- Workspace scorecards record per-package shared-component share ratios and the
+  consumers analysis version. Changed analysis versions mark the instrument
+  moved, including the first comparison with a row predating these metrics.
+
 - Unreleased 0.3.0 JSON stores suggestion candidates and declaration provenance
   once in `suggestionIndex`; use-site `candidateRef` and candidate
   `declarationRefs` retain every ordered record. Matching and terminal output
