@@ -8,5 +8,6 @@
   "homepage": "https://design-system-loop.vercel.app",
   "repository": "https://github.com/owaizin/ds-loop",
   "license": "MIT",
-  "skills": "./skill"
+  "skills": "./skill",
+  "commands": "./skill/commands"
 }

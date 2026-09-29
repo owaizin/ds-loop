@@ -23,6 +23,12 @@ export const INSTALL_BLOCK = `${START}
 Run \`npx ds-loop\` here. It audits this repo's design-system code, prints what it could
 and could not check, and names the command to run next.
 
+Agent commands: \`/ds-loop:start\`, \`/ds-loop:diagnose\`, \`/ds-loop:inventory\`,
+\`/ds-loop:foundations\`, \`/ds-loop:propose\`, \`/ds-loop:establish\`, \`/ds-loop:transform\`,
+\`/ds-loop:component\`, \`/ds-loop:document\`, \`/ds-loop:govern\`, \`/ds-loop:drift\`,
+and \`/ds-loop:prove\`. These guide your agent using the existing CLI commands.
+Command instructions: \`node_modules/ds-loop/skill/commands/\`
+
 Playbooks and roles: \`node_modules/ds-loop/skill/SKILL.md\`
 ${END}`;
 

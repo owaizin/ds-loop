@@ -253,8 +253,38 @@ try {
     }
   });
 
-  check('tar listing includes plugin, playbooks, roles, practices and benchmarks', () => {
+  check('tar listing includes plugin, commands, playbooks, roles, practices and benchmarks', () => {
     const entries = execFileSync('tar', ['-tzf', join(dir, tgz)], { encoding: 'utf8' }).split('\n');
+    const commandNames = [
+      'start',
+      'diagnose',
+      'inventory',
+      'foundations',
+      'propose',
+      'establish',
+      'transform',
+      'component',
+      'document',
+      'govern',
+      'drift',
+      'prove',
+    ];
+    const commandEntries = entries.filter((entry) => entry.startsWith('package/skill/commands/'));
+    assert(commandEntries.length === commandNames.length, 'tarball must carry exactly twelve command files');
+    for (const name of commandNames) {
+      assert(commandEntries.includes(`package/skill/commands/${name}.md`), `tarball missing command ${name}`);
+    }
+    process.stdout.write(`\n  packed agent commands (tar -tzf):\n${commandEntries.join('\n')}\n`);
+    const installed = join(dir, 'node_modules', 'ds-loop');
+    const manifest = JSON.parse(readFileSync(join(installed, '.claude-plugin/plugin.json'), 'utf8'));
+    assert(manifest.commands === './skill/commands', 'packed plugin command entry mismatch');
+    for (const name of commandNames) {
+      assert(
+        existsSync(join(installed, manifest.commands, `${name}.md`)),
+        `installed command missing ${name}`,
+      );
+    }
+
     for (const file of [
       '.claude-plugin/plugin.json',
       'hooks/hooks.json',

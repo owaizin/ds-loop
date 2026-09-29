@@ -103,33 +103,33 @@ product. Every command below maps to a playbook or role that already works today
 
 | Command | Backed by | One line |
 |---|---|---|
-| `/ds-loop start` | `SKILL.md` step 1–2, `context`, `audit`, `report` | See what is really in your system. |
-| `/ds-loop diagnose` | `discover.md`, `consultant` | Find the cause, not just the count. |
-| `/ds-loop inventory` | `census.md`, `consumers` | List what exists and who uses it. |
+| `/ds-loop:start` | `SKILL.md` step 1–2, `context`, `audit`, `report` | See what is really in your system. |
+| `/ds-loop:diagnose` | `discover.md`, `consultant` | Find the cause, not just the count. |
+| `/ds-loop:inventory` | `census.md`, `consumers` | List what exists and who uses it. |
 
 **Decide (2)**
 
 | Command | Backed by | One line |
 |---|---|---|
-| `/ds-loop foundations` | `foundations.md`, `tokenize.md` | Choose type, colour and spacing from real options. |
-| `/ds-loop propose` | `consult.md`, `engagement.md`, `architect` | Turn the evidence into a plan your team can approve. |
+| `/ds-loop:foundations` | `foundations.md`, `tokenize.md` | Choose type, colour and spacing from real options. |
+| `/ds-loop:propose` | `consult.md`, `engagement.md`, `architect` | Turn the evidence into a plan your team can approve. |
 
 **Build (4)**
 
 | Command | Backed by | One line |
 |---|---|---|
-| `/ds-loop establish` | `establish.md`, `starting.md` | Stand up a system your product can use. |
-| `/ds-loop transform` | `transform.md`, `migrating.md`, `migrator` | Move the code, one reviewed slice at a time. |
-| `/ds-loop component` | `shape.md`, `review.md`, `components` | Build or review a shared component against its contract. |
-| `/ds-loop document` | `scaffold.md`, `documenting.md`, `storybook.md`, `docs` | Write down the system you actually have. |
+| `/ds-loop:establish` | `establish.md`, `starting.md` | Stand up a system your product can use. |
+| `/ds-loop:transform` | `transform.md`, `migrating.md`, `migrator` | Move the code, one reviewed slice at a time. |
+| `/ds-loop:component` | `shape.md`, `review.md`, `components` | Build or review a shared component against its contract. |
+| `/ds-loop:document` | `scaffold.md`, `documenting.md`, `storybook.md`, `docs` | Write down the system you actually have. |
 
 **Keep (3)**
 
 | Command | Backed by | One line |
 |---|---|---|
-| `/ds-loop govern` | `governing.md`, `governor`, `decide` | Decisions, ownership and how a rule gets added or retired. |
+| `/ds-loop:govern` | `governing.md`, `governor`, `decide` | Decisions, ownership and how a rule gets added or retired. |
 | `/ds-loop guard` | `guard.md`, `drift.md` | Catch new hardcoded values as they are written. |
-| `/ds-loop prove` | `report`, `scorecard`, `maintaining.md` | What changed, and what nobody checked. |
+| `/ds-loop:prove` | `report`, `scorecard`, `maintaining.md` | What changed, and what nobody checked. |
 
 Deliberately **not** commands: `routing`, `scope`, `engagement`, `doctor`, `extract`, `sweep`,
 `audit`. The first three are how the agent behaves, not things a user asks for. `doctor` becomes a
@@ -166,7 +166,7 @@ playbook it points to.
   points at a playbook or role that exists on disk, and states a finish line. Cheap and mechanical,
   and it stops the set rotting as playbooks move.
 - `npm run smoke` proves `skill/commands/` is in the packed tarball.
-- In a scratch repo with the plugin installed, `/ds-loop start` and `/ds-loop diagnose` both run
+- In a scratch repo with the plugin installed, `/ds-loop:start` and `/ds-loop:diagnose` both run
   and produce what their one-liner promises. A command that does not work end to end does not ship.
 
 ---

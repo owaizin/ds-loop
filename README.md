@@ -96,6 +96,26 @@ For a new system, ask it to set up editable foundations, reusable components in 
 
 It can compare foundation options from the MIT [ds-kit](https://github.com/owaizin/ds-kit), reuse your existing library, and produce a visual proposal with the bundled `skill/tools/proposal.mjs`. The handoff records what was delivered, verified and left unchecked. [Choose a workflow](docs/guide/workflow.md).
 
+With the companion skill loaded, ask your agent for one of these commands. Each
+starts by reading your code and running `ds-loop context` and an unfiltered
+`ds-loop audit`. The CLI commands below supply evidence and write the requested
+artifacts; the agent follows the bundled playbooks.
+
+| Agent command | What you get | Backing CLI commands |
+|---|---|---|
+| `/ds-loop:start` | A first reading of your system | `context`, `audit`, `report` |
+| `/ds-loop:diagnose` | A cause and a first action | `context`, `audit`, `consumers` |
+| `/ds-loop:inventory` | What exists and who uses it | `audit`, `consumers` |
+| `/ds-loop:foundations` | Type, colour and spacing options | `audit`, `scan`, `sweep` |
+| `/ds-loop:propose` | A plan your team can approve | `audit`, `consumers`, `report` |
+| `/ds-loop:establish` | A system your product can use | `context`, `audit`, `consumers` |
+| `/ds-loop:transform` | A checked migration slice | `audit`, `consumers` |
+| `/ds-loop:component` | A component built or reviewed | `audit`, `consumers` |
+| `/ds-loop:document` | Guides tied to real code | `context`, `audit`, `consumers` |
+| `/ds-loop:govern` | Decisions with owners and evidence | `context`, `audit`, `decide` |
+| `/ds-loop:drift` | Feedback after edits | `audit`, `guard` |
+| `/ds-loop:prove` | What changed and what wasn't checked | `audit`, `scorecard`, `report` |
+
 ## Choose your next command
 
 | You want to… | Run |
