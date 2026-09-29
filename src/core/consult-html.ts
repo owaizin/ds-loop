@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { AuditReport } from '../commands/audit.ts';
+import { adoptionHtml, type adoptionReport } from './adoption.ts';
 import { findingLocations } from './audit-summary.ts';
 import { type ReferenceSet, benchmarkHtml } from './benchmark.ts';
 import type { Claim, Consult } from './consult.ts';
@@ -42,6 +43,8 @@ export function renderConsultHtml(
   root: string,
   consult?: Consult,
   against?: ReferenceSet,
+  adoption?: ReturnType<typeof adoptionReport>,
+  historyError?: string,
 ): string {
   const ref = (value: string): string => {
     let href: string | undefined;
@@ -120,7 +123,22 @@ export function renderConsultHtml(
   const structure = `<h3>Team structure</h3><ul>${formatTeamShape(shape)
     .map((f) => `<li>${esc(f)}</li>`)
     .join('')}</ul>`;
-  const outro = `${structure}${benchmarkHtml(r, shape, against)}${consumersView}</section>${section(
+  const documentation = r.documentation
+    ? `<h3>Component documentation</h3>${r.documentation.packages
+        .map(
+          (p) =>
+            `<h4>${esc(p.package)}</h4><p>${Object.entries(p.ratios)
+              .map(
+                ([category, ratio]) =>
+                  `${esc(category)}: ${ratio === null ? 'not checked' : `${(ratio * 100).toFixed(1)}%`}`,
+              )
+              .join(
+                ' · ',
+              )}</p><ul>${p.components.map((c) => `<li>${esc(c.name)} · ${ref(`${c.file}:${c.line}`)} — ${(['story', 'docs', 'types', 'example'] as const).map((key) => `${key}: ${c[key].length ? c[key].map((e) => ref(`${e.file}:${e.line}`)).join(', ') : 'no local evidence found'}`).join('; ')}</li>`).join('')}</ul>`,
+        )
+        .join('')}<ul>${r.documentation.limits.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>`
+    : '';
+  const outro = `${structure}${benchmarkHtml(r, shape, against)}${consumersView}${documentation}</section>${adoption ? adoptionHtml(adoption, historyError) : ''}${section(
     'ideal',
     'What good looks like',
     consult ? consult.practices.map((p) => `<h3>${esc(p.system)}</h3>${claim(p)}`).join('') : missing,

@@ -67,11 +67,13 @@ export function historyTrend(
   const matches = (r: ScorecardRow) =>
     r.adapters === report.manifest.adapter &&
     r.configHash === report.manifest.configHash &&
+    r.docsVersion ===
+      (report.documentation?.status === 'checked' ? report.documentation.version : undefined) &&
     r.consumersVersion === rows.at(-1)?.consumersVersion &&
     (!r.consumersVersion || r.consumersVersion === CONSUMERS_VERSION);
   if (!matches(rows.at(-1)!))
     return no(
-      'No trend: instrument moved — the latest row has different adapters, configuration or consumers analysis.',
+      'No trend: instrument moved — the latest row has different adapters, configuration, consumers analysis or documentation analysis.',
     );
   const start = rows.findLastIndex((r) => !matches(r)) + 1;
   const comparable = rows.slice(start);

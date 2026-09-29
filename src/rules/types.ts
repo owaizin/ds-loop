@@ -4,11 +4,12 @@ import type { FixtureMeta } from '../core/fixture.ts';
 import type { RawValue } from '../core/provenance.ts';
 import type { TokenContext } from '../core/token-context.ts';
 import type { FindingSuggestion } from '../core/token-suggestions.ts';
+import type { DocumentationCoverage } from './docs.ts';
 
 export type Severity = 'blocking' | 'high' | 'medium' | 'low';
 
 /** the slice of a design system a rule speaks to — used to route `audit <target>` */
-export type RuleTarget = 'tokens' | 'color' | 'spacing' | 'typography' | 'elevation' | 'motion';
+export type RuleTarget = 'docs' | 'tokens' | 'color' | 'spacing' | 'typography' | 'elevation' | 'motion';
 
 export type Finding = {
   ruleId: string;
@@ -28,6 +29,7 @@ export type Finding = {
 };
 
 export type RuleContext = {
+  documentation?: DocumentationCoverage;
   /** Requested audit domain; omitted by direct callers means all. */
   target?: RuleTarget | 'all';
   meta: FixtureMeta;

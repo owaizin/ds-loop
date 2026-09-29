@@ -1,6 +1,7 @@
 import { basename, relative } from 'node:path';
 import type { Adapter } from '../adapters/types.ts';
 import { isUnparsedColorFunction } from '../color/convert.ts';
+import type { DocumentationCoverage } from '../rules/docs.ts';
 import { listFiles, surveyTree } from './files.ts';
 import type { RawValue } from './provenance.ts';
 
@@ -25,6 +26,7 @@ import type { RawValue } from './provenance.ts';
  */
 
 export type Coverage = {
+  documentation?: DocumentationCoverage;
   /** extension -> file count, for formats no adapter reads */
   unreadFormats: Record<string, number>;
   /** what each adapter actually looks at inside the files it opens */
@@ -243,5 +245,14 @@ export function formatCoverage(c: Coverage): string[] {
     lines.push('    every format in scope was read, every colour converted, every rule able to judge');
   }
 
+  if (c.documentation) {
+    for (const p of c.documentation.packages)
+      lines.push(
+        `    documentation · ${p.package}: ${p.ratios.documented === null ? 'not checked' : `${(p.ratios.documented * 100).toFixed(1)}% with a story or docs page`}`,
+      );
+    if (!c.documentation.packages.length)
+      lines.push('    documentation: not checked — no workspace component inventory in scope');
+    for (const limit of c.documentation.limits) lines.push(`    ${limit}`);
+  }
   return lines;
 }

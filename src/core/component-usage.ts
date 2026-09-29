@@ -32,7 +32,7 @@ export type UsageSummary = {
  * lexical shadowing, dynamic components and components passed as props need a parser.
  * JSX occurrences are source syntax, not measured runtime renders or adoption quality.
  */
-function codeMask(text: string): string {
+export function codeMask(text: string): string {
   return text.replace(
     /\/\*[\s\S]*?\*\/|\/\/[^\n]*|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g,
     (s) => s.replace(/[^\n]/g, ' '),

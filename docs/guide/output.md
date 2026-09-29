@@ -59,7 +59,7 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
   2 findings — 0 blocking · 0 high · 0 medium · 2 low
   These checks found possible problems. Their counts are not a quality grade.
   version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 3c93c488
-  14 rules run
+  15 rules run
 
   scope — what this audit read
     What we read: .css — custom-property declarations (--token: value) — not rule bodies, not at-rules

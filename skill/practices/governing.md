@@ -43,3 +43,17 @@ and [guard](../reference/guard.md) for this decision workflow:
 
 Engine boundary: a `PostToolUse` hook reports after an edit; it cannot prevent it.
 A decision record alone neither configures a rule nor suppresses a finding.
+
+
+When the team uses this repository for decisions, record the authorized choice with:
+
+```sh
+ds-loop decide . --decision 'Use shared buttons' --alternatives 'Keep local buttons' --evidence 'packages/ui/Button.tsx:1' --owner 'UI maintainers'
+```
+
+Add `--status proposed` for an unapproved option. Include `--problem`,
+`--consequences` and `--reconsider` when recording the complete review context.
+The command creates a new Markdown file in `docs/decisions/`, with date and owner;
+`context` locates that intent source. Read the record before the next shared change.
+Keep an existing decision home when the team already has one. Recording a choice
+neither grants authority nor configures a rule.

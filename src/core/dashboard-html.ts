@@ -20,6 +20,7 @@ export function dashboardHistory(history: string, label: string): { rows: Scorec
         ) ||
         !Number.isFinite(Date.parse(row.ranAt)) ||
         typeof row.coverageComplete !== 'boolean' ||
+        (row.docsVersion !== undefined && typeof row.docsVersion !== 'string') ||
         (row.consumersVersion !== undefined && typeof row.consumersVersion !== 'string') ||
         !row.ratios ||
         typeof row.ratios !== 'object' ||

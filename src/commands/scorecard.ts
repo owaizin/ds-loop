@@ -35,6 +35,7 @@ export type ScorecardRow = {
   adapters: string;
   configHash: string;
   consumersVersion?: string;
+  docsVersion?: string;
   ratios: Record<string, number>;
   findings: Record<string, number>;
   findingCount: number;
@@ -91,6 +92,7 @@ export function scorecardRow(
     adapters: report.manifest.adapter,
     configHash: report.manifest.configHash,
     ...(consumers.status === 'checked' ? { consumersVersion: CONSUMERS_VERSION } : {}),
+    ...(report.documentation?.status === 'checked' ? { docsVersion: report.documentation.version } : {}),
     ratios: { ...report.ratios, ...adoptionRatios },
     findings: report.findings.reduce<Record<string, number>>((counts, f) => {
       counts[f.ruleId] = (counts[f.ruleId] ?? 0) + countOf(f);
@@ -113,15 +115,35 @@ function countOf(f: { data?: Record<string, unknown> }): number {
   return 1;
 }
 
-function readHistory(path: string): ScorecardRow[] {
+export function readHistory(path: string, onInvalid?: () => void): ScorecardRow[] {
   if (!existsSync(path)) return [];
   return readFileSync(path, 'utf8')
     .split('\n')
-    .filter(Boolean)
+    .filter((line) => line.trim())
     .flatMap((line) => {
       try {
-        return [JSON.parse(line) as ScorecardRow];
+        const row = JSON.parse(line);
+        if (
+          !row ||
+          typeof row.label !== 'string' ||
+          typeof row.ranAt !== 'string' ||
+          !Number.isFinite(Date.parse(row.ranAt)) ||
+          typeof row.adapters !== 'string' ||
+          typeof row.configHash !== 'string' ||
+          typeof row.coverageComplete !== 'boolean' ||
+          (row.consumersVersion !== undefined && typeof row.consumersVersion !== 'string') ||
+          (row.docsVersion !== undefined && typeof row.docsVersion !== 'string') ||
+          !row.ratios ||
+          typeof row.ratios !== 'object' ||
+          Array.isArray(row.ratios) ||
+          !Object.values(row.ratios).every((v) => typeof v === 'number' && Number.isFinite(v))
+        ) {
+          onInvalid?.();
+          return [];
+        }
+        return [row as ScorecardRow];
       } catch {
+        onInvalid?.();
         return []; // a hand-edited line should not break the run
       }
     });
@@ -129,31 +151,34 @@ function readHistory(path: string): ScorecardRow[] {
 
 type Comparability =
   | { clean: true }
-  | { clean: false; reason: string; changed: ('adapter' | 'config' | 'consumers')[] };
+  | { clean: false; reason: string; changed: ('adapter' | 'config' | 'consumers' | 'docs')[] };
 
 /**
  * Two rows are comparable only when the instrument did not move between them.
  * This is the whole reason the row records `adapters` and `configHash`.
  */
-type Instrument = Pick<ScorecardRow, 'adapters' | 'configHash' | 'consumersVersion'>;
+type Instrument = Pick<ScorecardRow, 'adapters' | 'configHash' | 'consumersVersion' | 'docsVersion'>;
 
 export function comparability(prev: Instrument | null, next: Instrument): Comparability {
   if (!prev) return { clean: true };
-  const changed: ('adapter' | 'config' | 'consumers')[] = [];
+  const changed: ('adapter' | 'config' | 'consumers' | 'docs')[] = [];
   if (prev.adapters !== next.adapters) changed.push('adapter');
   if (prev.configHash !== next.configHash) changed.push('config');
   if (prev.consumersVersion !== next.consumersVersion) changed.push('consumers');
+  if (prev.docsVersion !== next.docsVersion) changed.push('docs');
   if (changed.length === 0) return { clean: true };
   return {
     clean: false,
     changed,
-    reason: changed.includes('consumers')
-      ? `the consumers analysis changed (${prev.consumersVersion ?? 'not recorded'} -> ${next.consumersVersion ?? 'not recorded'})${changed.length > 1 ? '; adapters or config also changed' : ''}`
-      : changed.length === 2
-        ? 'both the adapters and the config changed since the previous row'
-        : changed[0] === 'adapter'
-          ? `the adapters changed (${prev.adapters} -> ${next.adapters})`
-          : `the config changed (${prev.configHash} -> ${next.configHash})`,
+    reason: changed.includes('docs')
+      ? 'the documentation analysis changed; this period cannot be compared'
+      : changed.includes('consumers')
+        ? `the consumers analysis changed (${prev.consumersVersion ?? 'not recorded'} -> ${next.consumersVersion ?? 'not recorded'})${changed.length > 1 ? '; adapters or config also changed' : ''}`
+        : changed.length === 2
+          ? 'both the adapters and the config changed since the previous row'
+          : changed[0] === 'adapter'
+            ? `the adapters changed (${prev.adapters} -> ${next.adapters})`
+            : `the config changed (${prev.configHash} -> ${next.configHash})`,
   };
 }
 

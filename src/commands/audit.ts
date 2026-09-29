@@ -6,6 +6,7 @@ import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { gutter, severityTag, wrapTo } from '../core/ansi.ts';
 import { auditSummary } from '../core/audit-summary.ts';
+import { findWorkspace } from '../core/consumers.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { surveyTree } from '../core/files.ts';
 import { type NextAction, auditViewActions, formatNext, nextAfterAudit } from '../core/next.ts';
@@ -16,10 +17,12 @@ import { type Suppression, applyIgnores } from '../core/suppress.ts';
 import { type TokenArchitecture, tokenArchitecture } from '../core/token-architecture.ts';
 import { type TokenContextRead, readTokenContext } from '../core/token-context.ts';
 import { formatSuggestion } from '../core/token-suggestions.ts';
+import { type DocumentationCoverage, documentationCoverage } from '../rules/docs.ts';
 import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
 
 export type AuditReport = {
+  documentation?: DocumentationCoverage;
   tokenArchitecture?: TokenArchitecture;
   manifest: {
     tool: 'ds-loop';
@@ -101,19 +104,32 @@ export function audit(
     opts.files !== undefined || opts.since !== undefined ? [...(opts.files ?? []), ...changed] : undefined;
   const { meta, source, live } = resolveSource(targetPath, { only });
   const adapters = adaptersFor(source, config);
-  if (adapters.length === 0) {
+  const documentation = documentationCoverage(
+    source.root,
+    source.only !== undefined || (ruleTarget !== 'all' && ruleTarget !== 'docs'),
+  );
+  if (adapters.length === 0 && documentation.status !== 'checked') {
     // No adapter recognised this tree. That is NOT a clean result, and it used to
     // return before printing the coverage report it most needed. Three outcomes
     // must stay distinguishable: an empty repository, styling in a format nothing
     // reads, and a source that was read but could not be judged. None of them may
     // masquerade as a checked system.
-    return noAdapterReport(ruleTarget, meta, source.root, targetPath, config, opts, source.only);
+    return noAdapterReport(
+      ruleTarget,
+      meta,
+      source.root,
+      targetPath,
+      config,
+      opts,
+      source.only,
+      documentation,
+    );
   }
 
   const values = adapters.flatMap((a) => a.extract(source, config));
   const colors = values.filter((v) => v.provenance.classification === 'color');
   const tokenContext = readTokenContext(source, config, values);
-  const ctx = { meta, source, config, values, colors, tokenContext, target: ruleTarget };
+  const ctx = { meta, source, config, values, colors, tokenContext, target: ruleTarget, documentation };
 
   const rules = rulesForTarget(ruleTarget);
   const minRank = opts.minSeverity ? SEVERITY_ORDER[opts.minSeverity] : Number.POSITIVE_INFINITY;
@@ -194,6 +210,27 @@ export function audit(
       ratios[`style-tokenization-${category}`] = round(row.tokenizationRatio);
   }
 
+  const workspace = findWorkspace(source.root).packages;
+  for (const pkg of workspace) {
+    const prefix = `${pkg.dir}/`;
+    const inventory = styleInventory(
+      values.filter(
+        (v) =>
+          v.provenance.file.startsWith(prefix) &&
+          !workspace.some(
+            (p) => p !== pkg && p.dir.startsWith(prefix) && v.provenance.file.startsWith(`${p.dir}/`),
+          ),
+      ),
+    );
+    for (const [category, row] of Object.entries(inventory))
+      if (row.tokenizationRatio !== null)
+        ratios[`style-tokenization-${category}:${pkg.name}`] = round(row.tokenizationRatio);
+  }
+
+  for (const p of documentation.packages)
+    for (const [category, ratio] of Object.entries(p.ratios))
+      if (ratio !== null) ratios[`docs-${category}:${p.package}`] = ratio;
+
   const coverage = buildCoverage(
     source.root,
     adapters,
@@ -204,7 +241,16 @@ export function audit(
     allFindings.filter((f) => f.data?.notJudged === true).map((f) => f.ruleId),
   );
 
+  coverage.documentation = documentation;
+  if (
+    documentation.packages.some((p) => p.status === 'not-checked') ||
+    (ruleTarget === 'docs' && documentation.status === 'not-checked')
+  ) {
+    coverage.couldNotJudge.push('docs/undocumented-shared-component');
+    coverage.complete = false;
+  }
   const report: AuditReport = {
+    documentation,
     manifest: {
       tool: 'ds-loop',
       command: 'audit',
@@ -269,8 +315,10 @@ function noAdapterReport(
     minSeverity?: Severity;
   },
   only?: string[],
+  documentation?: DocumentationCoverage,
 ): AuditReport {
   const coverage = buildCoverage(root, [], [], []);
+  coverage.documentation = documentation;
   const present = surveyTree(root);
   const anyFiles = present.size > 0;
 
@@ -298,6 +346,7 @@ function noAdapterReport(
     ratios: {},
     next: [],
     verdict: 'not-checked',
+    documentation,
   };
   report.next = nextAfterAudit(report, { root, path, config });
 

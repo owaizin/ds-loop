@@ -6,6 +6,7 @@ import {
   semanticLiteralRule,
 } from './color.ts';
 import { rawDimensionRule } from './dimension.ts';
+import { undocumentedSharedComponentRule } from './docs.ts';
 import { rawValueInMarkupRule, stockPaletteUtilityRule } from './markup.ts';
 import { rawValueInStyleRule } from './style.ts';
 import {
@@ -25,6 +26,7 @@ import type { Rule, RuleTarget } from './types.ts';
  * rule id is `domain/kebab-slug` and is stable — scorecards key on it.
  */
 export const RULES: Rule[] = [
+  undocumentedSharedComponentRule,
   upstreamBypassRule,
   tierLeakageRule,
   semanticLiteralRule,
@@ -48,6 +50,7 @@ export function rulesForTarget(target: RuleTarget | 'all'): Rule[] {
 
 export const KNOWN_TARGETS: (RuleTarget | 'all')[] = [
   'all',
+  'docs',
   'tokens',
   'color',
   'spacing',

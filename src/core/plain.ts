@@ -4,6 +4,10 @@ export type PlainWords = { title: string; description: string };
 
 /** Human wording only; never replaces the engine’s stable findings. */
 export const PLAIN_RULES: Record<string, PlainWords> = {
+  'docs/undocumented-shared-component': {
+    title: 'Missing component guidance',
+    description: 'No adjacent story or documentation page was found for this exported component.',
+  },
   'token/raw-value-in-style': {
     title: 'Hard-coded styles',
     description:
@@ -85,6 +89,10 @@ export const PLAIN_VERDICTS = {
   },
 };
 export const PLAIN_COVERAGE = {
+  documentation: {
+    title: 'Component documentation',
+    description: 'Local evidence of stories, pages, types and examples; presence is not quality.',
+  },
   complete: {
     title: 'Checked within the supported scope',
     description: 'No additional gaps were reported; this is not a check of every product behaviour.',
@@ -153,5 +161,14 @@ export function plainCoverage(c: Coverage): string[] {
       ? PLAIN_COVERAGE.complete.description
       : 'Some checks are incomplete. Read the limits before relying on this result.',
   );
+  if (c.documentation) {
+    for (const p of c.documentation.packages)
+      lines.push(
+        `Component documentation · ${p.package}: ${p.ratios.documented === null ? 'not checked' : `${(p.ratios.documented * 100).toFixed(1)}% with a story or docs page`}`,
+      );
+    if (!c.documentation.packages.length)
+      lines.push('Component documentation: not checked — no shared component inventory in scope.');
+    lines.push(...c.documentation.limits);
+  }
   return lines;
 }

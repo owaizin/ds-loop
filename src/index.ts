@@ -41,3 +41,10 @@ export type { Reference, ReferenceSet, Dimension } from './core/benchmark.ts';
 
 export { tokenJsonAdapter } from './adapters/token-json.ts';
 export { scssAdapter } from './adapters/scss.ts';
+
+export { impact } from './commands/impact.ts';
+export { decide } from './commands/decide.ts';
+export type { Decision } from './commands/decide.ts';
+export { documentationCoverage } from './rules/docs.ts';
+export type { DocumentationCoverage } from './rules/docs.ts';
+export { adoptionReport } from './core/adoption.ts';

@@ -15,6 +15,8 @@ Use the [installation guide](install.md) for your first run.
 | `audit [path]` | Summary and coverage; `--all` for full details and ratios | Only with `--out <dir>` or `--html <file>` |
 | `dashboard [path] [--out file.html]` | Write today’s state and saved scorecard trends to an offline dashboard. |
 | `report [path]` | Consulting report with measured evidence and optional `--consult <file.json>` assessment | Writes `ds-loop-report.html` or `--out <file.html>` |
+| `impact <specifier> [path]` | Every direct static import location, production and stories/tests apart; `--json` | No |
+| `decide [path]` | Markdown decision with owner, alternatives, date and evidence refs | Creates a new file in `docs/decisions/` |
 | `consumers [path]` | Workspace imports and static JSX shared-component share per package; `--scope`, `--json`, `--html <file>` | Only with `--html <file>` |
 | `scan <path>` | Extracted-value taxonomy and palette clusters | No |
 | `sweep <path>` | Clustering curve across the configured ΔE range | Only with `--out <dir>` |
@@ -458,3 +460,46 @@ Consultation plan steps accept optional `effort` text. Missing effort displays
 source ratios, and print CSS gives the cover its own page with 18mm margins.
 
 JSON token names retain dotted paths. Tier patterns test the original names and a separator-normalized form; semantic namespaces and reserved terms recognize dotted segments. Configure naming patterns for the source before interpreting tier findings. JSON aliases do not require CSS `var()` fallbacks. SCSS assignment modifiers (`!default`/`!global`) are omitted from the extracted value.
+
+
+## Documentation, impact and decisions
+
+```sh
+ds-loop audit . --target docs --json
+ds-loop impact '@example/ui#Button' . --json
+ds-loop decide . --decision 'Use the shared Button' --alternatives 'Keep local buttons' --evidence 'packages/ui/Button.tsx:1' --owner 'UI maintainers'
+```
+
+Documentation ratios cover detected exported JSX components in shared packages
+(with package exports or workspace consumers). Each package reports stories,
+adjacent Markdown/MDX pages, prop types/tables and literal usage examples.
+`docs/undocumented-shared-component` is low severity and lists components with
+neither a matching story nor a page. No detectable documentation convention, no
+component denominator, or a file-filtered scan means **not checked**, not zero.
+Presence does not establish quality or compliance with a contribution checklist.
+Re-export chains, generated or remote docs, inferred types, and HOCs without JSX
+are outside this regex analysis; matching uses adjacent source/component basenames.
+The JSON includes evidence file:line locations and all ratios.
+
+Impact accepts an exact package subpath, a bare export name, or
+`package/subpath#Export`. It includes every direct static import location without
+a sample cap, split into production and stories/tests. Export names survive local
+import aliases. Re-export chains, dynamic imports, require calls, namespace member
+usage, runtime composition, aliases and external consumers are not resolved.
+**No static import found** never means **safe to delete**. The unconsumed-subpaths
+list retains the broader consumers analysis (including literal dynamic specifiers).
+
+`decide` requires `--decision`, `--alternatives`, comma-separated `--evidence` refs,
+and `--owner`. It defaults to today's UTC date and `accepted` status; use
+`--date YYYY-MM-DD` or `--status proposed` when appropriate. Optional `--problem`,
+`--consequences` and `--reconsider` preserve the governance context. Repeated titles
+create separate files; existing records are never replaced. `context` discovers
+these as intent sources. A record does not grant approval or configure enforcement.
+
+`report` reads `.ds-scorecard/history.jsonl` from the current working directory,
+matching the audited source label. Its adoption section states the period and
+recorded-run count, then compares baseline and latest ratios by category/package.
+One row is a baseline, not a trend. Any adapter, config, consumer-analysis or
+documentation-analysis change in the period prevents a delta. Missing ratios are
+not checked, never zero. Labels are not full paths: avoid mixing identically named
+sources in one history file. Ratios describe source evidence, not money or time saved.

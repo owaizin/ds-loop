@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { adaptersFor } from '../adapters/registry.ts';
+import { listFiles } from '../core/files.ts';
 
 import type { LoadedConfig } from '../config/load.ts';
 import { renderContract } from '../core/contract.ts';
@@ -77,6 +78,12 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
       : '';
     const shown = found.map((f) => (f.isDir ? `${f.path}/` : f.path)).join(', ');
     console.log(`  declared    ${shown}${front.startsWith('---') ? ' (frontmatter)' : ''}`);
+    for (const file of listFiles(join(source.root, 'docs/decisions'), ['.md'])) {
+      const text = readFileSync(file, 'utf8');
+      console.log(
+        `  decision    ${file} · ${text.split('\n')[0]} · ${text.match(/^Status: (.*)$/m)?.[1] ?? 'status not recorded'}`,
+      );
+    }
     console.log('              read these before treating any finding as drift — a value that');
     console.log('              disagrees with a stated convention is drift; one that disagrees');
     console.log('              with nothing is a convention nobody wrote down yet.');

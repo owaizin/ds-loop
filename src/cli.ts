@@ -6,8 +6,10 @@ import { audit } from './commands/audit.ts';
 import { consumers } from './commands/consumers.ts';
 import { context } from './commands/context.ts';
 import { dashboard } from './commands/dashboard.ts';
+import { decide } from './commands/decide.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
+import { impact } from './commands/impact.ts';
 import { overview } from './commands/overview.ts';
 import { report } from './commands/report.ts';
 import { scan } from './commands/scan.ts';
@@ -68,6 +70,15 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
       Reads scorecard history from cwd; does not append a row. Exit status is unchanged.
       --require-coverage also exits 1 when part of the source could not be read or
       judged, so a green pipeline means "checked and clean" rather than "silent".
+
+  ds-loop impact <package/subpath|Export|package#Export> [path] [--json]
+      Locate every direct static import; separate production from stories/tests.
+      No static import found is never a deletion-safety claim.
+
+  ds-loop decide [path] --decision <text> --alternatives <text> --evidence <refs> --owner <name>
+      Append a Markdown record in docs/decisions/. Evidence refs are comma-separated.
+      Optional: --date YYYY-MM-DD --status accepted|proposed --problem <text>
+      --consequences <text> --reconsider <text> --json
 
   ds-loop consumers [<path>] [--scope <@org>] [--json] [--html <file>]
       Which workspace package imports which shared package: specifiers, named
@@ -131,6 +142,15 @@ function main(argv: string[]): void {
   const loaded = loadConfig(flag(rest, 'config'));
   const { config } = loaded;
   const valueFlags = new Set([
+    '--decision',
+    '--alternatives',
+    '--evidence',
+    '--owner',
+    '--date',
+    '--status',
+    '--problem',
+    '--consequences',
+    '--reconsider',
     '--target',
     '--out',
     '--html',
@@ -151,6 +171,34 @@ function main(argv: string[]): void {
     throw new Error('--against is supported by report and dashboard');
   const referenceOverride = against === 'products' || against === 'systems' ? against : undefined;
   switch (cmd) {
+    case 'impact': {
+      impact(positional[0] ?? '', positional[1] ?? '.', { json: has(rest, 'json') });
+      break;
+    }
+    case 'decide': {
+      const required = (name: string) => {
+        const value = flag(rest, name);
+        if (!value || value.startsWith('--')) throw new Error(`--${name} needs a value`);
+        return value;
+      };
+      for (const name of ['date', 'status', 'problem', 'consequences', 'reconsider'])
+        if (has(rest, name)) required(name);
+      const file = decide(positional[0] ?? '.', {
+        decision: required('decision'),
+        alternatives: required('alternatives'),
+        evidence: required('evidence')
+          .split(',')
+          .map((s) => s.trim()),
+        owner: required('owner'),
+        date: flag(rest, 'date'),
+        status: flag(rest, 'status') as 'accepted' | 'proposed' | undefined,
+        problem: flag(rest, 'problem'),
+        consequences: flag(rest, 'consequences'),
+        reconsider: flag(rest, 'reconsider'),
+      });
+      console.log(has(rest, 'json') ? JSON.stringify({ file }) : `Decision recorded: ${file}`);
+      break;
+    }
     case 'dashboard': {
       if (has(rest, 'out') && (!flag(rest, 'out') || flag(rest, 'out')!.startsWith('-')))
         throw new Error('--out needs a file path');

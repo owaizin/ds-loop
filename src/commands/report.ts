@@ -1,12 +1,14 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import type { LoadedConfig } from '../config/load.ts';
+import { adoptionReport } from '../core/adoption.ts';
 import type { ReferenceSet } from '../core/benchmark.ts';
 import { renderConsultHtml } from '../core/consult-html.ts';
 import { type Consult, checkConsult } from '../core/consult.ts';
 import { analyseConsumers } from '../core/consumers.ts';
 import { resolveSource } from '../core/source.ts';
 import { audit } from './audit.ts';
+import { readHistory } from './scorecard.ts';
 
 /** Report generation succeeds even with findings; malformed inputs and I/O failures do not. */
 export function report(
@@ -31,7 +33,25 @@ export function report(
   });
   const extractedRoot = resolveSource(path).source.root;
   const evidenceRoot = statSync(extractedRoot).isDirectory() ? extractedRoot : dirname(extractedRoot);
-  const html = renderConsultHtml(measured, analyseConsumers(root), evidenceRoot, consult, opts.against);
+  let history: ReturnType<typeof readHistory> = [];
+  let historyError: string | undefined;
+  try {
+    history = readHistory(join(process.cwd(), '.ds-scorecard', 'history.jsonl'), () => {
+      historyError = 'Scorecard history contains invalid rows; adoption was not checked.';
+    });
+    if (historyError) history = [];
+  } catch {
+    historyError = 'Scorecard history could not be read; adoption was not checked.';
+  }
+  const html = renderConsultHtml(
+    measured,
+    analyseConsumers(root),
+    evidenceRoot,
+    consult,
+    opts.against,
+    adoptionReport(history, measured.manifest.fixtureLabel),
+    historyError,
+  );
   const output = resolve(opts.out ?? 'ds-loop-report.html');
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, html);

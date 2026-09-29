@@ -1,6 +1,12 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { type ComponentUse, type UsageSummary, componentUses, summarizeUsage } from './component-usage.ts';
+import {
+  type ComponentUse,
+  type UsageSummary,
+  codeMask,
+  componentUses,
+  summarizeUsage,
+} from './component-usage.ts';
 import { listFiles } from './files.ts';
 
 /**
@@ -21,7 +27,7 @@ import { listFiles } from './files.ts';
  * dependency the engine refuses.
  */
 
-export const CONSUMERS_VERSION = '0.2.0';
+export const CONSUMERS_VERSION = '0.3.0';
 
 export type Platform = 'web' | 'native' | 'unknown';
 
@@ -56,7 +62,18 @@ export interface ConsumerEntry {
   uses: SpecifierUse[];
 }
 
+export interface ImportOccurrence extends ImportSample {
+  package: string;
+  specifier: string;
+  target: string;
+  subpath: string;
+  names: string[];
+  production: boolean;
+  kind: 'static' | 'reexport' | 'dynamic' | 'require';
+}
+
 export interface ConsumersReport {
+  imports?: ImportOccurrence[];
   analysisVersion: string;
   status: 'checked' | 'not-checked';
   scope: string | null;
@@ -261,6 +278,7 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
   const { packages, source } = findWorkspace(root);
   const names = packages.map((p) => p.name).sort((a, b) => b.length - a.length);
   const consumers: ConsumerEntry[] = [];
+  const imports: ImportOccurrence[] = [];
   const productionUse = new Map<string, number>(); // `${pkg}\0${subpath}` → production imports from other packages
   const anyUse = new Map<string, number>();
 
@@ -296,13 +314,26 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
           ...componentUses(text, rel, pkg.name, names, opts.scope, dependencies, aliases),
         );
       }
+      const code = codeMask(text);
       let lineAt: ((index: number) => number) | undefined;
       for (const m of text.matchAll(SPECIFIER)) {
+        if (!/^(?:import|export|require)\b/.test(code.slice(m.index))) continue;
         const spec = m[3] ?? m[4] ?? m[5] ?? m[6] ?? m[7];
         if (!spec) continue;
         if (opts.scope && !spec.startsWith(opts.scope)) continue;
         const hit = resolveTarget(spec, names);
         if (!hit || hit.target === pkg.name) continue;
+        lineAt ??= lineIndex(text);
+        imports.push({
+          package: pkg.name,
+          specifier: spec,
+          ...hit,
+          names: m[2] === undefined ? [] : namedImports(m[2]),
+          production,
+          file: rel,
+          line: lineAt(m.index),
+          kind: m[4] ? 'reexport' : m[5] ? 'dynamic' : m[6] ? 'require' : 'static',
+        });
         const use =
           uses.get(spec) ??
           ({ specifier: spec, ...hit, count: 0, production: 0, names: {}, samples: [] } as SpecifierUse);
@@ -337,6 +368,7 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
 
   return {
     analysisVersion: CONSUMERS_VERSION,
+    imports,
     status: packages.length ? 'checked' : 'not-checked',
     scope: opts.scope ?? null,
     root,
