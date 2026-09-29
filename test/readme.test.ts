@@ -45,16 +45,52 @@ function run(args: string[], cwd: string): string {
   }
 }
 
-/** every ```-fenced block preceded by `<!-- verified: id -->` */
-function verifiedBlocks(): Map<string, string> {
-  const readme = ['README.md', 'docs/guide/output.md', 'docs/site/landing-copy.md']
-    .map((file) => readFileSync(join(ROOT, file), 'utf8'))
-    .join('\n');
+/** Decode text from HTML code blocks without treating escaped tags as markup. */
+function decodeHtml(text: string): string {
+  const named: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+  return text.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (entity, name: string) => {
+    if (name.startsWith('#')) {
+      return String.fromCodePoint(
+        name[1]?.toLowerCase() === 'x' ? Number.parseInt(name.slice(2), 16) : Number(name.slice(1)),
+      );
+    }
+    return named[name.toLowerCase()] ?? entity;
+  });
+}
+
+/** Every marked Markdown fence or HTML pre/code block must be extractable. */
+function extractVerified(text: string): Map<string, string> {
   const blocks = new Map<string, string>();
-  const re = /<!--\s*verified:\s*([a-z0-9-]+)\s*-->\s*\n```[a-z]*\n([\s\S]*?)```/g;
-  for (const m of readme.matchAll(re)) blocks.set(m[1]!, m[2]!);
+  const re =
+    /<!--\s*verified:\s*([a-z0-9-]+)\s*-->\s*(?:```[a-z]*\n([\s\S]*?)```|<pre\b[^>]*>\s*<code\b[^>]*>([\s\S]*?)<\/code>\s*<\/pre>)/g;
+  for (const m of text.matchAll(re)) {
+    const body = m[2] ?? decodeHtml(m[3]!);
+    if (blocks.has(m[1]!)) assert.equal(blocks.get(m[1]!), body, `conflicting samples: ${m[1]}`);
+    blocks.set(m[1]!, body);
+  }
+  for (const marker of text.matchAll(/<!--\s*verified:\s*([a-z0-9-]+)\s*-->/g)) {
+    assert.ok(blocks.has(marker[1]!), `verified marker has no extractable sample: ${marker[1]}`);
+  }
   return blocks;
 }
+
+function verifiedBlocks(): Map<string, string> {
+  return extractVerified(
+    ['README.md', 'docs/guide/output.md', 'docs/site/landing-copy.md', 'site/reference.html']
+      .map((file) => readFileSync(join(ROOT, file), 'utf8'))
+      .join('\n'),
+  );
+}
+
+test('verified samples: HTML entities and Markdown fences preserve output text', () => {
+  const blocks = extractVerified(
+    '<!-- verified: html -->\n<pre class="output"><code>0 &lt; 1 &amp; &#x27;x&#39; &quot;y&quot;</code></pre>\n' +
+      '<!-- verified: markdown -->\n```text\nreal output\n```',
+  );
+  assert.equal(blocks.get('html'), `0 < 1 & 'x' "y"`);
+  assert.equal(blocks.get('markdown'), 'real output\n');
+  assert.throws(() => extractVerified('<!-- verified: missing -->'), /no extractable sample/);
+});
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 
@@ -63,18 +99,28 @@ function assertBlockIsReal(id: string, documented: string, actual: string): void
   const haystack = norm(actual);
   const skip = /^(since |appended to |version |ds-loop scorecard —)/;
 
+  let cursor = 0;
   for (const raw of documented.split('\n')) {
     const line = raw.trim();
     if (line === '' || skip.test(line)) continue;
     // `…` marks truncation: check the part that is actually claimed
     const claim = norm(line.split('…')[0] ?? '');
     if (claim.length < 8) continue;
+    const position = haystack.indexOf(claim, cursor);
     assert.ok(
-      haystack.includes(claim),
+      position >= 0,
       `README block "${id}" claims a line the real output does not contain:\n  claimed: ${claim}\n  Either the output changed and the README is stale, or the sample was never real.\n  actual output:\n${actual.replace(/^/gm, '    ')}`,
     );
+    cursor = position + claim.length;
   }
 }
+
+test('verified samples reject reordered and spliced claims', () => {
+  const actual = 'first finding; second finding; third finding';
+  assert.throws(() => assertBlockIsReal('reordered', 'third finding\nfirst finding', actual));
+  assert.throws(() => assertBlockIsReal('spliced', 'first finding; third finding', actual));
+  assertBlockIsReal('truncated', 'first finding…\nthird finding', actual);
+});
 
 function inTemp<T>(files: Record<string, string>, fn: (dir: string) => T): T {
   const dir = mkdtempSync(join(tmpdir(), 'ds-loop-readme-'));
@@ -163,38 +209,47 @@ for (const [id, args] of [
   });
 }
 
-test('README: consulting report output is real', () => {
-  const block = verifiedBlocks().get('report-css-example');
-  assert.ok(block);
-  inTemp({}, (dir) => {
-    const actual = run(
-      ['report', join(ROOT, 'fixtures/css-audit-example'), '--out', 'scratch/phase-1/css-report.html'],
-      dir,
-    );
-    assertBlockIsReal('report-css-example', block, actual);
+for (const [command, output, ids] of [
+  ['report', 'scratch/phase-1/css-report.html', ['report-css-example', 'guide-report-css-example']],
+  [
+    'dashboard',
+    'scratch/phase-2/dashboard-empty.html',
+    ['dashboard-css-example', 'guide-dashboard-css-example'],
+  ],
+] as const) {
+  test(`documentation: ${command} output is real in README and guide`, () => {
+    inTemp({}, (dir) => {
+      const actual = run([command, join(ROOT, 'fixtures/css-audit-example'), '--out', output], dir);
+      for (const id of ids) {
+        const block = verifiedBlocks().get(id);
+        assert.ok(block, `missing verified block: ${id}`);
+        assertBlockIsReal(id, block, actual);
+      }
+    });
   });
-});
+}
 
-test('README: dashboard output is real', () => {
-  const block = verifiedBlocks().get('dashboard-css-example');
-  assert.ok(block);
-  inTemp({}, (dir) => {
-    const actual = run(
-      [
-        'dashboard',
-        join(ROOT, 'fixtures/css-audit-example'),
-        '--out',
-        'scratch/phase-2/dashboard-empty.html',
-      ],
-      dir,
-    );
-    assertBlockIsReal('dashboard-css-example', block, actual);
+// The page has four synthetic audit cases, not the nine described in the brief.
+// Reproduce the inputs supplied beside the page, never use saved output as truth.
+const siteCases = JSON.parse(readFileSync(join(ROOT, 'site/examples.json'), 'utf8')) as {
+  id: string;
+  files: Record<string, string>;
+}[];
+
+for (const { id, files } of siteCases) {
+  test(`site: ${id} audit specimen is real output`, () => {
+    const block = verifiedBlocks().get(`site-${id}`);
+    assert.ok(block, `missing verified site sample: site-${id}`);
+    const actual = inTemp(files, (dir) => run(['audit', '.', '--all'], dir));
+    assertBlockIsReal(`site-${id}`, block, actual);
   });
-});
+}
 
-test('every verified block in the README is registered in this file', () => {
+test('every verified documentation block is registered in this file', () => {
   // an unregistered `verified:` block is an unchecked claim wearing a badge
   const registered = new Set([
+    'guide-report-css-example',
+    'guide-dashboard-css-example',
     'report-css-example',
     'dashboard-css-example',
     'start-css-showcase',
@@ -207,8 +262,17 @@ test('every verified block in the README is registered in this file', () => {
     'audit-css-inventory',
     'audit-css-suggestion',
   ]);
+  const siteIds = ['finding', 'judgment', 'unread', 'palette'];
+  assert.deepEqual(
+    siteCases.map(({ id }) => id).sort(),
+    [...siteIds].sort(),
+    'register every site input case',
+  );
+  for (const name of siteIds) registered.add(`site-${name}`);
   for (const id of verifiedBlocks().keys()) {
     assert.ok(registered.has(id), `README block "${id}" is marked verified but nothing checks it`);
   }
-  assert.equal(verifiedBlocks().size, registered.size);
+  for (const id of registered) {
+    assert.ok(verifiedBlocks().has(id), `registered sample is missing: ${id}`);
+  }
 });

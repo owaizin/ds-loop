@@ -7,6 +7,7 @@ import { consumers } from './commands/consumers.ts';
 import { context } from './commands/context.ts';
 import { dashboard } from './commands/dashboard.ts';
 import { decide } from './commands/decide.ts';
+import { doctor } from './commands/doctor.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
 import { impact } from './commands/impact.ts';
@@ -99,6 +100,10 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
   ds-loop sweep <path> [--out <dir>] [--config <file>]
       Sweep the CIEDE2000 ΔE cutoff across the configured range. Full curve.
 
+  ds-loop doctor [<path>] [--json]
+      Report contract drift, unmatched config patterns, guard state and cited intent/code pairs.
+      Read-only evidence; always exits 0.
+
   ds-loop scorecard [<path>] [--dry-run] [--json]
       Append one row of ratios to .ds-scorecard/history.jsonl and print the change
       since the last row. A delta is only called a delta when the adapters and the
@@ -155,6 +160,11 @@ function main(argv: string[]): void {
       }
     }
     install({ agent: flag(rest, 'agent'), dryRun: has(rest, 'dry-run'), guard: has(rest, 'guard') });
+    return;
+  }
+  if (cmd === 'doctor') {
+    const args = rest.filter((a, i) => !a.startsWith('-') && rest[i - 1] !== '--config');
+    doctor(args[0] ?? '.', { json: has(rest, 'json'), configPath: flag(rest, 'config') });
     return;
   }
   const loaded = loadConfig(flag(rest, 'config'));

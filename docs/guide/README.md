@@ -1,10 +1,16 @@
 # Design System Loop guide
 
-Start with a code check or bring a design-system problem to your agent.
-The engine reports evidence; the agent helps you decide what to do with it.
+Find hardcoded styles and the shared components your product uses:
+
+```sh
+npx ds-loop
+```
+
+Bring the findings or a design-system problem to your agent.
 
 | Your next step | Read |
 |---|---|
+| See what changed in 0.4.0 | [Release notes](release-0.4.0.md) |
 | Install and run your first check | [Installation](install.md) |
 | Understand a finding or coverage gap | [Reading an audit](output.md) |
 | Set up, improve or maintain a system | [Choose a workflow](workflow.md) |

@@ -81,11 +81,19 @@ test('CLI report headers are the command name, not the product name', () => {
  * so agreeing on a wrong list still fails.
  */
 test('both command tables list exactly the commands the CLI implements', () => {
+  // Both routing forms count. `install` and `doctor` are early `if (cmd === …)` guards
+  // ahead of the switch, because neither should fail on a broken config — and reading
+  // only `case` labels missed them, so a documentation table that omitted both passed
+  // this test. An inventory check that under-counts the inventory agrees with the gap
+  // it exists to catch.
+  const cli = read('src/cli.ts');
   const implemented = new Set(
-    [...read('src/cli.ts').matchAll(/^ {4}case '([a-z-]+)':/gm)]
+    [...cli.matchAll(/^ {4}case '([a-z-]+)':/gm), ...cli.matchAll(/^ {2}if \(cmd === '([a-z-]+)'\)/gm)]
       .map((m) => m[1]!)
       .filter((c) => c !== '-h' && c !== '--help'),
   );
+  for (const required of ['install', 'doctor'])
+    assert.ok(implemented.has(required), `${required} is routed but this test did not see it`);
 
   // SKILL.md marks CLI rows with a **CLI** cell; playbook rows are not commands
   // a cell may contain escaped pipes, as in `guard [on\|off\|status]`

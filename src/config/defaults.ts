@@ -235,6 +235,18 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
       'stone',
       'neutral',
     ],
+    // Deliberately few, and deliberately whole-line. Widening this list widens what
+    // `doctor` claims to have checked, and a wrong "your docs are out of date" costs
+    // more than a quiet one. `doctor` prints this scope beside the result, so a reader
+    // can see which sentences it looked for and that finding none is not a pass.
+    conventionStatements: [
+      'All CSS color values must use tokens.',
+      'All CSS colour values must use tokens.',
+      'Use design tokens for all colors.',
+      'Use design tokens for all colours.',
+      'No hardcoded colors.',
+      'No hardcoded colours.',
+    ],
     // measured on two real repos: one classified 0 of 17 referencing tokens, the
     // other 2 of 71. Both looked like a clean tier pass and neither was checked.
     tierCoverageFloor: 0.5,

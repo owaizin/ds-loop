@@ -1,6 +1,7 @@
 # Set up Design System Loop
 
-Use Node 22.6 or later. Install the complete package in the project you want to inspect.
+Give your agent the same design-system instructions on every task. Install the
+complete package in your project with Node 22.6 or later.
 
 ## Install from npm
 
@@ -9,6 +10,43 @@ npm install --save-dev ds-loop@0.4.0
 ```
 
 To test local changes, use [source installation](#install-from-source). Both paths install the CLI and companion skill. A local tarball path is specific to your machine; switch to the matching registry release before asking teammates to install it.
+
+## Add instructions for your agent
+
+```sh
+npx ds-loop install --agent codex --dry-run
+npx ds-loop install --agent codex
+```
+
+Choose `claude`, `cursor`, `codex` or `all`. Without `--agent`, the installer detects
+`.claude/`, `.cursor/`, and either `AGENTS.md` or `.codex/`. If it finds none, it
+writes nothing and asks you to select one.
+
+| Agent | Project file |
+| --- | --- |
+| Claude Code | `CLAUDE.md` |
+| Cursor | `.cursor/rules/ds-loop.mdc` |
+| Codex | `AGENTS.md` |
+
+The [installer](../../src/commands/install.ts) writes a short instruction block:
+the first CLI command, twelve agent commands, and paths to the bundled skill and
+command instructions. It creates missing parent directories and files. In an
+existing file it appends the block and preserves your text. On reruns it replaces
+only the text between `<!-- ds-loop:start -->` and `<!-- ds-loop:end -->`, including
+the markers. Unchanged blocks aren't rewritten. Missing, repeated or reversed
+markers stop installation before any selected instruction file changes.
+
+The guard is opt-in because it edits your `.claude/settings.json`:
+
+```sh
+npx ds-loop install --agent claude --guard --dry-run
+npx ds-loop install --agent claude --guard
+```
+
+Without `--guard`, installation only writes agent instructions. `--dry-run`
+previews both instruction and requested guard changes. These references don't
+launch an agent or register slash commands in every host; load the bundled skill
+using your agent's setup below.
 
 ## Get a first reading
 
@@ -20,7 +58,10 @@ A pre-existing report or `.ds-scorecard/` prevents automatic creation. Explicit
 
 ## Check the installation
 
-You should receive a report containing a verdict, adapter coverage and findings or their absence. If the result is `not-checked`, consult [coverage](reference.md#coverage); reinstalling will not add an adapter for an unsupported format.
+Run `npx ds-loop doctor .` for read-only installation and contract diagnostics.
+It reports missing evidence and drift without changing settings or acting as a CI gate.
+
+Your first audit produces a report containing a verdict, adapter coverage and findings or their absence. If the result is `not-checked`, consult [coverage](reference.md#coverage); reinstalling will not add an adapter for an unsupported format.
 
 ## Start with your agent
 

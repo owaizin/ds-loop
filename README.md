@@ -84,7 +84,12 @@ Install the engine and companion skill in your project:
 
 ```sh
 npm install --save-dev ds-loop@0.4.0
+npx ds-loop install --agent codex
 ```
+
+Use `--agent claude`, `cursor` or `all` for another host. The installer preserves
+your text and updates only its marked block. Add `--guard` to opt into Claude Code
+post-edit feedback. [Installer details](docs/guide/install.md#add-instructions-for-your-agent).
 
 For automatic discovery, use the [Claude Code plugin or Codex skill setup](docs/guide/install.md#claude-code-plugin). Both use the same bundled skill.
 
@@ -121,10 +126,14 @@ artifacts; the agent follows the bundled playbooks.
 | You want to… | Run |
 |---|---|
 | Get a first reading | `npx ds-loop` or `npx ds-loop start .` |
+| Check installation, contract drift and guard state | `npx ds-loop doctor .` |
 | See configuration and convention files | `npx ds-loop context .` |
 | Inspect every finding or export data | `npx ds-loop audit . --all` or `--json` |
 | Save a consulting report | `npx ds-loop report . --consult consult.json` |
 | Map shared imports and component usage | `npx ds-loop consumers .` |
+| Open today’s measurements and saved trends | `npx ds-loop dashboard .` |
+| Find direct consumers of an export | `npx ds-loop impact '@example/ui#Button' .` |
+| Record a decision with its owner and evidence | `npx ds-loop decide --help` |
 | Compare measurements over time | `npx ds-loop scorecard .` |
 | Inspect the palette or its clustering threshold | `npx ds-loop scan .` or `npx ds-loop sweep .` |
 | Preview mechanical fallback fixes | `npx ds-loop fix .` |

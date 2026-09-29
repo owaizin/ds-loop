@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -131,4 +131,82 @@ test('a saved exception retains its file selector rather than becoming blanket p
   });
   assert.match(md, /legacy\/\*/);
   assert.match(md, /all files/);
+});
+
+test('package measurements are local and honor the sample floor boundary', () => {
+  inTree(
+    {
+      'package.json': '{"workspaces":["packages/*"]}',
+      'packages/full/package.json': '{"name":"full"}',
+      'packages/full/style.css': Array.from({ length: 100 }, (_, i) => `.x${i} { color: var(--ink); }`).join(
+        '\n',
+      ),
+      'packages/small/package.json': '{"name":"small"}',
+      'packages/small/style.css': Array.from({ length: 99 }, (_, i) => `.x${i} { color: red; }`).join('\n'),
+    },
+    (root) => {
+      context(root, loaded(), { writeContract: true });
+      const md = readFileSync(join(root, 'DESIGN-SYSTEM.md'), 'utf8');
+      const full = md.split('### full')[1].split('### small')[0];
+      const small = md.split('### small')[1];
+      assert.match(full, /css-rule-bodies@/);
+      assert.match(full, /style-tokenization-color \| 1 \|/);
+      assert.match(small, /style-tokenization-color \| not measured/);
+    },
+  );
+});
+
+test('workspace sections include packages without measurable styling', () => {
+  inTree(
+    {
+      'package.json': '{"workspaces":["packages/*"]}',
+      'packages/styled/package.json': '{"name":"@example/styled"}',
+      'packages/styled/style.css': '.x { color: red; }',
+      'packages/empty/package.json': '{"name":"@example/empty"}',
+    },
+    (root) => {
+      context(root, loaded(), { writeContract: true });
+      const md = readFileSync(join(root, 'DESIGN-SYSTEM.md'), 'utf8');
+      assert.match(md, /### @example\/styled/);
+      assert.match(md, /### @example\/empty/);
+      assert.match(md, /not checked — no adapter/);
+      assert.doesNotMatch(md, /0%/);
+    },
+  );
+});
+
+test('example-workspace lists every discovered package and preserves the resulting contract', () => {
+  inTree({}, (root) => {
+    cpSync('fixtures/example-workspace', root, { recursive: true });
+    context(root, loaded(), { writeContract: true });
+    const file = join(root, 'DESIGN-SYSTEM.md');
+    const md = readFileSync(file, 'utf8');
+    for (const name of ['@example/ui', '@example/dashboard', '@example/portal']) assert.ok(md.includes(name));
+    assert.match(md, /not measured/);
+    context(root, loaded(), { writeContract: true });
+    assert.equal(readFileSync(file, 'utf8'), md);
+  });
+});
+
+test('shared-component share uses production JSX occurrences and the common sample floor', () => {
+  inTree(
+    {
+      'package.json': '{"workspaces":["packages/*"]}',
+      'packages/ui/package.json': '{"name":"@example/ui"}',
+      'packages/ui/index.tsx': 'export const Button = () => <button />;',
+      'packages/app/package.json': '{"name":"@example/app"}',
+      'packages/app/App.tsx': `import { Button } from '@example/ui'; export const App = () => <>${'<Button />'.repeat(100)}</>;`,
+      'packages/small/package.json': '{"name":"@example/small"}',
+      'packages/small/App.tsx': `import { Button } from '@example/ui'; export const App = () => <>${'<Button />'.repeat(99)}</>;`,
+    },
+    (root) => {
+      context(root, loaded(), { writeContract: true });
+      const md = readFileSync(join(root, 'DESIGN-SYSTEM.md'), 'utf8');
+      assert.match(md.split('### @example/app')[1].split('### ')[0], /shared-component-share \| 1 \|/);
+      assert.match(
+        md.split('### @example/small')[1].split('### ')[0],
+        /shared-component-share \| not measured/,
+      );
+    },
+  );
 });

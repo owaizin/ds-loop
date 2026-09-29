@@ -31,8 +31,8 @@
 <aside class="docs-nav" aria-label="Setup steps">
 <div class="nav-group">
 <p>Connect your codebase</p>
-<a href="#build">1. Install the package</a>
-<a href="#connect">2. Load the skill</a>
+<a href="#build">1. Run your first check</a>
+<a href="#connect">2. Connect your agent</a>
 <a href="#task">3. Agree on the delivery</a>
 <a href="#help">Check your result</a>
 <a href="#source">Install from source</a>
@@ -43,38 +43,43 @@
 <article>
 <div class="doc-title">
 <h1>Set up<br>Design System Loop.</h1>
-<p>Install the package, load the skill in your coding agent, and describe what you need. Your agent investigates the repository and guides the next steps.</p>
+<p>Run <code>npx ds-loop</code> in your project. Get findings, coverage and a first report, then connect your agent to act on what needs work.</p>
 </div>
 <aside class="setup-requirements" aria-label="Before you start">
 <strong>Before you start</strong>
 <p>You’ll need Node 22.6 or later and npm. For the companion skill, use a coding agent that can read local files and run terminal commands. Start in an isolated checkout of the project you want to inspect.</p>
-<p>The CLI checks CSS custom-property declarations, Tailwind arbitrary values, and selected named-palette utilities in JS/TS when token context is available. Your agent uses the companion skill to investigate findings and work with your project’s conventions. <a href="reference.html#coverage">Check the supported scope</a>.</p>
+<p>The CLI reads CSS declarations and rule bodies, Tailwind values in JS/TS strings, token JSON, and SCSS/Sass within its stated limits. Your agent uses the companion skill to investigate findings and work with your project’s conventions. <a href="reference.html#coverage">Check the supported scope</a>.</p>
 </aside>
 <section class="doc-section" id="build" aria-labelledby="build-title">
-<h2 id="build-title">1. Install the package</h2>
-<p>Run this in your project directory to install Design System Loop 0.2.0 from npm. To try the expanded 0.2.1 setup procedure before publication, use <a href="#source">source installation</a>.</p>
+<h2 id="build-title">1. Run your first check</h2>
+<p>Run this in your project directory to try Design System Loop 0.4.0. The first run saves <code>ds-loop-report.html</code> when no report or scorecard directory exists. It preserves an existing report.</p>
 <div class="code-head"><span>Terminal · your project directory</span><button class="copy-button" type="button" data-copy="build-code" hidden>Copy command</button></div>
-<pre><code id="build-code">npm install --save-dev ds-loop@0.2.0</code></pre>
+<pre><code id="build-code">npx ds-loop</code></pre>
 <div class="copy-status" id="build-code-status" role="status" aria-live="polite"></div>
-<p>The package includes the CLI and the companion skill at <code>node_modules/ds-loop/skill/SKILL.md</code>. Installing it does not load the skill into your agent or enable ongoing maintenance. Load the skill in step 2.</p>
+<p>Keep the CLI and companion skill available to your agent by installing the package locally:</p>
+<pre><code>npm install --save-dev ds-loop@0.4.0</code></pre>
+<p>Installing the package does not start an agent session. Connect it next.</p>
 </section>
 <section class="doc-section" id="connect" aria-labelledby="connect-title">
-<h2 id="connect-title">2. Load the skill</h2>
-<p>Open your coding agent in the project where you installed the package. Paste this prompt and describe your problem. The agent runs the relevant checks; you do not need to interpret an audit before starting.</p>
+<h2 id="connect-title">2. Connect your agent</h2>
+<p>From your project directory, run <code>ds-loop install</code>. With the local npm installation above, use:</p>
+<pre><code>npx --no-install ds-loop install</code></pre>
+<p>The installer detects Claude Code, Cursor and Codex. It appends a marked block to <code>CLAUDE.md</code>, <code>.cursor/rules/ds-loop.mdc</code> or <code>AGENTS.md</code>, preserving your existing instructions. Reruns update only that block and are idempotent.</p>
+<p>If no agent is detected, select one with <code>--agent claude</code>, <code>--agent cursor</code> or <code>--agent codex</code>. Use <code>--agent all</code> for all three, or <code>--dry-run</code> to preview. Claude edit feedback is opt-in with <code>--guard</code>.</p>
+<p>Open your agent in this project and describe the problem. If you’ve loaded the plugin, start with <code>/ds-loop:start</code>. Otherwise use this prompt with the installed project guidance:</p>
 <div class="code-head"><span>Agent prompt · add your product and problem</span><button class="copy-button" type="button" data-copy="first-task" data-copy-kind="Prompt" hidden>Copy prompt</button></div>
-<pre class="prompt"><code id="first-task">Read node_modules/ds-loop/skill/SKILL.md and follow it throughout this task. Confirm the installed version.
+<pre class="prompt"><code id="first-task">Follow the installed Design System Loop project guidance. Confirm the installed version.
 
 I need help with our design system. Start by asking what problem we need to solve, unless I have already explained it. Inspect the repository, existing components, conventions, and representative workflows.
 
 Explain what exists, what is missing, and what you could not verify. Ask only about unknowns that would change your approach. Recommend a delivery with clear outputs and a finish line. Start read-only.</code></pre>
 <div class="copy-status" id="first-task-status" role="status" aria-live="polite"></div>
 <p><strong>You should receive:</strong> a diagnosis grounded in your project, a recommended scope, and questions about decisions the agent cannot infer. Installing the package alone does not start this conversation.</p>
-<p class="small">Keep the whole package installed. The skill needs the adjacent <code>bin/</code> and <code>dist/</code> directories. Asking the agent to read the file directly avoids relying on automatic skill discovery.</p>
+<p class="small">Keep the whole package installed. The skill needs the adjacent <code>bin/</code> and <code>dist/</code> directories. The installer links your agent to those local instructions; it does not install a plugin or start the conversation.</p>
 </section>
 <section class="doc-section" id="task" aria-labelledby="task-title">
 <h2 id="task-title">3. Agree on the delivery</h2>
 <p>For a full setup, the plan should cover foundations, components, product patterns, a working reference, and maintenance guidance. It should name the workflows that will use them and the behavior to preserve. A proposal-only request should remain read-only.</p>
-<aside class="note"><p><strong>Expanded setup in 0.2.1:</strong> the full establishment procedure is in the source checkout and is not yet on npm. Use <a href="#source">source installation</a> to evaluate it. The npm command above installs 0.2.0.</p></aside>
 <p>When the scope is right, authorize the work. If you already provided a clear task and permission, the agent should continue without asking again at every step.</p>
 <div class="code-head"><span>Agent prompt · after reviewing the plan</span><button class="copy-button" type="button" data-copy="delivery-prompt" data-copy-kind="Prompt" hidden>Copy prompt</button></div>
 <pre class="prompt"><code id="delivery-prompt">Proceed with the agreed plan. Implement and adopt the system across the agreed workflows, verify the affected behavior, and document how developers use, customize, and extend it.
@@ -123,10 +128,10 @@ cd ds-loop
 npm pkg get version
 npm ci
 npm pack</code></pre>
-<p>The current source version is <code>0.2.1</code>, which produces <code>ds-loop-0.2.1.tgz</code>. Install it in the project you want to inspect using its actual absolute path:</p>
-<pre><code>npm install --save-dev /absolute/path/to/ds-loop-0.2.1.tgz</code></pre>
-<p>Then load <code>node_modules/ds-loop/skill/SKILL.md</code> as in step 2. Version 0.2.1 adds the expanded establishment procedure. Its engine checks are unchanged from 0.2.0. A local tarball path is machine-specific; use the matching npm release when it is published before asking teammates to install it.</p>
-<p>Local tarballs rebuilt under 0.1.2 can differ from registry 0.1.2. Check the dependency’s resolved artifact and integrity in the lockfile, not only the version string. Run an unfiltered audit after upgrading and review coverage before comparing measurements.</p>
+<p>The current source version is <code>0.4.0</code>, which produces <code>ds-loop-0.4.0.tgz</code>. Install it in the project you want to inspect using its actual absolute path:</p>
+<pre><code>npm install --save-dev /absolute/path/to/ds-loop-0.4.0.tgz</code></pre>
+<p>Then run <code>npx --no-install ds-loop install</code> as in step 2. A local tarball path is machine-specific; use the npm release when sharing setup instructions with teammates.</p>
+<p>A rebuilt local tarball can differ from the registry artifact with the same version. Check the dependency’s resolved artifact and integrity in the lockfile, not only the version string. Run an unfiltered audit after upgrading and review coverage before comparing measurements.</p>
 </section>
 
 </article>

@@ -3,6 +3,7 @@ import type { DsOpsConfig } from '../config/schema.ts';
 import { hashConfig } from '../config/schema.ts';
 import { classifyForm } from '../rules/color.ts';
 import { type Tier, classifyTier } from '../rules/tier.ts';
+import { contractMeasurements } from './contract-drift.ts';
 import type { Coverage } from './coverage.ts';
 import { formatCoverage } from './coverage.ts';
 import type { RawValue } from './provenance.ts';
@@ -104,6 +105,8 @@ export function renderContract(f: ContractFacts): string {
   L.push(`version: ${f.fixtureSha}`);
   L.push(`config_hash: ${hashConfig(f.config)}`);
   L.push(`generated_at: ${f.generatedAt}`);
+  L.push(`adapters: ${f.adapters.map((a) => `${a.id}@${a.version}`).join(' + ') || 'none'}`);
+  L.push(`measurements: ${JSON.stringify(contractMeasurements(f.values))}`);
   L.push('---');
   L.push('');
   L.push('# Design system contract');
@@ -115,7 +118,11 @@ export function renderContract(f: ContractFacts): string {
 
   L.push('## Measured');
   L.push('');
-  L.push(`Read by ${f.adapters.map((a) => `\`${a.id}@${a.version}\``).join(' + ')}.`);
+  L.push(
+    f.adapters.length
+      ? `Read by ${f.adapters.map((a) => `\`${a.id}@${a.version}\``).join(' + ')}.`
+      : 'No adapter reads this source — not checked.',
+  );
   L.push('');
   L.push(
     `- **${declarations.length}** token declarations · **${colors.length}** colour, **${new Set(colors.map((v) => v.raw.toLowerCase())).size}** distinct`,

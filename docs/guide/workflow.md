@@ -1,10 +1,65 @@
 # Work with Design System Loop
 
-Design System Loop combines an agent skill for design-system work with an engine that checks supported code. Start with the problem or outcome you need help with. The agent investigates and recommends a route; you do not need to classify your company or select a playbook. Scanner silence does not tell you whether a design system exists.
+Repeated components and drifting styles need a cause before they need a migration.
+Start by checking what your project declares and uses:
+
+```sh
+npx ds-loop context .
+npx ds-loop audit .
+```
+
+Then give your agent the outcome you need. It investigates the evidence and
+recommends a route. You don't need to classify your company or select a playbook.
 
 Choose the closest task: [start a system](#start-a-design-system),
 [improve one](#improve-a-partial-system), [transform it](#transform-an-existing-system),
 or [maintain it](#maintain-an-existing-system). If the problem is unclear, start below.
+
+## Agent commands
+
+With the [skill loaded](install.md#start-with-your-agent), type `/ds-loop:start`
+or ask your agent to follow its command file. The colon is part of the command.
+The twelve [command files](../../skill/commands/) route your task to procedures
+and roles; they aren't shell commands. Native slash-command discovery depends on
+your agent host. Directly reading a command file works when discovery isn't configured.
+
+| Agent command | What you get | Backing CLI commands |
+|---|---|---|
+| `/ds-loop:start` | A first reading of your system | `context`, `audit`, `report` |
+| `/ds-loop:diagnose` | A cause and a first action | `context`, `audit`, `consumers` |
+| `/ds-loop:inventory` | What exists and who uses it | `audit`, `consumers` |
+| `/ds-loop:foundations` | Type, colour and spacing options | `audit`, `scan`, `sweep` |
+| `/ds-loop:propose` | A plan your team can approve | `audit`, `consumers`, `report` |
+| `/ds-loop:establish` | A system your product can use | `context`, `audit`, `consumers` |
+| `/ds-loop:transform` | A checked migration slice | `audit`, `consumers` |
+| `/ds-loop:component` | A component built or reviewed | `audit`, `consumers` |
+| `/ds-loop:document` | Guides tied to real code | `context`, `audit`, `consumers` |
+| `/ds-loop:govern` | Decisions with owners and evidence | `context`, `audit`, `decide` |
+| `/ds-loop:drift` | Feedback after edits | `audit`, `guard` |
+| `/ds-loop:prove` | What changed and what wasn't checked | `audit`, `scorecard`, `report` |
+
+## Roles and practice guides
+
+The eight roles divide responsibilities within the same authorized task:
+[auditor](../../skill/roles/auditor.md) gathers measurements;
+[consultant](../../skill/roles/consultant.md) diagnoses and plans;
+[architect](../../skill/roles/architect.md) maps structure;
+[foundations](../../skill/roles/foundations.md) compares scales and themes;
+[components](../../skill/roles/components.md) builds and checks contracts;
+[migrator](../../skill/roles/migrator.md) moves consumers;
+[docs](../../skill/roles/docs.md) writes usable guidance; and
+[governor](../../skill/roles/governor.md) retains owners and decisions.
+They're responsibilities your agent follows, not eight automatically launched agents.
+
+The six practice guides support those roles:
+[starting](../../skill/practices/starting.md),
+[maintaining](../../skill/practices/maintaining.md),
+[migrating](../../skill/practices/migrating.md),
+[documenting](../../skill/practices/documenting.md),
+[Storybook](../../skill/practices/storybook.md), and
+[governing](../../skill/practices/governing.md).
+Read the guide for your task before recommending a process. Keep each cited source
+beside the specific recommendation it supports; label the agent's own opinion.
 
 ## If you do not know where to start
 

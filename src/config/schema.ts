@@ -127,6 +127,15 @@ export type DsOpsConfig = {
      * steps. Colour names, size words, generic qualifiers.
      */
     reservedSemanticTerms: string[];
+    /**
+     * Convention sentences `doctor` recognises in an intent document, so it can pair
+     * one against a finding that contradicts it. Each is matched as a whole line, not
+     * as a substring: a sentence inside a paragraph carries scope and exceptions this
+     * cannot read, and pairing against it would report a disagreement that may not
+     * exist. Policy, so it lives here — a phrase list decides what the tool claims to
+     * have checked, exactly as a threshold does. UNCALIBRATED.
+     */
+    conventionStatements: string[];
   };
   sweep: {
     min: number;

@@ -4,14 +4,15 @@ A static site with self-hosted typography. No framework, analytics, or browser-s
 
 ```sh
 npm run site:serve
-npm run site:check
+node scripts/check-site.mjs
+node site/check-examples.mjs --check
 ```
 
 Preview: http://127.0.0.1:4187. Set `DS_LOOP_SITE_PORT=4188` if that port is busy.
 
 ## Customer journey
 
-The homepage explains the outcome, shows synthetic product examples, and offers Start / Improve / Maintain. Setup follows install → load the skill → agree on delivery. Direct engine commands are optional; readers do not have to interpret an audit before working with an agent.
+The homepage explains the outcome, shows synthetic product examples, and offers Start / Improve / Maintain. Setup follows `npx ds-loop` → local package installation → `ds-loop install` → agree on delivery. Direct engine commands are optional; readers do not have to interpret an audit before working with an agent.
 
 A full setup means editable foundations, reusable components and product patterns adopted in the agreed workflows, a reference using the same source, and usage and maintenance guidance. A first screen is a checkpoint unless the request is only for a pilot. The skill guides the agent; the engine supplies deterministic checks; the team retains shared decisions and release authority.
 
@@ -40,15 +41,13 @@ The four-area comparison has one native range control and stacks on narrow scree
 
 Shared design decisions live in `../DESIGN.md` and `../.impeccable/surfaces/site-index-html.md`. Historical review captures remain local and are not needed to build the site.
 
-## Release alignment — 21 September 2026
+## Release alignment — 29 September 2026
 
-npm currently serves **0.2.0**; the checkout is **0.2.1**. Public install commands use the available registry version. The homepage FAQ, setup and guide label the expanded establishment workflow as 0.2.1 source work, with source installation instructions. Do not announce it as available on npm before publication is verified.
+The four main pages describe the version in `package.json` (0.4.0 at this refresh). The reference covers five adapters, fifteen CLI commands and twelve agent commands. Adapter versions are separate from the package version.
 
-Saved examples are regenerated from local engine 0.2.1. `site:check` compares all four excerpts against fresh engine output and their HTML representation. The engine is unchanged from 0.2.0; the earlier registry-artifact check is historical evidence, not a new download check.
+Run `node site/check-examples.mjs` to regenerate `examples.json` from the local engine, copy its escaped output and inputs into `reference.html`, then run `node site/check-examples.mjs --check`. All four cases use `audit . --all`; the unsupported case uses LESS and Vue because SCSS is now supported. Run `node scripts/check-site.mjs` for local links, anchors and copy targets.
 
-After 0.2.1 is published, verify its downloaded artifact, update the pinned commands in README.md, docs/guide/install.md and setup.html, and remove the pending-release notes from the homepage, setup, guide and README. Update this record too. Do not globally replace historical version references.
-
-After engine output changes, run `npm run site:examples`, update the reference excerpts from real output, then run `npm run site:check`. The latter also checks local links, HTML anchors and copy targets. CI runs it alongside the existing repository checks.
+The older `scripts/site-examples.mjs` still uses the summary output and an unsupported-SCSS assumption. `npm run site:check` calls that older script and needs a follow-up outside this site's edit boundary. The site-local verifier supplies reproducible output checks in the meantime. No registry artifact was downloaded or verified in this refresh.
 
 ## Hosting
 

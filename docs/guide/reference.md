@@ -1,6 +1,12 @@
 # Commands and coverage
 
-Run commands from the target project so configuration resolves from its working directory. Paths select the source to inspect.
+Find what your code uses and what the engine can check. Run this from your project:
+
+```sh
+npx ds-loop audit .
+```
+
+Most commands resolve configuration from the working directory. Paths select the source to inspect; `doctor` resolves configuration from the target root.
 
 Jump to [commands](#engine-commands), [audit options](#audit-options),
 [configuration](#configuration), [coverage](#coverage), or [rules](#rules).
@@ -8,12 +14,14 @@ Use the [installation guide](install.md) for your first run.
 
 ## Engine commands
 
+These 15 commands come from [the CLI entry point](../../src/cli.ts).
+
 | Command | Result | Writes? |
 | --- | --- | --- |
-| `start [path]` / bare `ds-loop` | Verdict for this directory, its biggest finding, what was read, and the next command | No |
+| `start [path]` / bare `ds-loop` | Verdict for this directory, its biggest finding, what was read, and the next command | Creates `ds-loop-report.html` only when no report or `.ds-scorecard/` exists |
 | `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | Only with `--write-contract`, which creates `DESIGN-SYSTEM.md` and never overwrites one |
 | `audit [path]` | Summary and coverage; `--all` for full details and ratios | Only with `--out <dir>` or `--html <file>` |
-| `dashboard [path] [--out file.html]` | Write today’s state and saved scorecard trends to an offline dashboard. |
+| `dashboard [path] [--out file.html]` | Today’s state and saved scorecard trends | Writes HTML and a local dashboard-refresh registration |
 | `report [path]` | Consulting report with measured evidence and optional `--consult <file.json>` assessment | Writes `ds-loop-report.html` or `--out <file.html>` |
 | `impact <specifier> [path]` | Every direct static import location, production and stories/tests apart; `--json` | No |
 | `decide [path]` | Markdown decision with owner, alternatives, date and evidence refs | Creates a new file in `docs/decisions/` |
@@ -22,6 +30,8 @@ Use the [installation guide](install.md) for your first run.
 | `sweep <path>` | Clustering curve across the configured ΔE range | Only with `--out <dir>` |
 | `scorecard [path]` | Ratios and comparable deltas | Appends `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews |
 | `fix <path>` | Mechanically resolvable `var()` fallbacks | Only with `--write` |
+| `install [--agent claude\|cursor\|codex\|all]` | Add agent instructions; `--dry-run` previews | Appends or replaces its own marked block; `--guard` also edits `.claude/settings.json` |
+| `doctor [path]` | Contract drift, config observations, guard state and intent evidence; `--json` | No; advisory, not a CI gate |
 | `guard on\|off\|status` | Claude Code post-edit feedback configuration | `on` and `off` edit `.claude/settings.json` |
 
 `fix` is not an automatic token migration. `scorecard` does not gate CI. `guard` cannot prevent an edit.
@@ -62,11 +72,15 @@ unsupported model as a limitation rather than redesigning it to obtain a clean a
 
 ## Agent procedures
 
-The skill includes `discover`, `census`, `drift`, `establish`, `transform`, `foundations`, `tokenize`, `scaffold`, `extract`, `shape`, `review` and `doctor`. They instruct an agent to investigate or perform a task. They are not CLI commands and their conclusions are not engine findings. See the [skill entry](../../skill/SKILL.md).
+Use the twelve [agent commands](workflow.md#agent-commands), starting with
+`/ds-loop:start`. Their instructions live in `skill/commands/`; deeper procedures
+live in `skill/reference/`. An agent investigates and acts within your authorized
+scope. These procedures are separate from CLI measurements. The CLI `doctor`
+reports evidence; the doctor playbook guides a broader agent review.
 
 ## Audit options
 
-Use `--json` for structured output, `--out <dir>` to retain reports, `--target` for a rule domain, `--files a,b` or `--since main` to narrow files, and `--min-severity` to filter findings. Targets are `all`, `tokens`, `color`, `spacing`, `typography`, `elevation` and `motion`. `--require-coverage` makes reported coverage gaps fail too.
+Use `--json` for structured output, `--out <dir>` to retain reports, `--target` for a rule domain, `--files a,b` or `--since main` to narrow files, and `--min-severity` to filter findings. Targets are `all`, `tokens`, `color`, `spacing`, `typography`, `elevation`, `motion` and `docs`. `--require-coverage` makes reported coverage gaps fail too.
 
 The audit exits 1 on surviving findings; without strict coverage, `not-checked` can exit 0. Severity filtering does not remove coverage limits from the report.
 
@@ -193,7 +207,7 @@ Merge the relevant settings into your existing config:
     }
   },
   "suggestions": { "rootFontSize": 16, "lengthTolerancePx": 1 },
-  "clustering": { "deltaE": 2.3 }
+  "clustering": { "deltaE": 2.3, "alphaTolerance": 0.01 }
 }
 ```
 
@@ -203,7 +217,35 @@ Merge the relevant settings into your existing config:
 | `style.severity.<category>` | Defaults shown above; `blocking`, `high`, `medium` or `low`. Applies to literal-presence findings; unclassified expressions still report a low-severity judgment limit. |
 | `suggestions.rootFontSize` | `16` px per rem; an explicit assumption, not a measured browser root size. |
 | `suggestions.lengthTolerancePx` | `1` px maximum distance for nearest px/rem candidates. |
-| `clustering.deltaE` | `2.3` maximum colour distance, also used by palette clustering. This is shared configuration, not a suggestions-only setting. |
+| `clustering.deltaE` | `2.3`; palette edges require ΔE below this threshold. Also used for colour suggestions. |
+| `clustering.alphaTolerance` | `0.01`; palette pairs with a larger alpha difference are excluded before comparing ΔE. |
+| `architecture.maxAliasDepth` | `4`; review threshold for reference depth, not an alias validity limit. |
+| `architecture.scaleStepPattern` | Regex for numeric or named scale steps; see the defaults for the full pattern. |
+| `suggestions.categoryPatterns` / `utilityPatterns` | Per-category regex signals for token names and markup utilities. Usage evidence takes precedence. |
+| `suggestions.unitlessRoles` | `font-weight`, `line-height` and `z-index` each configure `tokenPattern`, `properties` and `tolerance` (default `0`, exact only). |
+
+CIEDE2000 compares three colour coordinates and has no alpha term. An opaque
+black and a translucent black therefore have ΔE zero even though one composites
+with its background. The alpha gate prevents that pair from becoming a palette
+near-duplicate or a direct clustering edge. Its tolerance absorbs rounding; it
+doesn't establish interchangeable intent. Clusters use single linkage, so chains
+of eligible edges can still connect more distant endpoints. See the
+[clustering implementation](../../src/color/cluster.ts) and
+[near-duplicate rule](../../src/rules/color.ts).
+
+The remaining config groups describe your naming conventions and palette sweep:
+
+| Keys | Purpose |
+| --- | --- |
+| `taxonomy.primitivePattern`, `componentPattern`, `semanticNamespaces`, `tierCoverageFloor` | Recognize tiers; the default coverage floor is `0.5`. |
+| `taxonomy.reservedSemanticTerms`, `categoryTokenHints` | Flag appearance-based semantic names while recognizing category names. |
+| `taxonomy.shadowTokenHints`, `shadowAlphaCeiling`, `nonColorTokenHints` | Classify shadow internals and excluded values; the alpha ceiling defaults to `0.25`. |
+| `taxonomy.scaleUtilities`, `colorUtilities`, `stockPaletteFamilies` | Select supported scale and palette utility names. |
+| `sweep.min`, `sweep.max`, `sweep.step` | ΔE sweep range; defaults `0.5`, `12`, `0.25`. |
+| `tokenContexts`, `ignore` | Explicit CSS context and reasoned exceptions, described above and below. |
+
+These defaults are uncalibrated. The [schema](../../src/config/schema.ts) and
+[defaults](../../src/config/defaults.ts) are the complete source for keys and regexes.
 
 Upstream declarations may hold literals and reference their own internals without
 project fallback requirements. Project aliases reference upstream with fallbacks;
@@ -260,20 +302,22 @@ repair. Editing `DESIGN-SYSTEM.md` alone does not configure an exception.
 
 The [configuration schema](https://github.com/owaizin/ds-loop/blob/main/src/config/schema.ts) and [defaults](https://github.com/owaizin/ds-loop/blob/main/src/config/defaults.ts) define clustering, taxonomy and sweep settings. Defaults are uncalibrated. Use `sweep` to investigate your source before choosing a clustering cutoff. The `.ds-ops-config.yml` compatibility path reads system context and maps supported severity settings from design-system-ops.
 
-Tailwind JSX adapter 0.4.0 adds numeric opacity modifiers and respects configured
-palette families during detection. Re-measure a baseline before comparing it with
-0.3.0; extraction counts may change.
+Adapter versions and the configuration hash identify the measurement instrument.
+Re-measure after an upgrade; a changed instrument prevents a comparable delta.
 
 ## Coverage
 
+All five adapters in the [registry](../../src/adapters/registry.ts) run when they
+detect supported input. These boundaries follow each adapter’s `extensions` and
+`reads` declarations.
+
 | Adapter | Reads | Does not read |
 | --- | --- | --- |
-| CSS custom properties 0.4.0 | Custom-property declarations in `.css` | Ordinary rule bodies and declarations inside at-rules |
-| Tailwind JSX 0.4.0 | Arbitrary-value strings and framework-palette colour utilities in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Utilities naming your own theme tokens, arbitrary variants/bracketed opacity, inline style objects, CSS-in-JS |
-| CSS rule bodies 0.2.0 | Selected ordinary CSS properties, literals and `var()` references, including nested at-rules | Custom-property declarations, declaration at-rules such as `@font-face`, preprocessors, import/cascade resolution |
-
-| Token JSON 0.1.0 | DTCG `$value`/`$type`, Style Dictionary `value`/`type`, inherited types, nested groups, aliases and exact value lines in `.json` | Theme merging, `$extends`, composite evaluation; ambiguous aliases when targets are missing, duplicated or cyclic |
-| SCSS 0.1.0 | Variables, custom properties, selected rule properties, nested/conditional contexts, `map.get`, `.scss` and indented `.sass`; records `@use`/`@forward` | Module resolution, Sass evaluation, interpolation and mixin/function expansion |
+| [CSS custom properties 0.6.0](../../src/adapters/css-custom-props.ts) | Custom-property declarations in `.css` | Ordinary rule bodies and declarations inside at-rules |
+| [Tailwind JSX 0.5.0](../../src/adapters/tailwind-jsx.ts) | Arbitrary-value strings and framework-palette colour utilities in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Utilities naming your own theme tokens, arbitrary variants/bracketed opacity, inline style objects, CSS-in-JS |
+| [CSS rule bodies 0.3.0](../../src/adapters/css-rule-bodies.ts) | Selected ordinary CSS properties, literals and `var()` references, including nested at-rules | Custom-property declarations, declaration at-rules such as `@font-face`, preprocessors, import/cascade resolution |
+| [Token JSON 0.2.0](../../src/adapters/token-json.ts) | DTCG `$value`/`$type`, Style Dictionary `value`/`type`, inherited types, nested groups, aliases and exact value lines in `.json` | Theme merging, `$extends`, composite evaluation; ambiguous aliases when targets are missing, duplicated or cyclic |
+| [SCSS 0.2.0](../../src/adapters/scss.ts) | Variables, custom properties, selected rule properties, nested/conditional contexts, `map.get`, `.scss` and indented `.sass`; records `@use`/`@forward` | Module resolution, Sass evaluation, interpolation and mixin/function expansion |
 
 Colour covers colour/background/border-colour properties; spacing covers padding,
 margin and gap; typography covers font size, weight and line height. Radius,
@@ -282,16 +326,19 @@ seven categories. This is not every CSS property.
 
 Sass maps are recorded without evaluation. JSON composite values and unresolved or cyclic aliases remain ambiguous; coverage lists these separately from undecided colour roles. Recognized colors that cannot be converted are reported as ambiguous. A file extension is not a promise of full syntax coverage.
 
-`clean`, `issues` and `not-checked` are different verdicts. Read `coverage.couldNotJudge` even when severity filtering hides the associated finding. `context` runs no rules, and the hook filters at high severity; an unfiltered audit is the channel for all judgment limitations.
+`clean` means no findings survived the selected scope and severity. `issues` means
+findings survived. `not-checked` means no adapter read the source, including an
+empty source. These are different verdicts; a clean result is only as wide as its coverage. Read `coverage.couldNotJudge` even when severity filtering hides the associated finding. `context` runs no rules, and the hook filters at high severity; an unfiltered audit is the channel for all judgment limitations.
 
 ## Rules
 
 
-Fourteen deterministic rules examine supported extracted values. Interpret their
+Fifteen deterministic rules examine supported extracted values. Interpret their
 findings against the applicable project contract and the report's coverage.
 
 | rule | severity | catches |
 | --- | --- | --- |
+| `docs/undocumented-shared-component` | low | detected shared components with neither a matching story nor an adjacent docs page; missing documentation conventions remain not checked |
 | `token/upstream-bypass` | high | components or supported style/markup use sites reference upstream directly instead of a project alias |
 | `token/raw-value-in-style` | configured per category / low | literal presence in ordinary CSS, not a prohibition; low-severity groups identify unclassified expressions |
 | `token/tier-leakage` | high | component → primitive skips and upward references under the configured tier assumption; investigate applicability and theme behavior |
@@ -307,7 +354,7 @@ findings against the applicable project contract and the report's coverage.
 | `token/tier-model-undetectable` | low | too few referencing tokens match the configured tier patterns; silent at zero references, so it cannot establish that a design system is absent |
 | `token/var-missing-fallback` | low | a `var(--token)` with no fallback — resolves to nothing the moment that token is undefined |
 
-Route them with `--target color|tokens|spacing|typography|elevation|motion`, narrow with `--files a,b` or `--since main`, raise the floor with `--min-severity high`.
+Route them with `--target all|color|tokens|spacing|typography|elevation|motion|docs`, narrow with `--files a,b` or `--since main`, raise the floor with `--min-severity high`.
 
 
 ## Edit feedback and scorecard comparisons

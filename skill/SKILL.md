@@ -193,7 +193,9 @@ Run these in your terminal with `npx ds-loop <command>`.
 | `consumers [path]` | **CLI** | Audit | Which workspace package imports which shared package: specifiers, named imports, counts and file:line samples; stories and tests counted apart; exported subpaths with no production consumer. `--html <file>` draws the UI-architecture diagram. Static JSX shared-component share excludes external/unresolved elements; imports and JSX occurrences are not runtime usage | — |
 | `scan [path]` | **CLI** | Audit | Quick look: classification breakdown + palette clusters at the default ΔE | — |
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |
+| `install [--agent claude\|cursor\|codex\|all]` | **CLI** | Setup | Write the ds-loop block into `CLAUDE.md`, `AGENTS.md` or a Cursor rule so an agent finds the skill without being handed a path. Appends, replaces only its own marked block, and is idempotent. `--dry-run` previews; `--guard` also installs the hook | — |
 | `guard [on\|off\|status]` | **CLI** | Guard | Install/remove the edit-time `PostToolUse` hook | [reference/guard.md](reference/guard.md) |
+| `doctor [path]` | **CLI** | Guard | Contract drift, config patterns matching nothing, guard state, and document/code pairs. Reports evidence and never gates: exit 0 always | [reference/doctor.md](reference/doctor.md) |
 | `fix [target] [--write]` | **CLI** | Guard | Apply the mechanical fixes only — where the edit is provable from the code, no LLM. v0: inserts a `var()` fallback from the target token's literal. Dry run unless `--write` | — |
 | `scorecard [path]` | **CLI** | Guard | Append ratios to `.ds-scorecard/history.jsonl` in cwd; `--dry-run` previews without writing; CI scheduling is separate | [reference/scorecard.md](reference/scorecard.md) |
 

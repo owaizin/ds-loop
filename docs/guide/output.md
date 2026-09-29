@@ -1,4 +1,10 @@
-# Reading an audit
+# Read findings and saved reports
+
+Find the source of a finding before changing your code:
+
+```sh
+npx ds-loop audit .
+```
 
 These excerpts are checked against the engine by `test/readme.test.ts`. Line wrapping and marked truncation are permitted. Summaries use clear words; `--all` and JSON preserve the engine vocabulary.
 
@@ -58,13 +64,17 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
   ds-loop audit — Radix Colors · target: all
   2 findings — 0 blocking · 0 high · 0 medium · 2 low
   These checks found possible problems. Their counts are not a quality grade.
-  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 3c93c488
+  version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.6.0   config 1fc1f13c
   15 rules run
 
   scope — what this audit read
     What we read: .css — custom-property declarations (--token: value) — not rule bodies, not at-rules
     Colours we cannot compare: 72 — color(display-p3 0.995 0.992 0.985), color(display-p3 0.994 0.986 0.921), color(display-p3 0.994 0.969 0.782), color(display-p3 0.989 0.937 0.65)
     Some checks are incomplete. Read the limits before relying on this result.
+    Component documentation: not checked — no shared component inventory in scope.
+    Documentation presence only, not quality: exported PascalCase JSX declarations in shared workspace or standalone packages; package entrypoints, re-export chains, HOCs without JSX, remote and generated docs are not resolved.
+    Stories and docs are matched by adjacent component/source basename. Types recognize ComponentNameProps declarations or prop-table markers in matched docs; examples recognize literal component JSX in matched stories/docs. Prop tables, inferred types and differently named pages may be missed.
+    Ratios use detected components in each package. Documented means a matched story or docs page. Without a local documentation convention, a denominator, or on a file-filtered scan: not checked, never 0% documented.
 
   findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
   [LOW] Very similar palette colours · color/near-duplicate-primitives · 1 finding · no file:line recorded
@@ -82,7 +92,7 @@ The report includes the display-p3 values the color rules could not convert. A r
 
 ## Unsupported source
 
-This example contains a Vue template and an SCSS variable. Neither adapter reads them.
+This example contains a Vue template and a Less variable. No adapter reads either format.
 
 <!-- verified: audit-not-checked -->
 ```
@@ -120,15 +130,43 @@ The new references use names the configured taxonomy cannot classify. The lower 
 [Back to the guide](README.md)
 
 
+## Consulting report generation
+
+From the source checkout, run:
+
+```sh
+npm run ds-loop -- report fixtures/css-audit-example --out scratch/phase-1/css-report.html
+```
+
+<!-- verified: guide-report-css-example -->
+```text
+  ds-loop report — ds-loop
+  wrote scratch/phase-1/css-report.html
+```
+
+Open the written HTML for findings, architecture and coverage. Without
+`--consult consult.json`, the assessment and plan are labelled as not written yet.
+The banner uses the source label; this fixture resolves to `ds-loop`.
+
 ## Dashboard generation
 
-Run `npm run ds-loop -- dashboard fixtures/css-audit-example --out scratch/phase-2/dashboard-empty.html`.
+```sh
+npm run ds-loop -- dashboard fixtures/css-audit-example --out scratch/phase-2/dashboard-empty.html
+```
 The following is captured command output; dates and ratios are in the generated
 HTML. With no saved history, the dashboard shows today's measured state and the
 baseline command.
 
-<!-- verified: dashboard-css-example -->
+<!-- verified: guide-dashboard-css-example -->
 ```text
   ds-loop dashboard — ds-loop
   wrote scratch/phase-2/dashboard-empty.html
 ```
+
+## Limits
+
+`report` and `dashboard` write artifacts; successful generation isn't a clean
+audit or a CI pass. Run `audit --require-coverage` for that policy. Dashboard
+samples above were captured in an empty temporary working directory with the
+fixture passed by absolute path, so no saved history affected the result. The
+report sample used the same setup. Dates and ratios belong to the generated HTML.

@@ -1,4 +1,10 @@
-# 0.2.0 release notes
+# 0.2.0 release notes (historical)
+
+Superseded by the [0.4.0 release notes](release-0.4.0.md). To install the current documented version:
+
+```sh
+npm install --save-dev ds-loop@0.4.0
+```
 
 This release gives the companion skill a guided engagement: understand the team's
 problem, recommend a bounded delivery, carry out authorized work, verify it, and

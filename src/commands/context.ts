@@ -4,6 +4,8 @@ import { adaptersFor } from '../adapters/registry.ts';
 import { listFiles } from '../core/files.ts';
 
 import type { LoadedConfig } from '../config/load.ts';
+import { findWorkspace } from '../core/consumers.ts';
+import { packageContract } from '../core/contract-measurement.ts';
 import { renderContract } from '../core/contract.ts';
 import { buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { resolveSource } from '../core/source.ts';
@@ -149,7 +151,7 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
       // measurement is worth overwriting an argument.
       console.log(`\n  contract    ${CONTRACT} already exists — left untouched`);
       console.log('              delete it first if you want a fresh measurement pass');
-    } else if (adapters.length === 0) {
+    } else if (adapters.length === 0 && findWorkspace(source.root).packages.length === 0) {
       console.log(`\n  contract    not written — no adapter reads this tree, so there is`);
       console.log('              nothing measured to write down');
     } else {
@@ -164,7 +166,8 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
           values,
           coverage: buildCoverage(source.root, adapters, values, []),
           generatedAt: new Date().toISOString().slice(0, 10),
-        }),
+        }) + packageContract(source, loaded.config),
+        { flag: 'wx' },
       );
       console.log(`\n  contract    wrote ${CONTRACT} — measured counts, plus the questions`);
       console.log('              ds-loop cannot answer. Fill the TODO lines; they are the');
