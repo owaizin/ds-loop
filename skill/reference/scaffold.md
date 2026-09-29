@@ -68,9 +68,9 @@ configured tier, marking unresolved aliases/modes and unread formats. Avoid a
 second editable token source. Link refresh instructions when a derived table ships.
 
 Use [shape](shape.md)'s eight-section template for existing components, prioritized
-by observed consumer reach. `consumers` (A9) is **not yet available**; inspect imports
-and public exports, label sampled coverage, and separate real consumers from
-reference stories. Keep a better existing categorization instead of moving code
+by observed consumer reach. Run `ds-loop consumers <path>` for that reach, then
+inspect public exports, label sampled coverage, and separate real consumers from
+reference stories. Imports and JSX occurrences are not runtime usage. Keep a better existing categorization instead of moving code
 to match atoms/molecules/organisms. `patterns/` describes compositions that exist.
 
 Link the relevant foundation, token and component specs from the normal contributor

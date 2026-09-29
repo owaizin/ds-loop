@@ -3,7 +3,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { adaptersFor } from '../src/adapters/registry.ts';
 import { audit } from '../src/commands/audit.ts';
+import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
+import { buildCoverage, formatCoverage } from '../src/core/coverage.ts';
 
 function inTree<T>(files: Record<string, string>, fn: (root: string) => T): T {
   const root = mkdtempSync(join(tmpdir(), 'ds-loop-coverage-'));
@@ -165,4 +168,33 @@ test('a severity floor hides findings, never the fact that a check could not jud
     all.coverage.couldNotJudge,
     'but coverage must report it either way',
   );
+});
+
+// Dogfooding found this: five apps adopting a shared package measured as though they
+// declared no tokens, because `node_modules` is not listed and the package's CSS was
+// therefore read by nothing. The numbers described our coverage, not their systems —
+// the same failure the benchmark's sample floor exists to prevent.
+test('a stylesheet imported from a package is a named coverage limit, not a silent zero', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ds-loop-imported-'));
+  try {
+    writeFileSync(join(dir, 'app.tsx'), "import '@acme/ui/styles.css';\nexport const A = () => null;\n");
+    writeFileSync(join(dir, 'local.css'), "@import './other.css';\n:root{--c:#111}\n");
+    // A bare specifier resolved by a build alias is read normally and is not a gap.
+    // Measured on PostHog, which imports `~/scenes/…` and `lib/components/…` this way.
+    mkdirSync(join(dir, 'lib'), { recursive: true });
+    writeFileSync(join(dir, 'lib/aliased.scss'), '.a{color:#222}\n');
+    writeFileSync(join(dir, 'uses-alias.ts'), "import '~/lib/aliased.scss';\nimport 'lib/aliased.scss';\n");
+    const source = { root: dir, fixtureSha: 'test', label: 'test' };
+    const adapters = adaptersFor(source, DEFAULT_CONFIG);
+    const values = adapters.flatMap((a) => a.extract(source, DEFAULT_CONFIG));
+    const coverage = buildCoverage(dir, adapters, values, []);
+
+    assert.deepEqual(coverage.importedPackageStyles?.samples, ['@acme/ui/styles.css']);
+    assert.equal(coverage.complete, false, 'an unread imported stylesheet is not complete coverage');
+    const printed = formatCoverage(coverage).join('\n');
+    assert.match(printed, /imported from packages, not read/);
+    assert.match(printed, /not untokenized because of them/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

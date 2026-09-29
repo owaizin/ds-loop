@@ -38,6 +38,16 @@ export type DsOpsConfig = {
      * UNCALIBRATED default — see ds-loop-calibration for tuned values per source.
      */
     deltaE: number;
+    /**
+     * Two colours whose alpha differs by more than this are never merged, however
+     * close their hue. It absorbs rounding, and nothing wider: one value
+     * composites with what is behind it and the other does not. ΔE is a three-dimensional distance and has no alpha term,
+     * so `#000000` and `rgba(0,0,0,0.1)` measure ΔE 0.000 and clustered as the
+     * same swatch — a translucent overlay reported as a near-duplicate of the
+     * opaque colour it sits on. Distance alone does not establish
+     * interchangeability. UNCALIBRATED default — see ds-loop-calibration.
+     */
+    alphaTolerance: number;
   };
   taxonomy: {
     /** token-name substrings that force a color into `shadow-internal` */

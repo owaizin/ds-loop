@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { clusterByDeltaE } from '../src/color/cluster.ts';
+import { toLab } from '../src/color/convert.ts';
+import { ciede2000 } from '../src/color/delta-e.ts';
 import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import type { RawValue } from '../src/core/provenance.ts';
-import { literalDuplicateRule, semanticLiteralRule } from '../src/rules/color.ts';
+import { literalDuplicateRule, nearDuplicatePaletteRule, semanticLiteralRule } from '../src/rules/color.ts';
 import { rawDimensionRule } from '../src/rules/dimension.ts';
 import type { RuleContext } from '../src/rules/types.ts';
 
@@ -145,4 +148,44 @@ test('rawDimensionRule: a widget-named token is not promoted by its last segment
   assert.equal(findings.length, 1);
   assert.equal(findings[0]?.data?.count, 1);
   assert.match(findings[0]?.where ?? '', /--color-action-text/);
+});
+
+// Found by dogfooding on a real system, not by this suite: two reported pairs
+// compared a translucent overlay with the opaque colour beneath it. CIEDE2000 is
+// defined over three dimensions and has no alpha term, so the pair measured ΔE
+// 0.000 and read as an exact duplicate. Distance alone does not establish that two
+// values are interchangeable, and one of these composites while the other does not.
+test('near-duplicate palette does not pair a translucent overlay with an opaque colour', () => {
+  // 0.8 against 1.0 is the pair that was actually reported. It is why the tolerance is
+  // a rounding epsilon and not a band: the first value tried was 0.25, which still
+  // reported it.
+  const reported = [
+    value('--palette-fg', 'rgba(20, 20, 20, 1)'),
+    value('--palette-overlay', 'rgba(20, 20, 20, 0.8)'),
+  ];
+  assert.deepEqual(nearDuplicatePaletteRule.run(ctx(reported)), []);
+
+  const overlay = [
+    value('--palette-black-900', '#000000'),
+    value('--palette-black-100', 'rgba(0, 0, 0, 0.1)'),
+  ];
+  assert.equal(ciede2000(toLab('#000000')!, toLab('rgba(0, 0, 0, 0.1)')!), 0, 'ΔE must still read 0 here');
+  assert.deepEqual(nearDuplicatePaletteRule.run(ctx(overlay)), []);
+});
+
+test('near-duplicate palette still pairs two opaque colours nobody can tell apart', () => {
+  const found = nearDuplicatePaletteRule.run(
+    ctx([value('--palette-slate-500', '#64748b'), value('--palette-slate-550', '#64748c')]),
+  );
+  assert.equal(found.length, 1);
+  assert.match(found[0]!.where, /--palette-slate-500 ≈ --palette-slate-550/);
+});
+
+test('alpha gates a cluster edge without changing the distance it gates', () => {
+  const points = [
+    { id: 'opaque', raw: '#1e40af' },
+    { id: 'overlay', raw: 'rgba(30, 64, 175, 0.08)' },
+  ];
+  assert.equal(clusterByDeltaE(points, 2.3).length, 1, 'ungated, these merge — that was the defect');
+  assert.equal(clusterByDeltaE(points, 2.3, DEFAULT_CONFIG.clustering.alphaTolerance).length, 2);
 });

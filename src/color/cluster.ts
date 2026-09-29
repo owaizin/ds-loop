@@ -1,4 +1,4 @@
-import { toLab } from './convert.ts';
+import { alphaOf, toLab } from './convert.ts';
 import { ciede2000 } from './delta-e.ts';
 
 export type ColorPoint = {
@@ -23,8 +23,13 @@ export type Cluster = {
  * step). The cost is chaining across a gradient; the `sweep` curve is exactly how
  * we detect when that starts happening.
  */
-export function clusterByDeltaE(points: ColorPoint[], threshold: number): Cluster[] {
+export function clusterByDeltaE(
+  points: ColorPoint[],
+  threshold: number,
+  alphaTolerance = Number.POSITIVE_INFINITY,
+): Cluster[] {
   const labs = points.map((p) => toLab(p.raw));
+  const alphas = points.map((p) => alphaOf(p.raw));
   const parent = points.map((_, i) => i);
 
   const find = (i: number): number => {
@@ -46,6 +51,13 @@ export function clusterByDeltaE(points: ColorPoint[], threshold: number): Cluste
     for (let j = i + 1; j < points.length; j++) {
       const lj = labs[j];
       if (!lj) continue;
+      // Alpha gates the edge; it is not folded into the distance. CIEDE2000 is
+      // defined over three dimensions and adding a fourth would be inventing a
+      // metric, not applying one. What alpha does establish is that two values
+      // are not interchangeable: `#000000` and `rgba(0,0,0,0.1)` measure ΔE
+      // 0.000, and calling them the same swatch tells a team to replace an
+      // overlay tint with the opaque colour underneath it.
+      if (Math.abs((alphas[i] ?? 1) - (alphas[j] ?? 1)) > alphaTolerance) continue;
       if (ciede2000(li, lj) < threshold) union(i, j);
     }
   }

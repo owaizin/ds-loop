@@ -1,4 +1,5 @@
-import { basename, relative } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { basename, relative, sep } from 'node:path';
 import type { Adapter } from '../adapters/types.ts';
 import { isUnparsedColorFunction } from '../color/convert.ts';
 import type { DocumentationCoverage } from '../rules/docs.ts';
@@ -43,6 +44,15 @@ export type Coverage = {
   undecided: { count: number; samples: string[] };
   /** Unsupported CSS use-site expressions, distinct from low-alpha color roles. */
   unclassifiedStyles?: { count: number; samples: string[] };
+  /**
+   * Stylesheets this source imports from a package rather than declaring itself.
+   * `node_modules` is not listed, so a consumer app that imports its design system's
+   * CSS has that CSS read by nothing — and then measures as though it declared no
+   * tokens at all. The tokens are real and in the package; the audit cannot see them.
+   * Naming the import is the honest result: resolving into a dependency would audit
+   * someone else's source and attribute it to this one.
+   */
+  importedPackageStyles?: { count: number; samples: string[] };
   /** rules that returned nothing because they could not judge, not because it was clean */
   couldNotJudge: string[];
   /** Recognised keyword components, including those in mixed declarations. */
@@ -110,6 +120,29 @@ export function buildCoverage(
     )
     .map((f) => relative(root, f) || f);
 
+  // `import '@acme/ui/styles.css'` — a bare specifier, so it resolves into a package,
+  // not into this tree. A relative import is read normally and is not a gap.
+  const IMPORTED_STYLE =
+    /(?:import\s+|@import\s+|from\s+|require\()\s*['"]((?![./])[^'"]+\.(?:css|scss|sass|less))['"]/g;
+  // A bare specifier is not proof of a package. Measured on PostHog, which imports
+  // `~/scenes/…/DashboardItems.scss` and `lib/components/…/CardMeta.scss` through build
+  // aliases: both resolve inside this tree, are read normally, and reporting them as
+  // unread would have invented a coverage gap where there is none. A specifier counts
+  // only when nothing in the tree answers to it.
+  const styleFiles = listFiles(root, ['.css', '.scss', '.sass', '.less']).map((f) =>
+    relative(root, f).split(sep).join('/'),
+  );
+  const insideTree = (specifier: string) => {
+    const path = specifier.replace(/^~\//, '');
+    return styleFiles.some((f) => f === path || f.endsWith(`/${path}`));
+  };
+  const importedStyles = new Set<string>();
+  for (const file of listFiles(root, ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.css', '.scss'])) {
+    for (const [, specifier] of readFileSync(file, 'utf8').matchAll(IMPORTED_STYLE)) {
+      if (specifier && !insideTree(specifier)) importedStyles.add(specifier);
+    }
+  }
+
   const ambiguous = values.filter((v) => v.provenance.classification === 'ambiguous');
   const unconvertible = (v: RawValue) =>
     isUnparsedColorFunction(v.raw) || v.provenance.reason === 'declared colour this version cannot convert';
@@ -151,6 +184,9 @@ export function buildCoverage(
       reads: a.reads,
     })),
     unreadTokenFiles: tokenFiles,
+    ...(importedStyles.size
+      ? { importedPackageStyles: { count: importedStyles.size, samples: [...importedStyles].slice(0, 4) } }
+      : {}),
     unconvertible: { count: cannotConvert.length, samples: sample(cannotConvert) },
     undecided: { count: roleUndecided.length, samples: sample(roleUndecided) },
     couldNotJudge,
@@ -166,6 +202,7 @@ export function buildCoverage(
       adapters.length > 0 &&
       Object.keys(unreadFormats).length === 0 &&
       tokenFiles.length === 0 &&
+      importedStyles.size === 0 &&
       cannotConvert.length === 0 &&
       declarations.length === 0 &&
       unclassifiedStyles.length === 0 &&
@@ -180,6 +217,13 @@ export function formatCoverage(c: Coverage): string[] {
   for (const { adapter, extensions, reads } of c.partialReads) {
     lines.push(`    ${adapter}`);
     lines.push(`      reads ${extensions.join(' ')} — ${reads}`);
+  }
+
+  if (c.importedPackageStyles) {
+    lines.push(
+      `    ${c.importedPackageStyles.count} stylesheet(s) imported from packages, not read: ${c.importedPackageStyles.samples.join(', ')}`,
+    );
+    lines.push('      their tokens live in the package — this source is not untokenized because of them');
   }
 
   const unread = Object.entries(c.unreadFormats);

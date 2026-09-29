@@ -38,9 +38,10 @@ the project's component workflow or [scaffold](scaffold.md); review the result w
 
 For documentation work, cover components that actually exist. Order by observed
 consumer reach, then compatibility risk and relevance to the task; use
-[census](census.md) for source/import evidence. `consumers` (A9) is **not yet
-available**. A local zero-use search cannot clear external consumers of a published
-API. A newly proposed component stays a proposal until implemented; do not invent
+[census](census.md) for source/import evidence, and `ds-loop consumers <path>` for
+which workspace package imports which shared package. Neither clears external
+consumers of a published API: both read static imports in this workspace, and a
+local zero-use search is not evidence that nobody outside it uses the export. A newly proposed component stays a proposal until implemented; do not invent
 components to fill documentation categories.
 
 Use the existing spec format, or these eight sections under the layout in

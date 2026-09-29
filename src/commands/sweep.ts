@@ -56,7 +56,10 @@ export function sweep(fixtureDir: string, opts: { outDir?: string; config?: DsOp
   const { min, max, step } = config.sweep;
   const curve: SweepPoint[] = [];
   for (let d = min; d <= max + 1e-9; d = round(d + step)) {
-    curve.push({ deltaE: round(d), clusters: clusterByDeltaE(points, d).length });
+    curve.push({
+      deltaE: round(d),
+      clusters: clusterByDeltaE(points, d, config.clustering.alphaTolerance).length,
+    });
   }
 
   const monotone = isMonotoneNonIncreasing(curve);

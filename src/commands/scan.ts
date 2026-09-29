@@ -29,7 +29,7 @@ export function scan(fixtureDir: string, config: DsOpsConfig = DEFAULT_CONFIG): 
     id: v.provenance.tokenName ?? v.raw,
     raw: v.raw,
   }));
-  const clusters = clusterByDeltaE(points, config.clustering.deltaE);
+  const clusters = clusterByDeltaE(points, config.clustering.deltaE, config.clustering.alphaTolerance);
 
   console.log(`\n  ds-loop scan — ${meta.label}`);
   console.log(

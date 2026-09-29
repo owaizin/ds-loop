@@ -93,7 +93,7 @@ test('an upgraded instrument prints current values without numerical deltas', as
     writeFileSync(join(dir, 'tokens.css'), ':root{--brand:#333;--accent:#333}\n');
     scorecard(dir, { dir });
     output.length = 0;
-    const config = { ...DEFAULT_CONFIG, clustering: { deltaE: 1 } };
+    const config = { ...DEFAULT_CONFIG, clustering: { ...DEFAULT_CONFIG.clustering, deltaE: 1 } };
     scorecard(dir, { dir, config });
     assert.match(output.join('\n'), /instrument moved/);
     assert.doesNotMatch(output.join('\n'), /→|▲|▼/);

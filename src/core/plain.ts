@@ -109,6 +109,11 @@ export const PLAIN_COVERAGE = {
     title: 'Token files we cannot read',
     description: 'These likely token files use an unsupported format.',
   },
+  importedPackageStyles: {
+    title: 'Styles that come from a package',
+    description:
+      'This code imports stylesheets from a package we do not read, so their tokens are not counted here.',
+  },
   unconvertible: {
     title: 'Colours we cannot compare',
     description: 'These colour values were recognised but could not be compared.',

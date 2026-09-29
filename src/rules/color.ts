@@ -1,5 +1,5 @@
 import { type ColorPoint, clusterByDeltaE } from '../color/cluster.ts';
-import { toLab } from '../color/convert.ts';
+import { alphaOf, toLab } from '../color/convert.ts';
 import { ciede2000 } from '../color/delta-e.ts';
 import { isPrimitiveName, isUpstreamName } from './tier.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
@@ -125,11 +125,19 @@ export const nearDuplicatePaletteRule: Rule = {
     const threshold = ctx.config.clustering.deltaE;
     const pairs: { a: string; b: string; deltaE: number }[] = [];
     const labs = prims.map((p) => toLab(p.raw));
+    const alphas = prims.map((p) => alphaOf(p.raw));
     for (let i = 0; i < prims.length; i++) {
       for (let j = i + 1; j < prims.length; j++) {
         const li = labs[i];
         const lj = labs[j];
         if (!li || !lj) continue;
+        // A translucent overlay and the opaque colour under it measure ΔE 0.000,
+        // because CIEDE2000 has no alpha term. Reporting that pair tells a team two
+        // values are interchangeable when one composites and the other does not, so
+        // alpha distance excludes the pair rather than adjusting its score.
+        if (Math.abs((alphas[i] ?? 1) - (alphas[j] ?? 1)) > ctx.config.clustering.alphaTolerance) {
+          continue;
+        }
         const d = ciede2000(li, lj);
         if (d < threshold) pairs.push({ a: prims[i]!.id, b: prims[j]!.id, deltaE: round(d) });
       }
@@ -211,7 +219,7 @@ export const colorKneeRule: Rule = {
     let prev: number | null = null;
     let runStart = min;
     for (let d = min; d <= max + 1e-9; d = round(d + step)) {
-      const c = clusterByDeltaE(points, d).length;
+      const c = clusterByDeltaE(points, d, ctx.config.clustering.alphaTolerance).length;
       if (prev != null && c === prev) {
         if (Math.abs(c - shipped) <= shipped * 0.15 && d - runStart >= step * 2) {
           plateauFrom = runStart;

@@ -97,7 +97,9 @@ test('nearest colors obey ΔE and never match across alpha values', () => {
       assert.equal(s.candidates[0].metric, 'ΔE');
       assert.ok(s.candidates[0].distance > 0);
       assert.equal(
-        suggestions(dir, { config: { ...DEFAULT_CONFIG, clustering: { deltaE: 0 } } })[0].status,
+        suggestions(dir, {
+          config: { ...DEFAULT_CONFIG, clustering: { ...DEFAULT_CONFIG.clustering, deltaE: 0 } },
+        })[0].status,
         'no-token',
       );
     },

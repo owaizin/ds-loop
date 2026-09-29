@@ -67,6 +67,14 @@ export const DEFAULT_CONFIG: DsOpsConfig = {
   },
   clustering: {
     deltaE: 2.3,
+    // An epsilon for rounding, not a band of allowed difference. The first value
+    // tried here was 0.25, reasoned across from `taxonomy.shadowAlphaCeiling`;
+    // checked against the pair that prompted this, an 80% overlay beside the
+    // opaque foreground, it would have left that pair reported. There is no
+    // amount by which two colours may differ in alpha and still be swappable:
+    // one composites with what is behind it and the other does not. This only
+    // keeps `0.7999` and `0.8` from reading as different.
+    alphaTolerance: 0.01,
   },
   taxonomy: {
     shadowTokenHints: ['shadow', 'elevation', 'glow', 'ring-offset'],

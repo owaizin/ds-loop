@@ -84,3 +84,44 @@ test('plugin, install instructions and README expose every agent command', () =>
     assert.match(readme, new RegExp(`\\| \x60/ds-loop:${name}\x60 \\|[^\\n]+\\|[^\\n]+\\|`));
   }
 });
+
+// A skill doc told the agent `consumers` was "not yet available" while SKILL.md listed
+// it as implemented, for as long as it took someone to dogfood the tool and read both.
+// A doc that denies a shipped command costs more than a missing one: the agent believes
+// it and works around a command it could have run.
+test('no skill doc calls a shipped CLI command unavailable', () => {
+  const shipped = [
+    'start',
+    'context',
+    'audit',
+    'consumers',
+    'report',
+    'dashboard',
+    'scan',
+    'sweep',
+    'guard',
+    'fix',
+    'scorecard',
+    'impact',
+    'decide',
+    'install',
+  ];
+  const denial =
+    /`(\w[\w-]*)`[^.\n]{0,60}(not yet available|not yet shipped|not shipped|is not implemented)/g;
+  for (const file of skillDocs(new URL('skill/', root))) {
+    const text = readFileSync(file, 'utf8');
+    for (const [match, name] of text.matchAll(denial)) {
+      assert.ok(
+        !shipped.includes(name),
+        `${file.pathname.split('/skill/')[1]} denies shipped command: ${match}`,
+      );
+    }
+  }
+});
+
+function skillDocs(dir: URL): URL[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const child = new URL(entry.name + (entry.isDirectory() ? '/' : ''), dir);
+    return entry.isDirectory() ? skillDocs(child) : entry.name.endsWith('.md') ? [child] : [];
+  });
+}
