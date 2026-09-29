@@ -170,10 +170,28 @@ test('README: consulting report output is real', () => {
   });
 });
 
+test('README: dashboard output is real', () => {
+  const block = verifiedBlocks().get('dashboard-css-example');
+  assert.ok(block);
+  inTemp({}, (dir) => {
+    const actual = run(
+      [
+        'dashboard',
+        join(ROOT, 'fixtures/css-audit-example'),
+        '--out',
+        'scratch/phase-2/dashboard-empty.html',
+      ],
+      dir,
+    );
+    assertBlockIsReal('dashboard-css-example', block, actual);
+  });
+});
+
 test('every verified block in the README is registered in this file', () => {
   // an unregistered `verified:` block is an unchecked claim wearing a badge
   const registered = new Set([
     'report-css-example',
+    'dashboard-css-example',
     'start-css-showcase',
     'consumers-example',
     'audit-radix',

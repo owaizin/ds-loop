@@ -2,7 +2,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { CONSUMERS_VERSION, analyseConsumers } from '../core/consumers.ts';
-import { audit } from './audit.ts';
+import { type AuditReport, audit } from './audit.ts';
 
 /**
  * `scorecard` — the delta, which is the thing anyone actually buys.
@@ -51,28 +51,7 @@ export function scorecard(
   const report = audit(targetPath, { config: opts.config, silent: true });
 
   const consumers = analyseConsumers(resolve(targetPath));
-  const adoptionRatios = Object.fromEntries(
-    consumers.consumers.flatMap((c) =>
-      c.usage.production.sharedComponentShare === null
-        ? []
-        : [[`shared-component-share:${c.package}`, c.usage.production.sharedComponentShare]],
-    ),
-  );
-  const row: ScorecardRow = {
-    ranAt: new Date().toISOString(),
-    label: report.manifest.fixtureLabel,
-    fixtureSha: report.manifest.fixtureSha,
-    adapters: report.manifest.adapter,
-    configHash: report.manifest.configHash,
-    ...(consumers.status === 'checked' ? { consumersVersion: CONSUMERS_VERSION } : {}),
-    ratios: { ...report.ratios, ...adoptionRatios },
-    findings: report.findings.reduce<Record<string, number>>((counts, f) => {
-      counts[f.ruleId] = (counts[f.ruleId] ?? 0) + countOf(f);
-      return counts;
-    }, {}),
-    findingCount: report.findings.length,
-    coverageComplete: report.coverage.complete,
-  };
+  const row = scorecardRow(report, consumers);
 
   const dir = join(opts.dir ?? process.cwd(), DIR);
   const path = join(dir, FILE);
@@ -91,6 +70,35 @@ export function scorecard(
   }
 
   return { row, previous };
+}
+
+/** Shared row shape; constructing today's state does not append history. */
+export function scorecardRow(
+  report: AuditReport,
+  consumers: ReturnType<typeof analyseConsumers>,
+): ScorecardRow {
+  const adoptionRatios = Object.fromEntries(
+    consumers.consumers.flatMap((c) =>
+      c.usage.production.sharedComponentShare === null
+        ? []
+        : [[`shared-component-share:${c.package}`, c.usage.production.sharedComponentShare]],
+    ),
+  );
+  return {
+    ranAt: report.manifest.ranAt,
+    label: report.manifest.fixtureLabel,
+    fixtureSha: report.manifest.fixtureSha,
+    adapters: report.manifest.adapter,
+    configHash: report.manifest.configHash,
+    ...(consumers.status === 'checked' ? { consumersVersion: CONSUMERS_VERSION } : {}),
+    ratios: { ...report.ratios, ...adoptionRatios },
+    findings: report.findings.reduce<Record<string, number>>((counts, f) => {
+      counts[f.ruleId] = (counts[f.ruleId] ?? 0) + countOf(f);
+      return counts;
+    }, {}),
+    findingCount: report.findings.length,
+    coverageComplete: report.coverage.complete,
+  };
 }
 
 /** what a finding's headline number is, across the rules that carry different shapes */

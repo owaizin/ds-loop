@@ -11,7 +11,7 @@
  * It never blocks: a PostToolUse hook fires after the edit already landed.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,7 +33,42 @@ const filePath =
   payload?.tool_input?.file_path ?? payload?.tool_input?.path ?? payload?.tool_response?.filePath ?? '';
 const cwd = payload?.cwd ?? process.cwd();
 
-if (!filePath || !STYLE.test(filePath)) process.exit(0);
+if (!filePath) process.exit(0);
+
+// Refresh existing dashboards independently of the scoped hook audit.
+// No scorecard row is appended. Preserve each dashboard's target and config.
+let dashboards = [];
+try {
+  const saved = JSON.parse(readFileSync(resolve(cwd, 'node_modules/.cache/ds-loop/dashboards.json'), 'utf8'));
+  if (Array.isArray(saved))
+    dashboards = saved.filter(
+      (e) =>
+        e &&
+        typeof e.target === 'string' &&
+        typeof e.out === 'string' &&
+        (e.config === undefined || typeof e.config === 'string'),
+    );
+} catch {
+  /* default dashboard from before the refresh registry */
+}
+const defaultOutput = resolve(cwd, 'ds-loop-dashboard.html');
+if (!dashboards.some((e) => resolve(cwd, e.out) === defaultOutput))
+  dashboards.push({ target: cwd, out: defaultOutput });
+let dashboardNote = '';
+for (const entry of dashboards) {
+  if (!existsSync(resolve(cwd, entry.out))) continue;
+  const args = [CLI, 'dashboard', entry.target, '--out', entry.out];
+  if (entry.config) args.push('--config', entry.config);
+  const refresh = spawnSync(process.execPath, args, { encoding: 'utf8', cwd, timeout: 15_000 });
+  if (refresh.error || refresh.signal || refresh.status !== 0) {
+    dashboardNote += `ds-loop dashboard — refresh failed for ${entry.out}; the existing dashboard may be stale. ${refresh.error?.message ?? refresh.stderr?.trim() ?? 'Run ds-loop dashboard again.'}\n`;
+  }
+}
+
+if (!STYLE.test(filePath)) {
+  if (dashboardNote) process.stderr.write(`${dashboardNote}\n`);
+  process.exit(dashboardNote ? 2 : 0);
+}
 
 const res = spawnSync(
   process.execPath,
@@ -204,7 +239,7 @@ function attribute(finding, ranges) {
   return touched.length === lines.length ? 'changed lines' : 'partly changed';
 }
 
-const notes = [];
+const notes = dashboardNote ? [dashboardNote] : [];
 if (coverage && transitionNeedsNotice(coverageSignature(coverage))) {
   const parts = [];
   const unread = Object.entries(coverage.unreadFormats ?? {});

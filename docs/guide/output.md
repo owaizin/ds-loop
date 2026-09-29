@@ -118,3 +118,17 @@ This synthetic example replaces duplicate declarations with references, then run
 The new references use names the configured taxonomy cannot classify. The lower duplicate ratio does not establish a better system: the tier check now cannot judge. A scorecard describes the extracted source; it is not a maturity score or a CI gate.
 
 [Back to the guide](README.md)
+
+
+## Dashboard generation
+
+Run `npm run ds-loop -- dashboard fixtures/css-audit-example --out scratch/phase-2/dashboard-empty.html`.
+The following is captured command output; dates and ratios are in the generated
+HTML. With no saved history, the dashboard shows today's measured state and the
+baseline command.
+
+<!-- verified: dashboard-css-example -->
+```text
+  ds-loop dashboard — ds-loop
+  wrote scratch/phase-2/dashboard-empty.html
+```

@@ -124,3 +124,26 @@ It can compare foundation options from the MIT [ds-kit](https://github.com/owaiz
 From a source checkout, run `npm ci`, then `npm test`, `npm run check`, `npm run type-check` and `npm run smoke`.
 
 [Contribution notes](https://github.com/owaizin/ds-loop/blob/main/CLAUDE.md) · [Methodology](https://github.com/owaizin/ds-loop/blob/main/docs/METHODOLOGY.md) · [MIT licence](LICENSE)
+
+
+### See whether your system is changing
+
+```sh
+npx ds-loop scorecard .
+# Save another run after a source change, then:
+npx ds-loop dashboard .
+```
+
+Open `ds-loop-dashboard.html` for today's verdict, tokenization and shared-component
+trends, findings by theme and coverage. One HTML file, fully offline. With fewer
+than two saved runs it shows today alone; it never invents a baseline. Instrument
+changes break the chart and are labelled. The guard refreshes existing dashboards
+after edits. [Dashboard reference and CI setup](docs/guide/reference.md#dashboard-today-and-saved-trends).
+
+Captured with `npm run ds-loop -- dashboard fixtures/css-audit-example --out scratch/phase-2/dashboard-empty.html`:
+
+<!-- verified: dashboard-css-example -->
+```text
+  ds-loop dashboard — ds-loop
+  wrote scratch/phase-2/dashboard-empty.html
+```

@@ -1,4 +1,5 @@
 import type { ConsumersReport } from './consumers.ts';
+import { VISUAL_CSS } from './visual-system.ts';
 
 /**
  * Report #3 — UI architecture, generated from `analyseConsumers` only.
@@ -99,9 +100,7 @@ export function renderConsumersHtml(
   const idle = r.consumers.filter((c) => c.uses.length === 0).map((c) => c.package);
 
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>ds-loop consumers — ${esc(opts.label)}</title><style>
-:root{color-scheme:light dark;--bg:#f4f6f8;--card:#fff;--ink:#182638;--muted:#526277;--line:#c7d0da;--accent:#1756a3;--warn:#8a4014;--edge:#6d8199}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--warn:#ffbb8f;--edge:#8aa0b8}}
-:root[data-theme=dark]{--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--warn:#ffbb8f;--edge:#8aa0b8;color-scheme:dark}
+${VISUAL_CSS}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}main{max-width:1240px;margin:auto;padding:20px 16px 64px}
 h1{font-size:28px;letter-spacing:-.03em;margin:6px 0}h2{font-size:20px;margin:28px 0 8px}h3{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 8px}p{margin:6px 0}.muted,small{color:var(--muted)}.kicker{text-transform:uppercase;letter-spacing:.15em;font-size:11px;font-weight:700;color:var(--muted)}
 .diagram{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}

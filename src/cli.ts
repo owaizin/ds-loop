@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { audit } from './commands/audit.ts';
 import { consumers } from './commands/consumers.ts';
 import { context } from './commands/context.ts';
+import { dashboard } from './commands/dashboard.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
 import { overview } from './commands/overview.ts';
@@ -36,6 +37,9 @@ const FIX_USAGE = `
 
 const USAGE = `
 ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
+
+  dashboard [path] [--out <file.html>]
+      Save today’s state and saved trends (default: ds-loop-dashboard.html).
 
   report [path] [--consult <file.json>] [--out <file.html>]
       Save a self-contained consulting report (default: ds-loop-report.html).
@@ -140,6 +144,12 @@ function main(argv: string[]): void {
   const positional = rest.filter((a, i) => !a.startsWith('-') && !valueFlags.has(rest[i - 1] ?? ''));
 
   switch (cmd) {
+    case 'dashboard': {
+      if (has(rest, 'out') && (!flag(rest, 'out') || flag(rest, 'out')!.startsWith('-')))
+        throw new Error('--out needs a file path');
+      dashboard(positional[0] ?? '.', loaded, { out: flag(rest, 'out'), configPath: flag(rest, 'config') });
+      break;
+    }
     case 'report': {
       for (const name of ['consult', 'out'])
         if (has(rest, name) && (!flag(rest, name) || flag(rest, name)!.startsWith('-')))

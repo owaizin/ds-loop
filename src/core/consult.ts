@@ -7,7 +7,14 @@ export type Consult = {
   problem: Claim[];
   practices: (Claim & { system: string })[];
   after: Claim & { architecture: Proposal };
-  plan: { title: string; changes: string; why: string; verification: string; evidence: Evidence[] }[];
+  plan: {
+    effort?: string;
+    title: string;
+    changes: string;
+    why: string;
+    verification: string;
+    evidence: Evidence[];
+  }[];
   assumptions: Claim[];
 };
 
@@ -67,6 +74,8 @@ export function checkConsult(input: unknown): { errors: string[]; warnings: stri
             : ['text'],
         path,
       );
+      if (key === 'plan' && row.effort !== undefined && !text(row.effort))
+        errors.push(`${path}.effort must be a non-empty string`);
       evidence(row, path);
     });
   }

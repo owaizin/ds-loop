@@ -1,5 +1,5 @@
 {
-  "title": "Example DS \u2014 make shared choices easier to find",
+  "title": "Example DS — make shared choices easier to find",
   "problem": [
     {
       "text": "Both apps already use shared components alongside local components. The source alone does not establish whether the local components should become shared.",
@@ -42,11 +42,11 @@
       "lanes": [
         {
           "id": "before",
-          "label": "Before \u2014 observed"
+          "label": "Before — observed"
         },
         {
           "id": "after",
-          "label": "After \u2014 proposed"
+          "label": "After — proposed"
         }
       ],
       "nodes": [
@@ -134,7 +134,8 @@
         {
           "ref": "apps/portal/App.tsx:2"
         }
-      ]
+      ],
+      "effort": "One team review (illustrative estimate)"
     },
     {
       "title": "Write and try a usage example",
@@ -145,7 +146,8 @@
         {
           "ref": "packages/ui/index.tsx:1"
         }
-      ]
+      ],
+      "effort": "One contributor pilot (illustrative estimate)"
     }
   ]
 }

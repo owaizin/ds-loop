@@ -44,6 +44,25 @@ for (const source of ['fixtures/css-audit-example', 'fixtures/example-workspace'
       }
       assert.equal((html.match(/Not written yet — ask your agent/g) ?? []).length, consult ? 0 : 4);
       assert.match(html, /What we couldn't check/);
+      assert.match(html, /DESIGN SYSTEM LOOP \/ SYSTEM REPORT/);
+      assert.match(html, /class="cover"/);
+      assert.match(html, /class="headline-metrics"/);
+      assert.equal(
+        (html.match(/<h1>/g) ?? []).length,
+        consult
+          ? source.endsWith('example-workspace')
+            ? 3
+            : 2
+          : source.endsWith('example-workspace')
+            ? 2
+            : 1,
+      );
+      assert.match(html, /@page\{margin:18mm\}/);
+      if (consult) {
+        assert.match(html, /architecture-lanes/);
+        assert.match(html, /Step 1 · Effort: One team review/);
+        assert.match(html, /Changes: shared/);
+      }
       assert.match(html, /@media print/);
       assert.match(html, /break-before:page/);
       assert.doesNotMatch(html, /<(?:script|link|img|iframe)[^>]+(?:src|href)=/);

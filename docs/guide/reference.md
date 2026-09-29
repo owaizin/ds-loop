@@ -13,6 +13,7 @@ Use the [installation guide](install.md) for your first run.
 | `start [path]` / bare `ds-loop` | Verdict for this directory, its biggest finding, what was read, and the next command | No |
 | `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | Only with `--write-contract`, which creates `DESIGN-SYSTEM.md` and never overwrites one |
 | `audit [path]` | Summary and coverage; `--all` for full details and ratios | Only with `--out <dir>` or `--html <file>` |
+| `dashboard [path] [--out file.html]` | Write today’s state and saved scorecard trends to an offline dashboard. |
 | `report [path]` | Consulting report with measured evidence and optional `--consult <file.json>` assessment | Writes `ds-loop-report.html` or `--out <file.html>` |
 | `consumers [path]` | Workspace imports and static JSX shared-component share per package; `--scope`, `--json`, `--html <file>` | Only with `--html <file>` |
 | `scan <path>` | Extracted-value taxonomy and palette clusters | No |
@@ -363,7 +364,7 @@ fields are ignored. Paths in evidence are relative to the scanned source directo
 | `problem` | Array of claims: `{ "text": "…", "evidence": [{ "ref": "src/theme.css:12" }] }` |
 | `practices` | Array of claims with an additional required `system` string naming the source system |
 | `after` | Claim with required `architecture` proposal (see below) |
-| `plan` | Array of `{ "title": "…", "changes": "…", "why": "…", "verification": "…", "evidence": [...] }` |
+| `plan` | Array of `{ "title": "…", "effort": "…", "changes": "…", "why": "…", "verification": "…", "evidence": [...] }` |
 | `assumptions` | Array of claims, visibly labelled as assumptions awaiting confirmation |
 
 Every `evidence` entry has a `ref`: a `file:line` (optionally `file:line:column`), a
@@ -393,3 +394,62 @@ it in a source checkout:
 ```sh
 npm run ds-loop -- report fixtures/example-workspace --consult skill/templates/consult.example.json --out scratch/phase-1/example-workspace-report.html
 ```
+
+
+### Dashboard: today and saved trends
+
+```sh
+npx ds-loop scorecard .
+# After a source change, save the next measurement:
+npx ds-loop scorecard .
+npx ds-loop dashboard .
+```
+
+Open `ds-loop-dashboard.html`. `dashboard [path] [--out file.html]` runs a fresh,
+unfiltered audit, reads `.ds-scorecard/history.jsonl` from the current directory,
+and writes one offline HTML file. It never appends history. With fewer than two
+saved rows it shows today alone and the command to record a baseline.
+
+Charts show per-category style tokenization and production shared-component share
+per package. Every series has a disclosure with the dates, ratios and coverage of
+every run. Missing measurements say “not checked”; they are not zero. An adapter,
+configuration or consumers-analysis change breaks the line and says
+“instrument changed — not a comparison”. Invalid history suppresses the trend
+rather than silently joining rows around missing evidence. Today is separate from
+the saved runs. Numeric direction does not establish product quality.
+
+History is matched by source label, as in `scorecard`; labels do not identify full
+paths or scan scope. Use a separate working directory/history for unrelated scans
+with the same label. Keep the target and configuration consistent between runs.
+
+`ds-loop guard on` refreshes existing dashboards after edits.
+The command remembers output paths, targets and explicit `--config` paths locally
+in `node_modules/.cache/ds-loop/dashboards.json`. Deleted dashboards are skipped.
+Without that cache, the guard refreshes only `ds-loop-dashboard.html` in the
+project root, using the project root as its target and normal config discovery.
+Refresh failures report that the dashboard may be stale; they do not record history
+or erase the hook’s coverage state. There is no watcher or server.
+
+Keep the coverage gate in CI and regenerate the artifact even when the audit fails:
+
+```yaml
+- run: npm ci
+- name: Check design-system coverage and findings
+  run: npx ds-loop audit . --require-coverage
+- name: Refresh dashboard
+  if: always()
+  run: npx ds-loop dashboard . --out artifacts/ds-loop-dashboard.html
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: design-system-dashboard
+    path: artifacts/ds-loop-dashboard.html
+```
+
+Restore or check out your real `.ds-scorecard/history.jsonl` before regeneration to
+include trends. CI generation alone doesn't create baselines. The audit's failure
+still fails the job; writing HTML isn't a replacement gate.
+
+Consultation plan steps accept optional `effort` text. Missing effort displays
+“not estimated”; the engine does not invent estimates. The report cover uses three
+source ratios, and print CSS gives the cover its own page with 18mm margins.

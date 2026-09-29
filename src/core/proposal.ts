@@ -223,7 +223,7 @@ code{font:12px ui-monospace,monospace}a{color:var(--accent)}@media print{.node{b
 <div class="summary"><span>${counts.observed} observed</span><span>${counts.inferred} inferred</span><span>${counts.proposed} proposed</span><span>${counts['not-checked']} not checked</span><span>${edges.length} links</span></div>
 <div class="legend"><span><i class="s-observed"></i>observed — seen in source or a rendered check</span><span><i class="s-inferred"></i>inferred — reasoned from cited evidence</span><span><i class="s-proposed"></i>proposed — a change, not current architecture</span><span><i class="s-not-checked"></i>not checked — no result, never a pass</span></div>
 ${warnings.length ? `<div class="warn" role="note"><b>${warnings.length} claim${warnings.length > 1 ? 's' : ''} without a linked fact</b><ul>${warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
-${lanes}${decisions}${roadmap}
+<div class="architecture-lanes">${lanes}</div>${decisions}${roadmap}
 <p class="muted" style="margin-top:28px">Rendered by the ds-loop skill from an agent-authored proposal. Every box carries its basis; the engine did not produce these judgements.</p>
 </main><script>
 const edges=${JSON.stringify(edges.map((e) => [e.from, e.to])).replace(/</g, '\\u003c')};
