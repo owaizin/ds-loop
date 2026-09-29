@@ -12,7 +12,11 @@ invent a plan.
    or go ahead with what I found?” Ask at most five questions, one at a time, with
    a short example answer and plain words. Do not ask what the repository answers.
    Never assume an answer. Reuse the user's previous choice and authorization.
-3. Write `consult.json` using the schema in
+3. Load the [consultant role](../roles/consultant.md) and its
+   [practice guides](../roles/consultant.md#what-good-looks-like). Carry the specific
+   published source URL into every supported recommendation. Where no public source
+   states it, write **our own opinion**; never attribute our recipe to another system.
+   Write `consult.json` using the schema in
    [the command reference](../../docs/guide/reference.md#consultjson-schema).
    Describe the problem, cite practices and name the systems they come from,
    propose an after-state and architecture, and order steps by dependency. Every

@@ -14,7 +14,7 @@ user should not have to choose an internal playbook or interpret a report alone.
 ## How to use this skill
 
 Start with [the person's task](#start-with-the-persons-task), choose the relevant
-procedure, and [deliver and close](#deliver-and-close) within the agreed scope.
+role and procedure, and [deliver and close](#deliver-and-close) within the agreed scope.
 Use [CLI commands](#cli-commands) for measurements and [agent procedures](#ask-your-agent)
 for investigation and delivery. The command catalog is a reference, not an interview.
 
@@ -35,11 +35,42 @@ start an agent, schedule maintenance, or certify the UI.
 `<skill-base-dir>/bin/ds-loop`; the package root's launcher is `bin/ds-loop.mjs`.
 Resolve the skill path before running commands and keep cwd at the target project.
 
+## Choose the role from the outcome
+
+**our own opinion:** These roles and their hand-offs are the kit's working model,
+not a claim about how another team staffs its system. One agent may play several
+roles. No subagents or orchestration framework are required. Load only the role
+and practice needed for the current outcome; [routing](reference/routing.md) maps
+specific requests to the first role and subsequent hand-offs.
+
+| User outcome | Role to load |
+|---|---|
+| Establish facts or measure tokens and consumers | [auditor](roles/auditor.md) |
+| Diagnose a problem, choose a plan or produce a consulting report | [consultant](roles/consultant.md), with facts from auditor |
+| Design token layers, naming or before/after architecture | [architect](roles/architect.md) |
+| Choose color, type, spacing, radius, elevation or motion | [foundations](roles/foundations.md) |
+| Build/review a component or decide shared versus local | [components](roles/components.md) |
+| Document the system, examples or Storybook | [docs](roles/docs.md) |
+| Adopt a system, run a codemod or retire an old API | [migrator](roles/migrator.md) |
+| Resolve ownership, review policy, exceptions or drift prevention | [governor](roles/governor.md) |
+
+**our own opinion:** At each hand-off, name the sending and receiving role, goal,
+authorized scope, evidence locations and coverage, decided versus proposed choices,
+open questions, expected artifact and acceptance checks. Keep this in the existing
+task record; don't start a second interview. A role change grants no new authority.
+The auditor never proposes; pass diagnosis and recommendations to the consultant.
+For a measurement-only task, stop with facts and limits if that meets the request.
+
+The consultant's [what good looks like](roles/consultant.md#what-good-looks-like)
+links all six practice guides. Carry their supporting public URLs into report
+recommendations. Where no public source states a practice, say **our own opinion**
+in those words and keep the project's evidence separate from that judgment.
+
 ## Start with the person's task
 
 Read [routing.md](reference/routing.md) before the first deliverable, including an
 inventory, diagram or recommendation. Select the route from the requested outcome
-and evidence; do not make the user choose a playbook. Orientation and necessary
+and evidence; load the named role and do not make the user choose a playbook. Orientation and necessary
 questions can happen first. Load only the relevant procedure, not the whole catalog.
 
 1. Recover the user's goal and any prior task/decision record. Say what you will
@@ -66,7 +97,8 @@ questions can happen first. Load only the relevant procedure, not the whole cata
    example answer, at most five questions, in plain words. Never assume an answer.
    If the user says “go ahead”, record assumptions visibly in `consult.json`.
    A returning task reuses the user's earlier choice and authorization.
-4. Follow [consult.md](reference/consult.md): write `consult.json`, run
+4. Switch from auditor to [consultant](roles/consultant.md) for diagnosis and
+   recommendations. Follow [consult.md](reference/consult.md): write `consult.json`, run
    `<skill-base-dir>/bin/ds-loop report . --consult consult.json`, and give the file
    location plus three things worth looking at first. Counts are not grades.
 5. Explain the first useful delivery and its finish line. Use
