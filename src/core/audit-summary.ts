@@ -27,7 +27,12 @@ export function findingLocations(finding: Finding): string[] {
 }
 
 /** Presentation only. Does not mutate findings, severity, coverage or ratios. */
-export function auditSummary(report: AuditReport, path: string, beforeNext: string[] = []): string[] {
+export function auditSummary(
+  report: AuditReport,
+  path: string,
+  beforeNext: string[] = [],
+  compact = false,
+): string[] {
   const { findings, coverage, manifest: m } = report;
   const lines = [`  ds-loop audit — ${m.fixtureLabel} · target: ${m.target}`];
   if (report.verdict === 'not-checked') {
@@ -46,11 +51,15 @@ export function auditSummary(report: AuditReport, path: string, beforeNext: stri
   }
   lines.push(
     `  ${PLAIN_VERDICTS[report.verdict].description}`,
-    `  version ${m.fixtureSha}   adapter ${m.adapter}   config ${m.configHash}`,
-    `  ${report.rulesRun.length} rules run`,
+    ...(compact
+      ? []
+      : [
+          `  version ${m.fixtureSha}   adapter ${m.adapter}   config ${m.configHash}`,
+          `  ${report.rulesRun.length} rules run`,
+        ]),
     '',
     '  scope — what this audit read',
-    ...plainCoverage(coverage).map((line) => `    ${line}`),
+    ...plainCoverage(coverage, compact).map((line) => `    ${line}`),
   );
   if (m.judgedFiles)
     lines.push(`    selected files: ${m.judgedFiles.length} — see manifest.judgedFiles in --json`);
@@ -63,7 +72,7 @@ export function auditSummary(report: AuditReport, path: string, beforeNext: stri
       '',
       '  findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)',
     );
-    for (const f of findings) {
+    for (const f of compact ? findings.slice(0, 3) : findings) {
       const count = typeof f.data?.count === 'number' ? `${f.data.count} hits` : '1 finding';
       const locations = findingLocations(f);
       lines.push(
@@ -71,12 +80,14 @@ export function auditSummary(report: AuditReport, path: string, beforeNext: stri
       );
     }
   }
+  if (compact && findings.length > 3)
+    lines.push(`    ${findings.length - 3} more finding groups in the report or audit --all.`);
   if (report.suppressions.length) {
     lines.push('', '  suppressed — exceptions applied to this run');
     for (const s of report.suppressions)
       lines.push(`    ${s.rule} · ${s.value} — ${s.matched} value(s) · ${s.reason}`);
   }
-  if (Object.keys(report.styleInventory).length) {
+  if (!compact && Object.keys(report.styleInventory).length) {
     lines.push(
       '',
       '  CSS property inventory — extracted, before exceptions and severity filtering',
@@ -88,6 +99,16 @@ export function auditSummary(report: AuditReport, path: string, beforeNext: stri
       );
     }
   }
-  lines.push(...beforeNext, '', ...formatNext(auditViewActions(report.next, path)), '');
-  return lines;
+  const body = [...lines, ...beforeNext];
+  return [
+    ...(compact ? body.filter(Boolean) : body),
+    '',
+    ...formatNext(
+      auditViewActions(
+        compact ? report.next.filter((a) => a.command.startsWith('ds-loop context')) : report.next,
+        path,
+      ),
+    ),
+    '',
+  ];
 }

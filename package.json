@@ -1,15 +1,29 @@
 {
   "name": "ds-loop",
-  "version": "0.3.0",
-  "description": "Design System Loop — deterministic design-system checks for supported CSS and Tailwind code, with source locations and stated coverage limits.",
+  "version": "0.4.0",
+  "description": "Design System Loop \u2014 deterministic design-system checks for supported CSS and Tailwind code, with source locations and stated coverage limits.",
   "type": "module",
   "bin": {
     "ds-loop": "bin/ds-loop.mjs"
   },
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
-  "files": ["bin", "dist", "skill", "README.md", "LICENSE", "docs/guide", "benchmarks/reference.json"],
+  "files": [
+    "bin",
+    "dist",
+    "skill",
+    ".claude-plugin",
+    "hooks",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "docs/guide",
+    "benchmarks"
+  ],
   "engines": {
     "node": ">=22.6"
   },

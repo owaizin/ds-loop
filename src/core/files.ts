@@ -14,6 +14,9 @@ import { extname, join } from 'node:path';
 /** dependencies and derived output — never authored, so never audited */
 const SKIP = new Set([
   'node_modules',
+  // Default reports are derived output, not unread product HTML.
+  'ds-loop-report.html',
+  'ds-loop-dashboard.html',
   'bower_components',
   'vendor',
   'dist',

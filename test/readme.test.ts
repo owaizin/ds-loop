@@ -47,7 +47,7 @@ function run(args: string[], cwd: string): string {
 
 /** every ```-fenced block preceded by `<!-- verified: id -->` */
 function verifiedBlocks(): Map<string, string> {
-  const readme = ['README.md', 'docs/guide/output.md']
+  const readme = ['README.md', 'docs/guide/output.md', 'docs/site/landing-copy.md']
     .map((file) => readFileSync(join(ROOT, file), 'utf8'))
     .join('\n');
   const blocks = new Map<string, string>();
@@ -149,12 +149,17 @@ for (const id of ['audit-css-inventory', 'audit-css-suggestion']) {
 
 for (const [id, args] of [
   ['start-css-showcase', ['start', 'fixtures/css-audit-example']],
+  ['landing-css-showcase', ['start', 'fixtures/css-audit-example']],
   ['consumers-example', ['consumers', 'fixtures/example-workspace', '--scope', '@example/ui']],
 ] as const) {
   test(`README: ${id} is a contiguous excerpt of the real command`, () => {
     const block = verifiedBlocks().get(id);
     assert.ok(block, `missing verified block: ${id}`);
-    assert.ok(run([...args], ROOT).includes(block.trimEnd()), `${id} differs from real output`);
+    const actual =
+      args[0] === 'start'
+        ? inTemp({}, (dir) => run(['start', join(ROOT, args[1])], dir))
+        : run([...args], ROOT);
+    assert.ok(actual.includes(block.trimEnd()), `${id} differs from real output`);
   });
 }
 
@@ -193,6 +198,7 @@ test('every verified block in the README is registered in this file', () => {
     'report-css-example',
     'dashboard-css-example',
     'start-css-showcase',
+    'landing-css-showcase',
     'consumers-example',
     'audit-radix',
     'audit-markup',

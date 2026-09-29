@@ -46,7 +46,7 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
   report [path] [--consult <file.json>] [--out <file.html>] [--against products|systems]
       Save a self-contained consulting report (default: ds-loop-report.html).
 
-  Start here:  ds-loop            verdict for this directory, and what to run next
+  Start here:  ds-loop            read this directory, save a first report, and name the next step
                ds-loop start      the same, spelled out
 
   Orient yourself
@@ -327,5 +327,6 @@ try {
   main(process.argv.slice(2));
 } catch (err) {
   console.error(`\n  error: ${(err as Error).message}\n`);
+  console.error('  next\n    ds-loop context .   inspect configuration and supported formats\n');
   process.exitCode = 1;
 }

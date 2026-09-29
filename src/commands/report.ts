@@ -7,14 +7,21 @@ import { renderConsultHtml } from '../core/consult-html.ts';
 import { type Consult, checkConsult } from '../core/consult.ts';
 import { analyseConsumers } from '../core/consumers.ts';
 import { resolveSource } from '../core/source.ts';
-import { audit } from './audit.ts';
+import { type AuditReport, audit } from './audit.ts';
 import { readHistory } from './scorecard.ts';
 
 /** Report generation succeeds even with findings; malformed inputs and I/O failures do not. */
 export function report(
   path: string,
   loaded: LoadedConfig,
-  opts: { consult?: string; out?: string; against?: ReferenceSet } = {},
+  opts: {
+    consult?: string;
+    out?: string;
+    against?: ReferenceSet;
+    measured?: AuditReport;
+    silent?: boolean;
+    exclusive?: boolean;
+  } = {},
 ): string {
   let consult: Consult | undefined;
   if (opts.consult) {
@@ -26,11 +33,13 @@ export function report(
   }
   const source = resolve(path);
   const root = statSync(source).isDirectory() ? source : dirname(source);
-  const measured = audit(path, {
-    config: loaded.config,
-    severityOverrides: loaded.severityOverrides,
-    silent: true,
-  });
+  const measured =
+    opts.measured ??
+    audit(path, {
+      config: loaded.config,
+      severityOverrides: loaded.severityOverrides,
+      silent: true,
+    });
   const extractedRoot = resolveSource(path).source.root;
   const evidenceRoot = statSync(extractedRoot).isDirectory() ? extractedRoot : dirname(extractedRoot);
   let history: ReturnType<typeof readHistory> = [];
@@ -54,8 +63,10 @@ export function report(
   );
   const output = resolve(opts.out ?? 'ds-loop-report.html');
   mkdirSync(dirname(output), { recursive: true });
-  writeFileSync(output, html);
-  console.log(`  ds-loop report — ${measured.manifest.fixtureLabel}`);
-  console.log(`  wrote ${opts.out ?? 'ds-loop-report.html'}`);
+  writeFileSync(output, html, { flag: opts.exclusive ? 'wx' : 'w' });
+  if (!opts.silent) {
+    console.log(`  ds-loop report — ${measured.manifest.fixtureLabel}`);
+    console.log(`  wrote ${opts.out ?? 'ds-loop-report.html'}`);
+  }
   return output;
 }

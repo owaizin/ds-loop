@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -139,7 +147,7 @@ test('`start` is the spelled-out entrance and matches the bare command', () => {
   inTree(FIXABLE, (dir) => {
     const bare = run([], dir).out;
     const start = run(['start', '.'], dir).out;
-    const strip = (s: string) => s.replace(/ds-loop [\w.-]+ {2}·.*/g, '');
+    const strip = (s: string) => s.replace(/^.*(?:wrote ds-loop-report|Existing ds-loop-report).*$/gm, '');
     assert.equal(strip(start), strip(bare));
   });
 });
@@ -279,5 +287,64 @@ test('--all does not change JSON, filters, strict coverage, or exit codes', () =
       assert.equal(brief.status, full.status);
       assert.equal(run(['audit', '.', ...flags], dir).status, full.status);
     }
+  });
+});
+
+test('first run saves evidence without appending history or overwriting a report', () => {
+  inTree(JUDGEMENT_ONLY, (dir) => {
+    const first = run([], dir);
+    assert.equal(first.status, 1);
+    const file = join(dir, 'ds-loop-report.html');
+    assert.match(first.out, /wrote ds-loop-report.html/);
+    assert.match(first.out, /Look at: findings.*coverage/);
+    assert.match(readFileSync(file, 'utf8'), /color\/semantic-holds-literal/);
+    assert.equal(existsSync(join(dir, '.ds-scorecard')), false);
+    writeFileSync(file, 'Owner-authored report');
+    assert.match(run([], dir).out, /preserved/);
+    assert.equal(readFileSync(file, 'utf8'), 'Owner-authored report');
+  });
+});
+
+test('existing scorecard state prevents an automatic first-run report', () => {
+  inTree({ '.ds-scorecard/history.jsonl': '' }, (dir) => {
+    run([], dir);
+    assert.equal(existsSync(join(dir, 'ds-loop-report.html')), false);
+  });
+});
+
+test('empty and unsupported first runs save their not-checked verdict', () => {
+  for (const files of [{}, { 'theme.less': '@brand: red;' }] as Record<string, string>[]) {
+    inTree(files, (dir) => {
+      const result = run([], dir);
+      assert.match(result.out, /not checked/);
+      assert.match(result.out, /ds-loop context/);
+      assert.doesNotMatch(result.out, /✓ clean/);
+      assert.match(readFileSync(join(dir, 'ds-loop-report.html'), 'utf8'), /Not checked/);
+    });
+  }
+});
+
+test('failed first report writes retain the audit and next command', () => {
+  inTree(JUDGEMENT_ONLY, (dir) => {
+    symlinkSync(join(dir, 'missing-parent', 'report.html'), join(dir, 'ds-loop-report.html'));
+    const result = run([], dir);
+    assert.equal(result.status, 1);
+    assert.match(result.out, /Report could not be saved/);
+    assert.match(result.out, /2 findings/);
+    assert.match(result.out.trimEnd().split('\n\n').at(-1) ?? '', /^ {2}next$/m);
+    assert.equal(existsSync(join(dir, '.ds-scorecard')), false);
+  });
+});
+
+test('invalid first-run config reports failure and names a next command', () => {
+  inTree({ 'ds-loop.config.json': '{' }, (dir) => {
+    const result = spawnSync(process.execPath, ['--experimental-strip-types', CLI], {
+      cwd: dir,
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /error:/);
+    assert.match(result.stderr, /ds-loop context/);
+    assert.equal(existsSync(join(dir, 'ds-loop-report.html')), false);
   });
 });

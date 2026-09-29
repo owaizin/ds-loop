@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.4.0 — 2026-09-29
+
+- First run: bare `ds-loop` and `start` save `ds-loop-report.html` when no report
+  or `.ds-scorecard/` exists. The compact reading points to findings, coverage and
+  the agent's consulting work. Existing reports are preserved; findings still
+  exit 1 and not-checked sources remain explicitly not checked.
+- Packaging: Claude Code plugin manifest and post-edit hook, shared Codex skill
+  entry, bundled roles, practice guides and benchmark data. Packed smoke checks
+  exercise the first report, explicit report, dashboard and plugin hook.
+- Phase 1: offline consulting reports combine measured findings and architecture
+  with optional validated `consult.json`: problems, cited practices, proposed
+  state and ordered plan. Missing advice stays visibly unwritten. Plain-language
+  summaries preserve precise rule IDs, JSON and detailed output.
+- Phases 1b–2: report cover, print layout, side-by-side architecture proposals and
+  shared visual styling; offline dashboard with current state and saved scorecard
+  trends. Missing baselines and instrument changes prevent misleading comparisons.
+  The guard refreshes existing dashboards without adding history rows.
+- Phases 3–3b: team-shape evidence and product/system benchmark selection, with
+  explicit overrides. Reference dimensions retain denominators and coverage;
+  minimum sample and contributor policies suppress unsupported ranges. Corpus
+  collection and public precision gates remain incomplete; this release does not
+  claim calibration or industry grades.
+- Phase 4: eight specialist roles and six cited practice guides for starting,
+  maintaining, migrating, documenting, Storybook and governance. Handoffs retain
+  scope and authority; uncited recommendations are labelled “our own opinion.”
+- Phase 5: DTCG/Style Dictionary JSON and bounded SCSS/Sass adapters, with aliases,
+  provenance and unsupported expressions surfaced. These are not Sass evaluation
+  or full DTCG composite support; Vue/Svelte and CSS-in-JS remain unsupported.
+- Phase 5b: shared keyword and generic-font exclusions across all five adapters,
+  including mixed values. Keyword components stay visible without inflating
+  tokenization denominators. CSS custom properties 0.6.0, CSS rule bodies 0.3.0,
+  Tailwind JSX 0.5.0, token JSON 0.2.0 and SCSS/Sass 0.2.0 change attribution;
+  comparisons with earlier adapters report instrument moved.
+- Phase 6: bounded shared-component documentation coverage, direct static import
+  impact lookup, owner-attributed decision records discovered by `context`, and
+  adoption reports from comparable saved runs. Presence is not documentation
+  quality; zero imports is not permission to delete. Consumers analysis 0.3.0
+  and documentation instrumentation also break incompatible comparisons.
+
+
 ## 0.3.0 — 2026-09-28
 
 Highlights: plain-CSS auditing, token suggestions, a visual HTML report (audit and

@@ -5,10 +5,10 @@ Your tokens and components are only useful when product code uses them. Design S
 **Works with:** CSS custom properties, ordinary CSS rules, Tailwind classes in JavaScript/TypeScript, DTCG/Style Dictionary token JSON, and bounded SCSS/Sass extraction. **Not yet:** Vue/Svelte or CSS-in-JS. Sass evaluation and composite JSON values remain coverage limits.
 
 ```sh
-npx ds-loop@0.3.0
+npx ds-loop@0.4.0
 ```
 
-Run it from your project directory with Node 22.6 or later. You get findings, source locations, what was checked, and the next command. Read `verdict` and `coverage` together.
+Run it from your project directory with Node 22.6 or later. Your first run saves `ds-loop-report.html` and prints findings, what was checked, and the next command. Open the report for findings and coverage; ask your agent to add the assessment and plan. Existing reports are preserved. Read `verdict` and `coverage` together.
 
 The engine checks code locally, without a model, API key or runtime dependencies. The companion skill guides your coding agent to plan and build. Your team decides what should change.
 
@@ -83,8 +83,10 @@ Both screenshots come from the public fixtures above. [Reproduce the reports](ht
 Install the engine and companion skill in your project:
 
 ```sh
-npm install --save-dev ds-loop@0.3.0
+npm install --save-dev ds-loop@0.4.0
 ```
+
+For automatic discovery, use the [Claude Code plugin or Codex skill setup](docs/guide/install.md#claude-code-plugin). Both use the same bundled skill.
 
 Then give your coding agent a problem:
 

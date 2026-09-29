@@ -2,7 +2,7 @@
 name: ds-loop
 description: Diagnose design-system problems and guide establishment, adoption, component contributions, and maintenance using repository evidence and the team's commitments. Use when starting a system, resolving inconsistent UI foundations, helping developers reuse a library, or reviewing a shared change. Includes deterministic token checks; not general product strategy or isolated screen styling.
 metadata:
-  version: 0.3.0
+  version: 0.4.0
 ---
 
 # Design System Loop
@@ -183,7 +183,7 @@ Run these in your terminal with `npx ds-loop <command>`.
 
 | Command | Runs in | Category | Description | Reference |
 |---|---|---|---|---|
-| `start [path]` / bare `ds-loop` | **CLI** | Meta | Verdict for this directory, its biggest finding, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
+| `start [path]` / bare `ds-loop` | **CLI** | Meta | First reading, automatic report for a fresh project, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
 | `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage. `--write-contract` starts `DESIGN-SYSTEM.md` from measured counts, with the decisions the tool cannot read left as TODO | — |
 | `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Summary-first findings and coverage, compact CSS inventory, and a `next` block. `--all` prints full details and scorecard ratios. `--html <file>` saves the same audit as a self-contained visual report. No LLM, no network | [reference/audit.md](reference/audit.md) |
 | `dashboard [path] [--out file.html]` | **CLI** | Today’s state and saved scorecard trends in one offline HTML file. |

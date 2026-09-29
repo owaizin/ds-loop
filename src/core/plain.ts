@@ -135,10 +135,14 @@ export const PLAIN_COVERAGE = {
   },
 } satisfies Record<keyof Coverage, PlainWords>;
 
-export function plainCoverage(c: Coverage): string[] {
-  const lines = c.partialReads.map(
-    (p) => `${PLAIN_COVERAGE.partialReads.title}: ${p.extensions.join(', ')} — ${p.reads}`,
-  );
+export function plainCoverage(c: Coverage, compact = false): string[] {
+  const lines = compact
+    ? [
+        `Readers: ${c.partialReads.map((p) => `${p.adapter} (${p.extensions.join(', ')})`).join('; ') || 'none'} — bounded extraction; full limits in the report.`,
+      ]
+    : c.partialReads.map(
+        (p) => `${PLAIN_COVERAGE.partialReads.title}: ${p.extensions.join(', ')} — ${p.reads}`,
+      );
   if (!lines.length) lines.push('No supported reader checked this source.');
   for (const [ext, count] of Object.entries(c.unreadFormats))
     lines.push(`${PLAIN_COVERAGE.unreadFormats.title}: ${count} ${ext} files`);
@@ -168,7 +172,8 @@ export function plainCoverage(c: Coverage): string[] {
       );
     if (!c.documentation.packages.length)
       lines.push('Component documentation: not checked — no shared component inventory in scope.');
-    lines.push(...c.documentation.limits);
+    if (!compact) lines.push(...c.documentation.limits);
+    else lines.push('Documentation checks are bounded presence checks; full limits are in the report.');
   }
   return lines;
 }

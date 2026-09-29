@@ -5,7 +5,7 @@ Use Node 22.6 or later. Install the complete package in the project you want to 
 ## Install from npm
 
 ```sh
-npm install --save-dev ds-loop@0.3.0
+npm install --save-dev ds-loop@0.4.0
 ```
 
 To test local changes, use [source installation](#install-from-source). Both paths install the CLI and companion skill. A local tarball path is specific to your machine; switch to the matching registry release before asking teammates to install it.
@@ -13,8 +13,10 @@ To test local changes, use [source installation](#install-from-source). Both pat
 ## Get a first reading
 
 From your project directory, run `npx ds-loop` (or `npx ds-loop start .`).
-It prints findings, coverage and the next command. For a visual report, run
-`npx ds-loop audit . --html audit-report.html`.
+On a fresh project it prints findings and coverage and writes `ds-loop-report.html`.
+Open it for findings and coverage, then ask your agent to add the assessment and plan.
+A pre-existing report or `.ds-scorecard/` prevents automatic creation. Explicit
+`npx ds-loop report .` refreshes the report; `audit` remains read-only unless given an output flag.
 
 ## Check the installation
 
@@ -74,10 +76,10 @@ npm ci
 npm pack
 ```
 
-This builds `ds-loop-0.3.0.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
+This builds `ds-loop-0.4.0.tgz` without publishing it. From your target project, install the tarball using its actual absolute path:
 
 ```sh
-npm install --save-dev /absolute/path/to/ds-loop-0.3.0.tgz
+npm install --save-dev /absolute/path/to/ds-loop-0.4.0.tgz
 ```
 
 Continue with [Start with your agent](#start-with-your-agent), or [run the checks yourself](#run-the-checks-yourself). The launcher uses the compiled JavaScript included in the package.
@@ -91,3 +93,39 @@ npm run ds-loop -- audit fixtures/radix-colors
 The fixture contains known findings, so exit 1 is expected. Fixtures and development scripts are not included in the npm package.
 
 [Next: work through a change](workflow.md)
+
+## Claude Code plugin
+
+After installing `ds-loop@0.4.0`, launch Claude Code from your project:
+
+```sh
+claude --plugin-dir ./node_modules/ds-loop
+```
+
+Invoke `/ds-loop:ds-loop` and describe your goal. The plugin loads the same skill,
+including its roles, practices and playbooks, and registers the post-edit guard.
+Do not also install the project guard: if you previously ran `guard on`, run
+`npx --no-install ds-loop guard off` before using the plugin to avoid duplicate feedback.
+Leaving the plugin out of the next session removes its hook from that session.
+The hook reports after edits; it cannot block them or replace an unfiltered audit.
+
+The package follows Claude Code's [plugin manifest format](https://code.claude.com/docs/en/plugins-reference)
+and [local loading workflow](https://code.claude.com/docs/en/plugins).
+Keep the entire npm package together; a source checkout must be built first.
+
+## Codex skill
+
+The same `skill/SKILL.md` is the Codex entry point, using the documented
+[local skill discovery format](https://developers.openai.com/codex/skills/#where-codex-loads-local-skills). From your project root,
+make it discoverable without copying it away from the engine:
+
+```sh
+mkdir -p .agents/skills
+ln -s ../../node_modules/ds-loop/skill .agents/skills/ds-loop
+```
+
+Start a new Codex session and invoke `$ds-loop`, followed by your goal. The relative
+link stays inside the project and resolves the package's launcher. If a skill with
+that name already exists, inspect it before replacing it. Directly asking Codex to
+read `node_modules/ds-loop/skill/SKILL.md` also works. Codex does not run the Claude
+Code hook; run the unfiltered audit at setup and completion as the skill directs.
