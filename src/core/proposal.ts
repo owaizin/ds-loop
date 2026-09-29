@@ -1,3 +1,5 @@
+import { ICON_SPRITE, icon } from './icons.ts';
+
 export type Evidence = { ref: string; report?: string };
 export type ProposalItem = { status: string; evidence?: Evidence[] };
 export type ProposalNode = ProposalItem & {
@@ -165,7 +167,7 @@ export function renderProposal(p: Proposal, { date = '' } = {}) {
   const node = (n: ProposalNode) => {
     const out = edges.filter((e) => e.from === n.id);
     return `<article class="node s-${esc(n.status)}" id="n-${esc(n.id)}" data-id="${esc(n.id)}" tabindex="0">
-<span class="tag">${esc(n.status)}</span><h3>${esc(n.label)}</h3>${n.detail ? `<p>${esc(n.detail)}</p>` : ''}${n.replaces ? `<p class="muted">Changes: ${esc(n.replaces)}</p>` : ''}
+<span class="tag">${icon(`status-${n.status}`, `s-${n.status}`)}${esc(n.status)}</span><h3>${esc(n.label)}</h3>${n.detail ? `<p>${esc(n.detail)}</p>` : ''}${n.replaces ? `<p class="muted">Changes: ${esc(n.replaces)}</p>` : ''}
 <details><summary>Evidence${out.length ? ` · ${out.length} link${out.length > 1 ? 's' : ''}` : ''}</summary>${evidence(n)}${out
       .map(
         (e) =>
@@ -204,30 +206,99 @@ export function renderProposal(p: Proposal, { date = '' } = {}) {
     ]),
   );
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>${esc(p.title)}</title><style>
-:root{color-scheme:light dark;--bg:#f4f6f8;--card:#fff;--ink:#182638;--muted:#526277;--line:#c7d0da;--accent:#1756a3;--obs:#2f7d4f;--inf:#8a6a14;--pro:#1756a3;--nc:#7a8591;--bad:#a1332b}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101720;--card:#182331;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--obs:#7fd49c;--inf:#e4c068;--pro:#8cbfff;--nc:#98a4b0;--bad:#ff9b8f}}
+:root{color-scheme:light dark;--bg:#f4f6f8;--card:#fff;--ink:#182638;--muted:#526277;--line:#c7d0da;--accent:#1756a3;--obs:#2f7d4f;--inf:#8a6a14;--pro:#1756a3;--nc:#7a8591;--bad:#a1332b;--shadow-1:0 1px 2px -1px rgb(0 0 0/.08),0 4px 12px -4px rgb(0 0 0/.1)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101720;--card:#1c2739;--ink:#edf2f8;--muted:#b1c0d2;--line:#45576c;--accent:#8cbfff;--obs:#7fd49c;--inf:#e4c068;--pro:#8cbfff;--nc:#98a4b0;--bad:#ff9b8f;--shadow-1:inset 0 1px 0 rgb(255 255 255/.06),0 8px 24px -12px #000}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,sans-serif}main{max-width:1180px;margin:auto;padding:24px 16px 64px}
 h1{font-size:clamp(24px,4vw,36px);letter-spacing:-.03em;margin:4px 0}h2{font-size:18px;margin:0}h3{font-size:15px;margin:6px 0 4px}p{margin:4px 0}.muted{color:var(--muted);font-size:13px}.kicker{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--muted)}
 .summary{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.summary span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
 .warn{border:1px solid var(--bad);color:var(--bad);border-radius:10px;padding:10px 14px;margin:12px 0}.warn ul{margin:6px 0;padding-left:18px}
 .lane{border-top:2px solid var(--ink);padding:12px 0 18px}.lane header{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}.row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:10px}
-.node{background:var(--card);border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:10px 12px;min-width:0;overflow-wrap:anywhere}.node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.node{background:var(--card);border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:12px 14px;min-width:0;min-height:96px;display:flex;flex-direction:column;box-shadow:var(--shadow-1);overflow-wrap:anywhere}.node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .s-observed{border-left-color:var(--obs)}.s-inferred{border-left-color:var(--inf);border-left-style:dashed}.s-proposed{border-left-color:var(--pro);border-left-style:double;border-left-width:6px}.s-not-checked{border-left-color:var(--nc);border-left-style:dotted}
-.tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.node.hl{outline:2px solid var(--accent)}
+.tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 8px;display:inline-flex;align-items:center;gap:5px}.node.hl{outline:2px solid var(--accent)}
 details summary{cursor:pointer;color:var(--accent);font-size:13px;padding-top:6px}.ev{margin:4px 0;padding-left:16px;font-size:12px}.edge-line{font-size:13px;margin-top:8px}.unsupported{color:var(--bad);font-size:12px;font-weight:600}
-.legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:12px;color:var(--muted)}.legend i{display:inline-block;width:18px;height:12px;border:1px solid var(--line);border-left-width:5px;margin-right:6px;vertical-align:middle}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}
+.icon{width:1.05em;height:1.05em;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.18em;flex-shrink:0}
+.icon.s-observed{color:var(--obs)}.icon.s-inferred{color:var(--inf)}.icon.s-proposed{color:var(--pro)}.icon.s-not-checked{color:var(--nc)}
+.node-map{position:relative;border-radius:14px;box-shadow:var(--shadow-1);background-image:radial-gradient(circle,color-mix(in srgb,var(--ink) 22%,transparent) 1px,transparent 1px);background-size:16px 16px}
+.edge-layer{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.edge-layer path{fill:none;stroke:var(--nc);stroke-width:2;opacity:.75;transition:stroke .15s,stroke-width .15s,opacity .15s}
+.edge-layer path.s-observed{stroke:var(--obs)}.edge-layer path.s-inferred{stroke:var(--inf);stroke-dasharray:2 4}.edge-layer path.s-proposed{stroke:var(--pro);stroke-dasharray:6 4}
+.edge-layer path.s-replaces{stroke:var(--accent);stroke-width:2.6;stroke-dasharray:1 6;opacity:.9}
+.edge-layer path.active{stroke:var(--accent);stroke-width:3;opacity:1}.edge-layer path.dimmed{opacity:.12}
 .block{margin-top:26px}.table{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}.stages{padding-left:20px}.stages li{margin:8px 0}
-code{font:12px ui-monospace,monospace}a{color:var(--accent)}@media print{.node{break-inside:avoid}details{display:block}}
-</style></head><body><main>
+code{font:12px ui-monospace,monospace}a{color:var(--accent)}
+@media print{.node{break-inside:avoid}details{display:block}.node-map{background-image:none}.edge-layer{display:none}}
+</style></head><body>${ICON_SPRITE}<main>
 <p class="kicker">Proposal${date ? ` · ${esc(date)}` : ''}</p><h1>${esc(p.title)}</h1>${p.scope ? `<p class="muted">${esc(p.scope)}</p>` : ''}
 <div class="summary"><span>${counts.observed} observed</span><span>${counts.inferred} inferred</span><span>${counts.proposed} proposed</span><span>${counts['not-checked']} not checked</span><span>${edges.length} links</span></div>
-<div class="legend"><span><i class="s-observed"></i>observed — seen in source or a rendered check</span><span><i class="s-inferred"></i>inferred — reasoned from cited evidence</span><span><i class="s-proposed"></i>proposed — a change, not current architecture</span><span><i class="s-not-checked"></i>not checked — no result, never a pass</span></div>
+<div class="legend"><span>${icon('status-observed', 's-observed')}observed — seen in source or a rendered check</span><span>${icon('status-inferred', 's-inferred')}inferred — reasoned from cited evidence</span><span>${icon('status-proposed', 's-proposed')}proposed — a change, not current architecture</span><span>${icon('status-not-checked', 's-not-checked')}not checked — no result, never a pass</span></div>
 ${warnings.length ? `<div class="warn" role="note"><b>${warnings.length} claim${warnings.length > 1 ? 's' : ''} without a linked fact</b><ul>${warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
-<div class="architecture-lanes">${lanes}</div>${decisions}${roadmap}
-<p class="muted" style="margin-top:28px">Rendered by the ds-loop skill from an agent-authored proposal. Every box carries its basis; the engine did not produce these judgements.</p>
+<div class="node-map" id="pmap"><svg class="edge-layer" id="pmap-edges" aria-hidden="true"></svg><div class="architecture-lanes">${lanes}</div></div>${decisions}${roadmap}
+<p class="muted" style="margin-top:28px">Rendered by the ds-loop skill from an agent-authored proposal. Every box carries its basis; the engine did not produce these judgements. Connector lines repeat the "→ … · meaning" list already in each box's evidence — read either.</p>
 </main><script>
-const edges=${JSON.stringify(edges.map((e) => [e.from, e.to])).replace(/</g, '\\u003c')};
-for(const n of document.querySelectorAll('.node')){const on=v=>{const id=n.dataset.id;for(const [a,b] of edges){if(a===id||b===id){for(const t of [a,b]){const el=document.getElementById('n-'+t);if(el)el.classList.toggle('hl',v);}}}};n.addEventListener('mouseenter',()=>on(true));n.addEventListener('mouseleave',()=>on(false));n.addEventListener('focus',()=>on(true));n.addEventListener('blur',()=>on(false));}
+const edges=${JSON.stringify([
+    ...edges.map((e) => [e.from, e.to, e.status]),
+    ...p.nodes.filter((n) => n.replaces).map((n) => [n.replaces, n.id, 'replaces']),
+  ]).replace(/</g, '\\u003c')};
+const pmap=document.getElementById('pmap'), edgeLayer=document.getElementById('pmap-edges');
+function port(rect,mapRect,side){
+  const x=side==='left'?rect.left-mapRect.left:side==='right'?rect.right-mapRect.left:(rect.left+rect.right)/2-mapRect.left;
+  const y=side==='top'?rect.top-mapRect.top:side==='bottom'?rect.bottom-mapRect.top:(rect.top+rect.bottom)/2-mapRect.top;
+  return {x,y};
+}
+function layout(){
+  if(!pmap||!edgeLayer) return;
+  const mapRect=pmap.getBoundingClientRect();
+  edgeLayer.setAttribute('viewBox','0 0 '+mapRect.width+' '+mapRect.height);
+  const defs='<defs><marker id="pmap-arrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8 Z" fill="var(--accent)"/></marker></defs>';
+  edgeLayer.innerHTML=defs+edges.map(([from,to,status])=>{
+    const a=document.getElementById('n-'+from), b=document.getElementById('n-'+to);
+    if(!a||!b) return '';
+    const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+    const stacked=Math.min(ar.right,br.right)>Math.max(ar.left,br.left);
+    let p1,p2;
+    if(stacked){
+      const aFirst=ar.top<br.top;
+      p1=port(aFirst?ar:br,mapRect,'bottom'); p2=port(aFirst?br:ar,mapRect,'top');
+    } else {
+      const aFirst=ar.left<br.left;
+      const leftRect=aFirst?ar:br, rightRect=aFirst?br:ar;
+      const leftLane=(aFirst?a:b).closest('.lane'), rightLane=(aFirst?b:a).closest('.lane');
+      const crossLane=leftLane&&rightLane&&leftLane!==rightLane;
+      const leftX=crossLane?leftLane.getBoundingClientRect().right:leftRect.right;
+      const rightX=crossLane?rightLane.getBoundingClientRect().left:rightRect.left;
+      p1={x:leftX-mapRect.left,y:(leftRect.top+leftRect.bottom)/2-mapRect.top};
+      p2={x:rightX-mapRect.left,y:(rightRect.top+rightRect.bottom)/2-mapRect.top};
+    }
+    const midX=(p1.x+p2.x)/2, midY=(p1.y+p2.y)/2;
+    const d=stacked
+      ? 'M '+p1.x+' '+p1.y+' C '+p1.x+' '+midY+', '+p2.x+' '+midY+', '+p2.x+' '+p2.y
+      : 'M '+p1.x+' '+p1.y+' C '+midX+' '+p1.y+', '+midX+' '+p2.y+', '+p2.x+' '+p2.y;
+    const arrow=status==='replaces'&&!stacked?' marker-end="url(#pmap-arrow)"':'';
+    return '<path data-a="'+from+'" data-b="'+to+'" class="s-'+status+'" d="'+d+'"'+arrow+'/>';
+  }).join('');
+}
+layout();
+let resizeTimer;
+window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(layout,120);});
+for(const n of document.querySelectorAll('.node')){
+  const on=v=>{
+    const id=n.dataset.id;
+    const related=new Set([id]);
+    for(const [a,b] of edges) if(a===id||b===id){related.add(a);related.add(b);}
+    for(const t of document.querySelectorAll('.node')) t.classList.toggle('hl',v&&related.has(t.dataset.id));
+    for(const path of edgeLayer.querySelectorAll('path')){
+      const hit=path.dataset.a===id||path.dataset.b===id;
+      path.classList.toggle('active',v&&hit);
+      path.classList.toggle('dimmed',v&&!hit);
+    }
+  };
+  n.addEventListener('mouseenter',()=>on(true));
+  n.addEventListener('mouseleave',()=>on(false));
+  n.addEventListener('focus',()=>on(true));
+  n.addEventListener('blur',()=>on(false));
+}
 </script></body></html>
 `;
 }

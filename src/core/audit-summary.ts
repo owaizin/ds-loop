@@ -4,6 +4,11 @@ import { severityTag, style } from './ansi.ts';
 import { auditViewActions, formatNext } from './next.ts';
 import { PLAIN_RULES, PLAIN_VERDICTS, plainCoverage } from './plain.ts';
 
+/** Stable id for a severity+rule finding group, shared by the group anchor and any cross-link to it. */
+export function findingGroupId(severity: string, ruleId: string): string {
+  return `g-${severity}-${ruleId}`.replace(/[^a-zA-Z0-9-]+/g, '-');
+}
+
 /** Recorded examples only: some rules retain a sample, not the full hit list. */
 export function findingLocations(finding: Finding): string[] {
   const locations: string[] = [];

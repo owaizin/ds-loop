@@ -5,6 +5,7 @@ import { parseColor } from '../color/convert.ts';
 import type { AuditReport } from '../commands/audit.ts';
 import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
+import { findingGroupId } from './audit-summary.ts';
 import { CONSUMERS_VERSION } from './consumers.ts';
 import { reportData } from './report-data.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
@@ -192,7 +193,14 @@ export function renderAuditHtml(
     history?: string;
     historyError?: string;
     timestamp?: string;
-    consulting?: { intro: string; outro: string; css: string; findings: string; sourceBase: string };
+    consulting?: {
+      intro: string;
+      outro: string;
+      css: string;
+      findings: string;
+      sourceBase: string;
+      script?: string;
+    };
   } = {},
 ): string {
   const r = options.timestamp
@@ -278,7 +286,7 @@ export function renderAuditHtml(
         .join(
           '',
         )}</tbody></table></div><p>${htmlEscape(trendRows[0].ranAt)} → ${htmlEscape(trendRows.at(-1)!.ranAt)}</p>${trendRows.some((row) => !row.coverageComplete) ? '<p>Some history rows report incomplete coverage. Those rows do not record detailed coverage limits.</p>' : ''}${inspect(['trend', 'rows'], 'All comparable rows and source revisions')}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">${options.consulting ? `<title>Design System Loop — System report — ${htmlEscape(r.manifest.fixtureLabel)}</title>` : `<title>ds-loop audit — ${htmlEscape(r.manifest.fixtureLabel)}</title>`}<style>${REPORT_CSS}${TOKEN_CSS}${options.consulting?.css ?? ''}</style></head><body><main>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src data:; base-uri 'none'; form-action 'none'">${options.consulting ? `<title>Design System Loop — System report — ${htmlEscape(r.manifest.fixtureLabel)}</title>` : `<title>ds-loop audit — ${htmlEscape(r.manifest.fixtureLabel)}</title>`}<style>${REPORT_CSS}${TOKEN_CSS}${options.consulting?.css ?? ''}</style></head><body><main>
   <div class="toolbar"><span class="kicker">${options.consulting ? `DESIGN SYSTEM LOOP / SYSTEM REPORT · ${htmlEscape(r.manifest.fixtureLabel)} · ${htmlEscape(r.manifest.ranAt.slice(0, 10))}` : 'ds-loop / audit report'}</span><label>Appearance <select id="theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div>
   ${
     options.consulting
@@ -301,7 +309,7 @@ export function renderAuditHtml(
     groups
       .map(
         (g, i) =>
-          `<section class="group"><div class="kicker">${g.severity} · ${g.indices.length} findings</div><h3>${htmlEscape(g.rule)}</h3>${g.indices
+          `<section class="group" id="${htmlEscape(findingGroupId(g.severity, g.rule))}"><div class="kicker">${g.severity} · ${g.indices.length} findings</div><h3>${htmlEscape(g.rule)}</h3>${g.indices
             .slice(0, 3)
             .map((index) => finding(r.findings[index], index))
             .join(
@@ -330,6 +338,7 @@ const decoded = await new Response(stream).text();
 document.getElementById('audit-data').textContent = decoded;
 ${REPORT_SCRIPT}
 ${TOKEN_SCRIPT}
+${options.consulting?.script ?? ''}
 } catch (error) {
 const notice = document.createElement('p'); notice.setAttribute('role', 'alert');
 notice.textContent = 'Evidence browser could not load. Open this report in a browser with gzip DecompressionStream support. The printed summary remains available; audit --json provides the full evidence.';
