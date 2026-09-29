@@ -1,0 +1,151 @@
+{
+  "title": "Example DS \u2014 make shared choices easier to find",
+  "problem": [
+    {
+      "text": "Both apps already use shared components alongside local components. The source alone does not establish whether the local components should become shared.",
+      "evidence": [
+        {
+          "ref": "apps/dashboard/App.tsx:6"
+        },
+        {
+          "ref": "apps/portal/App.tsx:5"
+        }
+      ]
+    }
+  ],
+  "practices": [
+    {
+      "system": "Primer",
+      "text": "Publish foundation guidance alongside components. Primer documents colour, typography and layout as foundations of its product interfaces.",
+      "evidence": [
+        {
+          "ref": "https://primer.style/product/getting-started/foundations/"
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    {
+      "text": "For this synthetic walkthrough, assume the team wants clearer guidance on when to reuse a shared component. No team interview was conducted.",
+      "evidence": []
+    }
+  ],
+  "after": {
+    "text": "Keep the existing shared package and add guidance for choosing shared versus local components. Validate the guidance in one representative task before changing component ownership.",
+    "evidence": [
+      {
+        "ref": "packages/ui/index.tsx:1"
+      }
+    ],
+    "architecture": {
+      "title": "Preserve the package; clarify how apps use it",
+      "lanes": [
+        {
+          "id": "before",
+          "label": "Before \u2014 observed"
+        },
+        {
+          "id": "after",
+          "label": "After \u2014 proposed"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "shared",
+          "lane": "before",
+          "label": "Shared UI package",
+          "status": "observed",
+          "evidence": [
+            {
+              "ref": "packages/ui/index.tsx:1"
+            }
+          ]
+        },
+        {
+          "id": "apps",
+          "lane": "before",
+          "label": "Dashboard and portal",
+          "status": "observed",
+          "evidence": [
+            {
+              "ref": "apps/dashboard/App.tsx:1"
+            },
+            {
+              "ref": "apps/portal/App.tsx:1"
+            }
+          ]
+        },
+        {
+          "id": "guide",
+          "lane": "after",
+          "label": "Shared UI with usage guidance",
+          "status": "proposed",
+          "replaces": "shared",
+          "evidence": [
+            {
+              "ref": "packages/ui/index.tsx:1"
+            }
+          ]
+        },
+        {
+          "id": "pilot",
+          "lane": "after",
+          "label": "One task validates the guidance",
+          "status": "proposed",
+          "evidence": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "apps",
+          "to": "shared",
+          "meaning": "Imports shared components",
+          "status": "observed",
+          "evidence": [
+            {
+              "ref": "apps/dashboard/App.tsx:1"
+            }
+          ]
+        },
+        {
+          "from": "pilot",
+          "to": "guide",
+          "meaning": "Tests proposed guidance",
+          "status": "proposed",
+          "evidence": [
+            {
+              "ref": "apps/portal/App.tsx:1"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "plan": [
+    {
+      "title": "Confirm the reuse boundary",
+      "changes": "Review the dashboard notice and portal header with the team before proposing shared replacements.",
+      "why": "Local usage is measured, but duplication or harm is not established.",
+      "verification": "Record the intended owner and reason for keeping or sharing each component.",
+      "evidence": [
+        {
+          "ref": "apps/dashboard/App.tsx:3"
+        },
+        {
+          "ref": "apps/portal/App.tsx:2"
+        }
+      ]
+    },
+    {
+      "title": "Write and try a usage example",
+      "changes": "Add a short guide next to the shared package and try it on a representative contributor task.",
+      "why": "The pilot can test whether the guidance answers a real question.",
+      "verification": "Observe a developer finding and applying the guidance; rerun the unfiltered audit and consumers report. Counts alone do not prove improvement.",
+      "evidence": [
+        {
+          "ref": "packages/ui/index.tsx:1"
+        }
+      ]
+    }
+  ]
+}

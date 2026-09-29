@@ -13,6 +13,7 @@ Use the [installation guide](install.md) for your first run.
 | `start [path]` / bare `ds-loop` | Verdict for this directory, its biggest finding, what was read, and the next command | No |
 | `context [path]` | Config, conventional intent-source locations, extraction scope; no rules | Only with `--write-contract`, which creates `DESIGN-SYSTEM.md` and never overwrites one |
 | `audit [path]` | Summary and coverage; `--all` for full details and ratios | Only with `--out <dir>` or `--html <file>` |
+| `report [path]` | Consulting report with measured evidence and optional `--consult <file.json>` assessment | Writes `ds-loop-report.html` or `--out <file.html>` |
 | `consumers [path]` | Workspace imports and static JSX shared-component share per package; `--scope`, `--json`, `--html <file>` | Only with `--html <file>` |
 | `scan <path>` | Extracted-value taxonomy and palette clusters | No |
 | `sweep <path>` | Clustering curve across the configured ΔE range | Only with `--out <dir>` |
@@ -324,3 +325,71 @@ active. Colour proximity does not compare different alpha values. A channel-refe
 classification does not make that expression resolvable by the suggestion engine.
 
 [Example reports](output.md) · [Back to the guide](README.md)
+
+## Consulting report
+
+```sh
+npx ds-loop report .
+npx ds-loop report . --consult consult.json --out design-system-report.html
+```
+
+`report [path]` audits the source without a severity filter and checks component
+usage when workspace packages exist. It writes `ds-loop-report.html` in the current
+directory by default. Parent output directories are created. `--config` uses the
+same configuration and severity overrides as `audit`. Generation exits 0 even if
+findings exist or coverage is incomplete; invalid input and I/O errors exit nonzero.
+Use `audit --require-coverage` for a CI gate.
+
+The self-contained report makes no network requests. It includes summary, problem,
+current evidence and architecture, cited practices, proposed state, plan, and
+coverage limits, in that order. Without `--consult`, the four assessment sections
+say they have not been written and point to `skill/reference/consult.md`.
+Light/dark appearance follows the system or the appearance control. Printing starts
+each main section on a new page. Expand evidence before printing; the HTML retains
+the full recorded evidence browser. Source links use local `file:` URLs with line
+fragments; editors/browsers may not navigate to the exact line. Recipients need the
+same source checkout. Reference URLs are links, never fetched by the engine.
+
+### consult.json schema
+
+All fields below are required. Strings must be non-empty. `problem`, `practices`
+and `plan` must have at least one entry; `assumptions` may be empty. Unknown extra
+fields are ignored. Paths in evidence are relative to the scanned source directory
+(or the containing directory for a single-file scan).
+
+| Field | Shape |
+|---|---|
+| `title` | String naming the engagement |
+| `problem` | Array of claims: `{ "text": "…", "evidence": [{ "ref": "src/theme.css:12" }] }` |
+| `practices` | Array of claims with an additional required `system` string naming the source system |
+| `after` | Claim with required `architecture` proposal (see below) |
+| `plan` | Array of `{ "title": "…", "changes": "…", "why": "…", "verification": "…", "evidence": [...] }` |
+| `assumptions` | Array of claims, visibly labelled as assumptions awaiting confirmation |
+
+Every `evidence` entry has a `ref`: a `file:line` (optionally `file:line:column`), a
+registered rule ID, or an HTTP(S) URL. An optional `report` string identifies the
+source report. Empty evidence arrays are permitted and visibly labelled unsupported.
+The validator checks structure and reference syntax, not whether a citation proves
+the claim. Agent-cited evidence is labelled as such; it is not engine verification.
+Malformed input lists all detected validation errors and does not write a report.
+
+`after.architecture` uses the same validator and renderer as
+`skill/tools/proposal.mjs`:
+
+- `title`: non-empty string; optional `scope` string.
+- `lanes`: non-empty array of `{ "id": "before", "label": "Before" }` (optional `note`).
+- `nodes`: non-empty array of `{ "id": "ui", "lane": "before", "label": "Shared UI", "status": "observed", "evidence": [...] }`.
+  Optional `detail` and `replaces` (an existing node ID).
+- Optional `edges`: `{ "from": "ui", "to": "app", "meaning": "Imported by", "status": "proposed", "evidence": [...] }` entries.
+- Status is `observed`, `inferred`, `proposed` or `not-checked`. Observed and inferred
+  nodes/edges require evidence. Proposed claims without evidence render unsupported.
+- Optional `decisions` and `roadmap` retain the proposal tool's schema; see
+  `skill/templates/proposal.example.json`. A decided decision names its owner;
+  each roadmap stage names entry criteria rather than a promised date.
+
+A complete synthetic example is in `skill/templates/consult.example.json`. To try
+it in a source checkout:
+
+```sh
+npm run ds-loop -- report fixtures/example-workspace --consult skill/templates/consult.example.json --out scratch/phase-1/example-workspace-report.html
+```

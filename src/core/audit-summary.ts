@@ -1,8 +1,8 @@
 import type { AuditReport } from '../commands/audit.ts';
 import type { Finding } from '../rules/types.ts';
-import { severityTag } from './ansi.ts';
-import { formatCoverage } from './coverage.ts';
+import { severityTag, style } from './ansi.ts';
 import { auditViewActions, formatNext } from './next.ts';
+import { PLAIN_RULES, PLAIN_VERDICTS, plainCoverage } from './plain.ts';
 
 /** Recorded examples only: some rules retain a sample, not the full hit list. */
 export function findingLocations(finding: Finding): string[] {
@@ -45,11 +45,12 @@ export function auditSummary(report: AuditReport, path: string, beforeNext: stri
     );
   }
   lines.push(
+    `  ${PLAIN_VERDICTS[report.verdict].description}`,
     `  version ${m.fixtureSha}   adapter ${m.adapter}   config ${m.configHash}`,
     `  ${report.rulesRun.length} rules run`,
     '',
     '  scope — what this audit read',
-    ...formatCoverage(coverage),
+    ...plainCoverage(coverage).map((line) => `    ${line}`),
   );
   if (m.judgedFiles)
     lines.push(`    selected files: ${m.judgedFiles.length} — see manifest.judgedFiles in --json`);
@@ -66,7 +67,7 @@ export function auditSummary(report: AuditReport, path: string, beforeNext: stri
       const count = typeof f.data?.count === 'number' ? `${f.data.count} hits` : '1 finding';
       const locations = findingLocations(f);
       lines.push(
-        `  ${severityTag(f.severity)} ${f.ruleId} · ${f.summary} · ${count} · ${locations.join(', ') || 'no file:line recorded'}`,
+        `  ${severityTag(f.severity)} ${PLAIN_RULES[f.ruleId].title} · ${style(f.ruleId, 'dim')} · ${count} · ${locations.join(', ') || 'no file:line recorded'}`,
       );
     }
   }

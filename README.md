@@ -19,12 +19,29 @@ This is real output from the [Example DS CSS fixture](https://github.com/owaizin
 <!-- verified: start-css-showcase -->
 ```text
   findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
-  [HIGH] token/raw-value-in-style · 1 color property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged · 1 hits · styles.css:7
-  [HIGH] token/raw-value-in-style · 1 spacing property value(s) contain literals in ordinary CSS (1 distinct); project permission not judged · 1 hits · styles.css:9
-  [LOW] token/var-missing-fallback · 2 var() reference(s) have no fallback value · 2 hits · styles.css:8, styles.css:10
+  [HIGH] Hard-coded styles · token/raw-value-in-style · 1 hits · styles.css:7
+  [HIGH] Hard-coded styles · token/raw-value-in-style · 1 hits · styles.css:9
+  [LOW] Missing backup values · token/var-missing-fallback · 2 hits · styles.css:8, styles.css:10
 ```
 
 The color and spacing findings point straight to `styles.css:7` and `styles.css:9`. Run `npx ds-loop audit . --all` for risks, fix guidance and candidate tokens.
+
+Save the findings, architecture and coverage as one consulting report:
+
+```sh
+npx ds-loop report .
+```
+
+With an agent-written assessment, add `--consult consult.json`. Without it, the
+problem, recommended practices, proposed state and plan are clearly marked as not
+written yet. From the source checkout, run
+`npm run ds-loop -- report fixtures/css-audit-example --out scratch/phase-1/css-report.html`:
+
+<!-- verified: report-css-example -->
+```text
+  ds-loop report — ds-loop
+  wrote scratch/phase-1/css-report.html
+```
 
 In a workspace, see which apps render shared components:
 
@@ -46,6 +63,7 @@ Shared-component share is shared / (shared + local) production JSX elements. Ext
 Save reports you can open locally or share with your team:
 
 ```sh
+npx ds-loop report . --consult consult.json --out consulting-report.html
 npx ds-loop audit . --html audit-report.html
 npx ds-loop consumers . --html consumers-report.html
 ```
@@ -83,6 +101,7 @@ It can compare foundation options from the MIT [ds-kit](https://github.com/owaiz
 | Get a first reading | `npx ds-loop` or `npx ds-loop start .` |
 | See configuration and convention files | `npx ds-loop context .` |
 | Inspect every finding or export data | `npx ds-loop audit . --all` or `--json` |
+| Save a consulting report | `npx ds-loop report . --consult consult.json` |
 | Map shared imports and component usage | `npx ds-loop consumers .` |
 | Compare measurements over time | `npx ds-loop scorecard .` |
 | Inspect the palette or its clustering threshold | `npx ds-loop scan .` or `npx ds-loop sweep .` |

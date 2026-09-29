@@ -152,7 +152,7 @@ export function formatNext(actions: NextAction[]): string[] {
 export function auditViewActions(actions: NextAction[], path: string): NextAction[] {
   return [
     { command: `ds-loop audit ${path} --all`, why: 'full findings, risks, fixes and token suggestions' },
-    { command: `ds-loop audit ${path} --html ds-loop-report.html`, why: 'save a complete visual report' },
+    { command: `ds-loop report ${path}`, why: 'save a consulting report with evidence and next steps' },
     ...actions,
   ];
 }

@@ -43,9 +43,8 @@ and evidence; do not make the user choose a playbook. Orientation and necessary
 questions can happen first. Load only the relevant procedure, not the whole catalog.
 
 1. Recover the user's goal and any prior task/decision record. Say what you will
-   investigate or deliver in one sentence. For a bare invocation, ask what brought
-   them here while doing a small read-only orientation. Reuse a supplied goal;
-   do not lead with a command menu or require a maturity label.
+   investigate or deliver in one sentence. For a bare invocation, investigate the repository first. Reuse a supplied goal;
+   do not lead with a command menu.
    If asked to start fresh, set aside prior session diagnoses, backlog and inferred
    priorities. Read current repository instructions and investigate again; do not
    reintroduce old conclusions as evidence for the new engagement.
@@ -54,21 +53,23 @@ questions can happen first. Load only the relevant procedure, not the whole cata
    and checks. Keep cwd at the target project. Run
    `<skill-base-dir>/bin/ds-loop context .`, then
    `<skill-base-dir>/bin/ds-loop audit . --json` without a severity filter. Retain
-   coverage and scope. `context` runs no rules; the high-severity hook does not
+   coverage and scope. When a workspace exists, run
+   `<skill-base-dir>/bin/ds-loop consumers . --json` next. `context` runs no rules; the high-severity hook does not
    replace this audit. If no code exists, say there is no code baseline and work
    from the product brief and a representative use case.
    Report what was read before reporting what is wrong: the source, the formats
    no adapter covers, and the checks that could not judge. A findings list handed
    over without its coverage invites a conclusion the run cannot support.
-3. Ask about unknowns that could change the next action. For broad pain, uncertain intent, or a
-   first system, read [discover.md](reference/discover.md): diagnose before choosing
-   a route. For a specific authorized task, the selected route goes directly to the relevant
-   work. A returning task resumes from retained
-   context after checking what changed; it does not repeat the initial interview.
-   "Guide me" is a request for you to lead discovery. Establish the outcome or
-   propose a bounded investigation before ranking repairs; audit severity does not
-   establish the team's priority. Load the relevant playbook yourself.
-4. Explain the first useful delivery and its finish line. Use
+3. After investigating, offer: “I've looked through your code. Want me to ask you a
+   few quick questions, or go ahead with what I found?” Follow
+   [discover.md](reference/discover.md). Ask one question at a time, with a short
+   example answer, at most five questions, in plain words. Never assume an answer.
+   If the user says “go ahead”, record assumptions visibly in `consult.json`.
+   A returning task reuses the user's earlier choice and authorization.
+4. Follow [consult.md](reference/consult.md): write `consult.json`, run
+   `<skill-base-dir>/bin/ds-loop report . --consult consult.json`, and give the file
+   location plus three things worth looking at first. Counts are not grades.
+5. Explain the first useful delivery and its finish line. Use
    [engagement.md](reference/engagement.md) when presenting a diagnosis and plan,
    coordinating adoption, handing off to a specialist, or closing/resuming work.
    A small settled edit needs only a short plan. Apply
@@ -153,6 +154,7 @@ Run these in your terminal with `npx ds-loop <command>`.
 | `start [path]` / bare `ds-loop` | **CLI** | Meta | Verdict for this directory, its biggest finding, what was read, and the next command. The audit's own numbers, summarised — not a separate measurement | — |
 | `context [path]` | **CLI** | Meta | What this session is working with: config loaded, usual intent-source paths found, extraction coverage. `--write-contract` starts `DESIGN-SYSTEM.md` from measured counts, with the decisions the tool cannot read left as TODO | — |
 | `audit [target]` | **CLI** | Audit | Every deterministic rule that speaks to `<target>`. Summary-first findings and coverage, compact CSS inventory, and a `next` block. `--all` prints full details and scorecard ratios. `--html <file>` saves the same audit as a self-contained visual report. No LLM, no network | [reference/audit.md](reference/audit.md) |
+| `report [path]` | **CLI** | Consult | One self-contained consulting report; `--consult <file.json>` adds agent assessment, cited practices, proposed architecture and plan; `--out <file.html>` selects the output | [reference/consult.md](reference/consult.md) |
 | `consumers [path]` | **CLI** | Audit | Which workspace package imports which shared package: specifiers, named imports, counts and file:line samples; stories and tests counted apart; exported subpaths with no production consumer. `--html <file>` draws the UI-architecture diagram. Static JSX shared-component share excludes external/unresolved elements; imports and JSX occurrences are not runtime usage | — |
 | `scan [path]` | **CLI** | Audit | Quick look: classification breakdown + palette clusters at the default ΔE | — |
 | `sweep [target]` | **CLI** | Audit | CIEDE2000 ΔE cutoff sweep — the colour-domain calibration curve | [reference/sweep.md](reference/sweep.md) |

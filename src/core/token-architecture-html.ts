@@ -40,6 +40,15 @@ export const TOKEN_CSS = `
 `;
 export const TOKEN_SCRIPT = String.raw`
 (() => {
+const sourceLocation = (file, line, suffix = '') => {
+  const p = el('p');
+  if (payload.sourceBase) {
+    const a = el('a', file+':'+line);
+    a.href = new URL(file.split('/').map(encodeURIComponent).join('/'), payload.sourceBase).href+'#L'+line;
+    p.append(a, document.createTextNode(suffix));
+  } else p.textContent = file+':'+line+suffix;
+  return p;
+};
  const a = payload.report.tokenArchitecture;
  if (!a) return;
  const tokens = new Map(a.tokens.map(t => [t.name, t]));
@@ -69,14 +78,14 @@ export const TOKEN_SCRIPT = String.raw`
  const referenceRow = (r) => {
    const row=el('div'); row.className='token-row';
    if (r.from) row.append(tokenButton(r.from)); else row.append(el('strong', 'Use site: '+r.property));
-   row.append(el('span', ' → '), tokenButton(r.to), el('p', r.file+':'+r.line)); return row;
+   row.append(el('span', ' → '), tokenButton(r.to), sourceLocation(r.file,r.line)); return row;
  };
  function select(name) {
    const host=document.getElementById('token-detail');host.replaceChildren(el('h3',name));
    const t=tokens.get(name);
    host.append(el('p',t ? 'Layer: '+(t.tier==='unknown'?'unclassified':t.tier)+' · alias depth: '+(t.aliasDepth===null?'unresolved (cycle or chain into cycle)':t.aliasDepth)+(t.cycle?' · alias cycle':'') : 'No declaration observed in this scope. This does not prove the token is absent at runtime.'));
    if(t){const declarations=el('div');host.append(el('h4','Declarations and modes'),el('p','Order not resolved across files. Same-file positions do not establish a computed winner.'),declarations);
-     page(declarations,t.declarations,d=>{const row=el('div');row.className='token-row';row.append(el('code',d.value),el('p',d.file+':'+d.line+' · '+(d.selector??'selector not recorded')),el('small',(d.mode?'Mode selector · ':'')+(d.sourceOrder===null?'order not resolved':'within-file source position '+(d.sourceOrder+1))));return row;});}
+     page(declarations,t.declarations,d=>{const row=el('div');row.className='token-row';row.append(el('code',d.value),sourceLocation(d.file,d.line,' · '+(d.selector??'selector not recorded')),el('small',(d.mode?'Mode selector · ':'')+(d.sourceOrder===null?'order not resolved':'within-file source position '+(d.sourceOrder+1))));return row;});}
    for(const [direction,title] of [['up','References followed toward dependencies'],['down','Consumers followed toward use sites']]) {const details=el('details'),summary=el('summary',title),body=el('div');details.append(summary,body);host.append(details);let loaded=false;details.addEventListener('toggle',()=>{if(details.open&&!loaded){loaded=true;page(body,chain(name,direction),referenceRow);}});}
    host.scrollIntoView({block:'nearest'});host.focus({preventScroll:true});
  }

@@ -1,6 +1,6 @@
 # Reading an audit
 
-These excerpts are checked against the engine by `test/readme.test.ts`. Line wrapping and marked truncation are permitted; the output vocabulary is unchanged.
+These excerpts are checked against the engine by `test/readme.test.ts`. Line wrapping and marked truncation are permitted. Summaries use clear words; `--all` and JSON preserve the engine vocabulary.
 
 The `│` gutter groups the lines of one finding and is always emitted. In a terminal, long `where:`, `risk:` and `fix:` lines wrap to the window width and continue under their label; piped or redirected output keeps each on one line, so a captured log and these excerpts stay comparable. Colour follows the same rule — severity tags are coloured only on a terminal, and `NO_COLOR` turns that off.
 
@@ -46,7 +46,7 @@ This independently written JSX example contains three literals.
 
 <!-- verified: audit-markup -->
 ```
-  [HIGH] token/raw-value-in-markup · 3 hardcoded value(s) at use sites bypass the token layer (1 colour, 2 length; 3 distinct) · 3 hits · Card.tsx:2, Card.tsx:3
+  [HIGH] Hard-coded component styles · token/raw-value-in-markup · 3 hits · Card.tsx:2, Card.tsx:3
 ```
 
 ## Public fixture: Radix Colors
@@ -57,25 +57,25 @@ From the repository root, run `npm run ds-loop -- audit fixtures/radix-colors`. 
 ```
   ds-loop audit — Radix Colors · target: all
   2 findings — 0 blocking · 0 high · 0 medium · 2 low
+  These checks found possible problems. Their counts are not a quality grade.
   version npm:@radix-ui/colors@3.0.0   adapter css-custom-props@0.5.0   config 3c93c488
   14 rules run
 
   scope — what this audit read
-    css-custom-props@0.5.0
-      reads .css — custom-property declarations (--token: value) — not rule bodies, not at-rules
-    72 colour value(s) this version cannot convert: color(display-p3 0.995 0.992 0.985), color(display-p3 0.994 0.986 0.921), color(display-p3 0.994 0.969 0.782), color(display-p3 0.989 0.937 0.65)
-      excluded from every colour rule — a gap in the engine, not in your code
+    What we read: .css — custom-property declarations (--token: value) — not rule bodies, not at-rules
+    Colours we cannot compare: 72 — color(display-p3 0.995 0.992 0.985), color(display-p3 0.994 0.986 0.921), color(display-p3 0.994 0.969 0.782), color(display-p3 0.989 0.937 0.65)
+    Some checks are incomplete. Read the limits before relying on this result.
 
   findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
-  [LOW] color/near-duplicate-primitives · 20 pair(s) of palette primitives are within ΔE 2.3 — below a reliable just-noticeable difference · 1 finding · no file:line recorded
-  [LOW] color/no-intent-plateau · no ΔE band holds a cluster count within 15% of the 72 shipped primitives · 1 finding · no file:line recorded
+  [LOW] Very similar palette colours · color/near-duplicate-primitives · 1 finding · no file:line recorded
+  [LOW] Palette structure needs review · color/no-intent-plateau · 1 finding · no file:line recorded
 
   next
-    ds-loop audit fixtures/radix-colors --all                        full findings, risks, fixes and token suggestions
-    ds-loop audit fixtures/radix-colors --html ds-loop-report.html   save a complete visual report
-    decide on the rest                                               nothing here is mechanically provable — all 2 findings state their choice on the fix line
-    ds-loop scorecard fixtures/radix-colors                          pin these ratios as run 1 — a ratio only says something against a previous row
-    ds-loop guard on                                                 report high-severity findings after each Claude Code edit (never blocks)
+    ds-loop audit fixtures/radix-colors --all   full findings, risks, fixes and token suggestions
+    ds-loop report fixtures/radix-colors        save a consulting report with evidence and next steps
+    decide on the rest                          nothing here is mechanically provable — all 2 findings state their choice on the fix line
+    ds-loop scorecard fixtures/radix-colors     pin these ratios as run 1 — a ratio only says something against a previous row
+    ds-loop guard on                            report high-severity findings after each Claude Code edit (never blocks)
 ```
 
 The report includes the display-p3 values the color rules could not convert. A reported finding does not imply full coverage.

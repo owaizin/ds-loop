@@ -20,10 +20,9 @@ This repo ships the **open engine and skill** (MIT). The tuned thresholds and th
 before/after engagement runs live in a separate private repo (`ds-loop-calibration`) and are passed in at
 run time. See `docs/guide/reference.md` for configuration and coverage boundaries.
 
-Positioning that has been settled and should not be relitigated: ds-loop **complements** Murphy Trueman's
-LLM-based `design-system-ops` skill pack (it reads his `.ds-ops-config.yml` verbatim for interop) and
-operates on *the system behind the screens*. A representative screen or product flow
-is used to diagnose and verify a shared-system change; this is not a general screen-design skill.
+The engine reads `.ds-ops-config.yml` verbatim for configuration interoperability.
+It operates on the system behind the screens. A representative product flow helps
+diagnose and verify a shared-system change; this is not a general screen-design skill.
 
 ## Commands
 
@@ -94,7 +93,7 @@ Reconstructing this after the fact is impossible, so never drop a field to simpl
 (`clustering.deltaE`, `primitivePattern`, `componentPattern`, `semanticNamespaces`,
 `reservedSemanticTerms`, `taxonomy.shadow*`, sweep range) lives here with an **UNCALIBRATED** default.
 **Nothing in `src/` outside `config/` may hardcode a threshold** — if it does, the seam has leaked.
-`load.ts` also reads Murphy's `.ds-ops-config.yml` and maps its `severity:` block onto rule ids
+`load.ts` also reads `.ds-ops-config.yml` and maps its `severity:` block onto rule ids
 (`MURPHY_SEVERITY_TO_RULES`); `yaml-lite.ts` is a deliberately minimal parser so the zero-dependency rule
 holds.
 
@@ -203,10 +202,10 @@ heuristics.
 
 ## Conventions and constraints
 
-- **Do not rewrite the tool's output strings into plain English.** Rule summaries, `fix` text and audit
-  output stay in domain vocabulary. This was tried once and reverted by the user: engineers and agents share
-  the domain language, and plain phrasing forces a lossy translation step. (Customer-facing wording belongs
-  on a landing page, framed *around* verbatim output.)
+- **Keep two output layers.** Stable rule IDs, rule `summary` strings, `--json`, fix text and
+  report headers stay precise and unchanged for agents and CI. Human-facing summaries use
+  `src/core/plain.ts` titles and descriptions; `--all` preserves the detailed engineer view.
+
 - Rules are regex-based, not parser-based. Where that leaves a known ceiling, mark it with a `ponytail:`
   comment naming the ceiling and the upgrade path, as `dimension.ts`, `tier.ts` and `tailwind-jsx.ts` do.
 - biome: single quotes, trailing commas, 110-column lines, `fixtures/**` ignored. `console.log` and
@@ -250,7 +249,7 @@ decision, not a restructuring — capabilities and verified output do not change
 
 - `ds-loop` — the package, the binary, the command in every example
 - `.ds-loop-config.{yml,yaml}`, `ds-loop.config.json`, and `.ds-ops-config.{yml,yaml}` — the last is
-  Murphy Trueman's filename, kept verbatim for interop, and renaming it breaks that
+  an external tool's filename, kept verbatim for config interop, and renaming it breaks that
 - `.ds-scorecard/history.jsonl` — an append-only file in users' repositories
 - `skill/hooks/ds-loop-guard.mjs` — referenced by hook entries already written into users'
   `.claude/settings.json`; renaming it silently disables their guard
@@ -345,11 +344,11 @@ internal notes.
 - `STRATEGY.md` — the portfolio read: what the engine, the calibration corpus and the skills pack are each
   for, and what is missing.
 - `docs/METHODOLOGY.md` — the engagement methodology the tool automates, including the four-layer token
-  model and the relationship to `design-system-ops`.
+  model.
 - `skill/` — the `/ds-loop` skill: `SKILL.md`, per-command playbooks in `reference/`, the guard hook in
-  `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Eight CLI commands are implemented:
-  `start` (also the bare invocation), `context`, `audit`, `scan`, `sweep`, `guard`, `fix` and
-  `scorecard`. The other named operations are agent playbooks.
+  `hooks/ds-loop-guard.mjs`, and the CLI launcher `bin/ds-loop`. Ten CLI commands are implemented:
+  `start` (also the bare invocation), `context`, `audit`, `consumers`, `report`, `scan`, `sweep`,
+  `guard`, `fix` and `scorecard`. The other named operations are agent playbooks.
 - `product-system-skills-v0.2/` is an **unrelated, untracked** skills pack that happens to sit in this tree.
   It is not part of the engine. Its review history lives in
   `docs/FEEDBACK-TRIAGE-2026-09-16.md` (untracked), which records every accept/reject

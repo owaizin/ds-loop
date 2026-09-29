@@ -5,9 +5,21 @@ If evidence is missing, name the investigation that will resolve it.
 
 ## Understand why this matters
 
-Reuse the user's stated goal. When absent, ask: “What brought you here, and what
-would you like to be easier or work better?” A request for a specific authorized
-repair does not need this interview.
+Reuse the user's stated goal. Investigate first: read instructions, run `context`,
+then an unfiltered `audit --json`, then `consumers --json` when a workspace exists.
+Inspect a relevant component or product flow and the team's existing decisions.
+Don't ask what the repository already answers.
+
+Then offer: “I've looked through your code. Want me to ask you a few quick
+questions, or go ahead with what I found?” Ask one question at a time, each with a
+short example answer, at most five questions. Use plain words. Never assume an
+answer. For example: “What should be easier after this work? For example, adding a
+second theme without editing every screen.” Reuse an earlier choice on a returning
+task. A specific authorized repair does not need a repeated interview.
+
+If the user says “go ahead”, put assumptions in `consult.json`, visibly marked as
+assumptions rather than reported facts. Follow [consult.md](consult.md) to produce
+the report and point out the three things to review first.
 
 When the user says "guide me" or cannot name a problem, take the lead: inspect one
 representative contributor or product task, explain the possible obstacle, and ask
@@ -30,7 +42,7 @@ whose answers could change the next action:
 | Constraints | What must stay compatible, and who owns shared decisions? | Scope, rollout, and material decisions needing an owner. |
 | First demonstration | Which flow would be useful to prove this in? | Pilot consumer, states, and access needed for verification. |
 
-Ask related questions in small groups; investigate between them. Offer a
+Ask one question at a time; investigate between questions. Offer a
 provisional recommendation when the user does not know. An unknown blocks only
 work that depends on it. Keep the interview proportional to the next decision.
 

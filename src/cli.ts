@@ -8,6 +8,7 @@ import { context } from './commands/context.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
 import { overview } from './commands/overview.ts';
+import { report } from './commands/report.ts';
 import { scan } from './commands/scan.ts';
 import { scorecard } from './commands/scorecard.ts';
 import { sweep } from './commands/sweep.ts';
@@ -35,6 +36,9 @@ const FIX_USAGE = `
 
 const USAGE = `
 ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
+
+  report [path] [--consult <file.json>] [--out <file.html>]
+      Save a self-contained consulting report (default: ds-loop-report.html).
 
   Start here:  ds-loop            verdict for this directory, and what to run next
                ds-loop start      the same, spelled out
@@ -131,10 +135,18 @@ function main(argv: string[]): void {
     '--min-severity',
     '--config',
     '--scope',
+    '--consult',
   ]);
   const positional = rest.filter((a, i) => !a.startsWith('-') && !valueFlags.has(rest[i - 1] ?? ''));
 
   switch (cmd) {
+    case 'report': {
+      for (const name of ['consult', 'out'])
+        if (has(rest, name) && (!flag(rest, name) || flag(rest, name)!.startsWith('-')))
+          throw new Error(`--${name} needs a file path`);
+      report(positional[0] ?? '.', loaded, { consult: flag(rest, 'consult'), out: flag(rest, 'out') });
+      break;
+    }
     case 'audit': {
       if (has(rest, 'html') && (!flag(rest, 'html') || flag(rest, 'html')!.startsWith('-'))) {
         throw new Error('--html needs a file path, e.g. --html ds-loop-report.html');

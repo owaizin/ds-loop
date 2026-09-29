@@ -20,7 +20,7 @@ test('large hit lists stay one summary row with exact counts and three recorded 
   const lines = auditSummary(report, '.');
   const rows = lines.filter((line) => line.includes('[LOW]'));
   assert.equal(rows.length, 1);
-  assert.ok(rows[0]?.includes(report.findings[0]!.summary));
+  assert.match(rows[0]!, /Missing backup values · token\/var-missing-fallback/);
   assert.match(rows[0]!, /12000 hits · a.css:1, a.css:2, a.css:3$/);
   assert.equal(JSON.stringify(report), before, 'the terminal must not alter the report');
 });

@@ -219,7 +219,8 @@ test('inventory is unfiltered; new-rule JSON keeps all hits; human output is gro
       );
       const human = capture(() => audit(dir)).output;
       assert.match(human, /CSS property inventory/);
-      assert.match(human, /project permission not judged/);
+      assert.match(human, /Hard-coded styles/);
+      assert.match(capture(() => audit(dir, { all: true })).output, /project permission not judged/);
       assert.doesNotMatch(human, /padding: 12px at a.css:125/);
       const row = capture(() => scorecard(dir, { dryRun: true })).value.row;
       assert.equal(row.ratios['style-tokenization-spacing'], 0.008);
@@ -402,7 +403,7 @@ test('unclassified styles are not low-alpha colors and coverage survives filters
       assert.equal(report.coverage.complete, false);
       assert.equal(report.styleInventory.spacing?.unclassified, 2);
       const human = capture(() => audit(dir)).output;
-      assert.match(human, /CSS property expression\(s\) unclassified/);
+      assert.match(human, /Style expressions we cannot interpret/);
       assert.doesNotMatch(human, /low-alpha colour\(s\)/);
     },
   );

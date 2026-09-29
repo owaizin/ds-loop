@@ -158,9 +158,22 @@ for (const [id, args] of [
   });
 }
 
+test('README: consulting report output is real', () => {
+  const block = verifiedBlocks().get('report-css-example');
+  assert.ok(block);
+  inTemp({}, (dir) => {
+    const actual = run(
+      ['report', join(ROOT, 'fixtures/css-audit-example'), '--out', 'scratch/phase-1/css-report.html'],
+      dir,
+    );
+    assertBlockIsReal('report-css-example', block, actual);
+  });
+});
+
 test('every verified block in the README is registered in this file', () => {
   // an unregistered `verified:` block is an unchecked claim wearing a badge
   const registered = new Set([
+    'report-css-example',
     'start-css-showcase',
     'consumers-example',
     'audit-radix',

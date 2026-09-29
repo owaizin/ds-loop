@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { PLAIN_RULES } from '../src/core/plain.ts';
 
 /**
  * Every exit names the next command.
@@ -118,7 +119,7 @@ test('the bare command audits this directory instead of printing the manual', ()
   inTree(JUDGEMENT_ONLY, (dir) => {
     const { out, status } = run([], dir);
     assert.match(out, /2 findings —/, `expected a verdict, got:\n${out}`);
-    assert.match(out, /\[HIGH\] color\/semantic-holds-literal/);
+    assert.match(out, /\[HIGH\] Role colours bypass the palette · color\/semantic-holds-literal/);
     assert.match(out, /^ {2}next$/m);
     assert.doesNotMatch(out, /--require-coverage/, 'the flag manual belongs to --help');
     assert.equal(status, 1, 'findings exist, so the exit code says so');
@@ -184,7 +185,7 @@ test('the overview names unread token files and color conversion gaps', () => {
     (dir) => {
       const { out } = run([], dir);
       assert.match(out, /tokens.json/);
-      assert.match(out, /1 colour value\(s\) this version cannot convert/);
+      assert.match(out, /Colours we cannot compare: 1/);
       assert.doesNotMatch(out, /✓ clean/);
     },
   );
@@ -213,7 +214,7 @@ test('severity tags carry no escape codes when stdout is not a terminal', () => 
     const ESC = String.fromCharCode(27);
     assert.ok(!bare.out.includes(ESC), 'the entrance emitted an escape code without a TTY');
     assert.ok(!full.out.includes(ESC), 'audit emitted an escape code without a TTY');
-    assert.match(full.out, /\[HIGH\] color\/semantic-holds-literal/);
+    assert.match(full.out, /\[HIGH\] Role colours bypass the palette · color\/semantic-holds-literal/);
   });
 });
 
@@ -245,19 +246,19 @@ test('the wordmark degrades to plain text without a terminal', () => {
   });
 });
 
-test('summary shows each verbatim finding, coverage first, and both detail routes', () => {
+test('summary shows each plain finding title, coverage first, and both detail routes', () => {
   inTree(FIXABLE, (dir) => {
     const report = JSON.parse(run(['audit', '.', '--json'], dir).out);
     for (const command of [['audit', '.'], ['start', '.'], []]) {
       const { out, status } = run(command, dir);
       assert.equal(status, 1);
       for (const finding of report.findings) {
-        assert.ok(out.includes(finding.summary));
+        assert.ok(out.includes(PLAIN_RULES[finding.ruleId].title));
         assert.ok(out.includes(finding.ruleId));
       }
       assert.ok(out.indexOf('scope —') < out.indexOf('[LOW]'));
       assert.match(out, /audit \. --all/);
-      assert.match(out, /audit \. --html ds-loop-report.html/);
+      assert.match(out, /report \./);
       assert.doesNotMatch(out, /risk:|where:|scorecard ratios/);
       assert.match(out.trimEnd().split('\n\n').at(-1) ?? '', /^ {2}next$/m);
     }
