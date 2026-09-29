@@ -24,27 +24,18 @@
       "coverage": {
         "excludedKeywords": {
           "count": 96,
-          "samples": [
-            "initial",
-            "none",
-            "transparent",
-            "normal"
-          ]
+          "samples": ["initial", "none", "transparent", "normal"]
         },
         "unreadFormats": {},
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -60,15 +51,9 @@
         },
         "undecided": {
           "count": 2,
-          "samples": [
-            "rgba(0, 0, 0, 0.25)",
-            "rgb(0 0 0 / 0)"
-          ]
+          "samples": ["rgba(0, 0, 0, 0.25)", "rgb(0 0 0 / 0)"]
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedStyles": {
           "count": 45,
           "samples": [
@@ -124,27 +109,18 @@
       "coverage": {
         "excludedKeywords": {
           "count": 36,
-          "samples": [
-            "sans-serif",
-            "inherit",
-            "transparent",
-            "none"
-          ]
+          "samples": ["sans-serif", "inherit", "transparent", "none"]
         },
         "unreadFormats": {},
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -194,38 +170,23 @@
       "coverage": {
         "excludedKeywords": {
           "count": 175,
-          "samples": [
-            "auto",
-            "transparent",
-            "none",
-            "unset"
-          ]
+          "samples": ["auto", "transparent", "none", "unset"]
         },
         "unreadFormats": {},
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.5.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -243,10 +204,7 @@
             "rgba(206, 212, 218, 0.05)"
           ]
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedStyles": {
           "count": 53,
           "samples": [
@@ -292,12 +250,7 @@
       "coverage": {
         "excludedKeywords": {
           "count": 159,
-          "samples": [
-            "transparent",
-            "none",
-            "inherit",
-            "auto"
-          ]
+          "samples": ["transparent", "none", "inherit", "auto"]
         },
         "unreadFormats": {
           ".html": 1
@@ -305,33 +258,21 @@
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.5.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
-        "unreadTokenFiles": [
-          "packages/react/src/Token/Token.docs.json"
-        ],
+        "unreadTokenFiles": ["packages/react/src/Token/Token.docs.json"],
         "unconvertible": {
           "count": 0,
           "samples": []
@@ -340,10 +281,7 @@
           "count": 0,
           "samples": []
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedStyles": {
           "count": 22,
           "samples": [
@@ -389,38 +327,23 @@
       "coverage": {
         "excludedKeywords": {
           "count": 217,
-          "samples": [
-            "none",
-            "transparent",
-            "inherit",
-            "auto"
-          ]
+          "samples": ["none", "transparent", "inherit", "auto"]
         },
         "unreadFormats": {},
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.5.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -431,15 +354,9 @@
         },
         "undecided": {
           "count": 2,
-          "samples": [
-            "rgba(187, 128, 9, 0.15)",
-            "rgba(175, 184, 193, 0.2)"
-          ]
+          "samples": ["rgba(187, 128, 9, 0.15)", "rgba(175, 184, 193, 0.2)"]
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedStyles": {
           "count": 15,
           "samples": [
@@ -485,45 +402,28 @@
       "coverage": {
         "excludedKeywords": {
           "count": 71,
-          "samples": [
-            "transparent",
-            "none",
-            "normal",
-            "unset"
-          ]
+          "samples": ["transparent", "none", "normal", "unset"]
         },
         "unreadFormats": {},
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.5.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           },
           {
             "adapter": "token-json@0.2.0",
-            "extensions": [
-              ".json"
-            ],
+            "extensions": [".json"],
             "reads": "DTCG $value/$type and Style Dictionary value/type declarations in .json, inherited types and aliases — no theme merging, $extends or composite evaluation; unresolved/cyclic aliases remain ambiguous"
           }
         ],
@@ -534,16 +434,9 @@
         },
         "undecided": {
           "count": 5,
-          "samples": [
-            "#e22c2c14",
-            "#e0b30e14",
-            "rgba(206, 1, 211, 0.2)"
-          ]
+          "samples": ["#e22c2c14", "#e0b30e14", "rgba(206, 1, 211, 0.2)"]
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedDeclarations": {
           "count": 46,
           "samples": [
@@ -598,12 +491,7 @@
       "coverage": {
         "excludedKeywords": {
           "count": 230,
-          "samples": [
-            "transparent",
-            "none",
-            "inherit",
-            "auto"
-          ]
+          "samples": ["transparent", "none", "inherit", "auto"]
         },
         "unreadFormats": {
           ".html": 187,
@@ -612,27 +500,17 @@
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.5.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -650,9 +528,7 @@
             "rgba(0, 0, 0, 0.075)"
           ]
         },
-        "couldNotJudge": [
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/raw-value-in-style"],
         "unclassifiedStyles": {
           "count": 2,
           "samples": [
@@ -696,12 +572,7 @@
       "coverage": {
         "excludedKeywords": {
           "count": 164,
-          "samples": [
-            "transparent",
-            "none",
-            "sans-serif",
-            "auto"
-          ]
+          "samples": ["transparent", "none", "sans-serif", "auto"]
         },
         "unreadFormats": {
           ".html": 2
@@ -709,17 +580,12 @@
         "partialReads": [
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           },
           {
             "adapter": "scss@0.2.0",
-            "extensions": [
-              ".scss",
-              ".sass"
-            ],
+            "extensions": [".scss", ".sass"],
             "reads": ".scss and indented .sass variables, CSS custom properties, selected nested rule properties and map.get references; @use/@forward recorded, not resolved — no Sass evaluation, interpolation, mixin/function expansion or CSS-in-JS"
           }
         ],
@@ -732,10 +598,7 @@
           "count": 0,
           "samples": []
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedDeclarations": {
           "count": 43,
           "samples": [
@@ -790,12 +653,7 @@
       "coverage": {
         "excludedKeywords": {
           "count": 389,
-          "samples": [
-            "none",
-            "transparent",
-            "auto",
-            "inherit"
-          ]
+          "samples": ["none", "transparent", "auto", "inherit"]
         },
         "unreadFormats": {
           ".html": 4
@@ -803,42 +661,27 @@
         "partialReads": [
           {
             "adapter": "css-custom-props@0.6.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.5.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.3.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           },
           {
             "adapter": "token-json@0.2.0",
-            "extensions": [
-              ".json"
-            ],
+            "extensions": [".json"],
             "reads": "DTCG $value/$type and Style Dictionary value/type declarations in .json, inherited types and aliases — no theme merging, $extends or composite evaluation; unresolved/cyclic aliases remain ambiguous"
           },
           {
             "adapter": "scss@0.2.0",
-            "extensions": [
-              ".scss",
-              ".sass"
-            ],
+            "extensions": [".scss", ".sass"],
             "reads": ".scss and indented .sass variables, CSS custom properties, selected nested rule properties and map.get references; @use/@forward recorded, not resolved — no Sass evaluation, interpolation, mixin/function expansion or CSS-in-JS"
           }
         ],
@@ -856,10 +699,7 @@
             "rgb(247 165 1 / 10%)"
           ]
         },
-        "couldNotJudge": [
-          "token/tier-model-undetectable",
-          "token/raw-value-in-style"
-        ],
+        "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
         "unclassifiedDeclarations": {
           "count": 181,
           "samples": [
@@ -871,12 +711,7 @@
         },
         "unclassifiedStyles": {
           "count": 98,
-          "samples": [
-            "'../styles/mixins'",
-            "'../styles/global'",
-            "screen($md)",
-            "'../../styles/vars'"
-          ]
+          "samples": ["'../styles/mixins'", "'../styles/global'", "screen($md)", "'../../styles/vars'"]
         },
         "complete": false
       }
@@ -954,27 +789,17 @@
         "partialReads": [
           {
             "adapter": "css-custom-props@0.5.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
             "adapter": "tailwind-jsx@0.4.0",
-            "extensions": [
-              ".jsx",
-              ".tsx",
-              ".js",
-              ".ts",
-              ".mjs"
-            ],
+            "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
             "adapter": "css-rule-bodies@0.2.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -1011,9 +836,7 @@
         "partialReads": [
           {
             "adapter": "css-rule-bodies@0.2.0",
-            "extensions": [
-              ".css"
-            ],
+            "extensions": [".css"],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
           }
         ],
@@ -1063,27 +886,17 @@
           "partialReads": [
             {
               "adapter": "css-custom-props@0.5.0",
-              "extensions": [
-                ".css"
-              ],
+              "extensions": [".css"],
               "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
             },
             {
               "adapter": "tailwind-jsx@0.4.0",
-              "extensions": [
-                ".jsx",
-                ".tsx",
-                ".js",
-                ".ts",
-                ".mjs"
-              ],
+              "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
               "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
             },
             {
               "adapter": "css-rule-bodies@0.2.0",
-              "extensions": [
-                ".css"
-              ],
+              "extensions": [".css"],
               "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
             }
           ],
@@ -1094,16 +907,9 @@
           },
           "undecided": {
             "count": 40,
-            "samples": [
-              "oklch(1 0 0 / 10%)",
-              "oklch(1 0 0 / 15%)",
-              "oklch(1 0 0 / 0.2)"
-            ]
+            "samples": ["oklch(1 0 0 / 10%)", "oklch(1 0 0 / 15%)", "oklch(1 0 0 / 0.2)"]
           },
-          "couldNotJudge": [
-            "token/tier-model-undetectable",
-            "token/raw-value-in-style"
-          ],
+          "couldNotJudge": ["token/tier-model-undetectable", "token/raw-value-in-style"],
           "unclassifiedStyles": {
             "count": 6,
             "samples": [
@@ -1146,27 +952,17 @@
           "partialReads": [
             {
               "adapter": "css-custom-props@0.5.0",
-              "extensions": [
-                ".css"
-              ],
+              "extensions": [".css"],
               "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
             },
             {
               "adapter": "tailwind-jsx@0.4.0",
-              "extensions": [
-                ".jsx",
-                ".tsx",
-                ".js",
-                ".ts",
-                ".mjs"
-              ],
+              "extensions": [".jsx", ".tsx", ".js", ".ts", ".mjs"],
               "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
             },
             {
               "adapter": "css-rule-bodies@0.2.0",
-              "extensions": [
-                ".css"
-              ],
+              "extensions": [".css"],
               "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
             }
           ],
@@ -1184,9 +980,7 @@
               "hsl(240, 5%, 65%, 0.15)"
             ]
           },
-          "couldNotJudge": [
-            "token/tier-model-undetectable"
-          ],
+          "couldNotJudge": ["token/tier-model-undetectable"],
           "complete": false
         }
       },

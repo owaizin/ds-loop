@@ -14,6 +14,7 @@
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -222,6 +223,67 @@ try {
     assert(r.stdout.includes('npx --no-install ds-loop'), 'no local command guidance');
   });
 
+  check('tar listing includes plugin, playbooks, roles, practices and benchmarks', () => {
+    const entries = execFileSync('tar', ['-tzf', join(dir, tgz)], { encoding: 'utf8' }).split('\n');
+    for (const file of [
+      '.claude-plugin/plugin.json',
+      'hooks/hooks.json',
+      'skill/SKILL.md',
+      'skill/roles/consultant.md',
+      'skill/practices/starting.md',
+      'skill/reference/consult.md',
+      'skill/bin/ds-loop',
+      'skill/hooks/ds-loop-guard.mjs',
+      'benchmarks/reference.json',
+    ]) {
+      assert(entries.includes(`package/${file}`), `tarball missing ${file}`);
+    }
+  });
+
+  check('packed first run, report and dashboard work on the Example DS fixture', () => {
+    const probe = join(dir, 'example-ds');
+    cpSync(join(ROOT, 'fixtures/css-audit-example'), probe, { recursive: true });
+    const first = run([], probe);
+    assert(first.status === 1, `expected findings, got ${first.status}: ${first.stderr}`);
+    assert(first.stdout.includes('wrote ds-loop-report.html'), 'first report not announced');
+    const reportFile = join(probe, 'ds-loop-report.html');
+    assert(readFileSync(reportFile, 'utf8').includes('token/raw-value-in-style'), 'report missing evidence');
+    for (const command of ['report', 'dashboard']) {
+      const result = run([command, '.'], probe);
+      assert(result.status === 0, `${command}: ${result.stderr}`);
+      assert(existsSync(join(probe, `ds-loop-${command}.html`)), `${command} output missing`);
+    }
+  });
+
+  rmSync(join(dir, 'example-ds'), { recursive: true, force: true });
+
+  check('packed plugin hook executes using its declared plugin-root command', () => {
+    const installed = join(dir, 'node_modules', 'ds-loop');
+    const manifest = JSON.parse(readFileSync(join(installed, '.claude-plugin/plugin.json'), 'utf8'));
+    assert(manifest.version === '0.4.0' && manifest.skills === './skill', 'plugin entry mismatch');
+    const hooks = JSON.parse(readFileSync(join(installed, 'hooks/hooks.json'), 'utf8'));
+    const command = hooks.hooks.PostToolUse[0].hooks[0].command;
+    const probe = join(dir, 'plugin-hook');
+    mkdirSync(probe);
+    writeFileSync(join(probe, 'tokens.css'), ':root{--color-surface:#ffffff}');
+    const result = spawnSync('/bin/sh', ['-c', command], {
+      cwd: probe,
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PLUGIN_ROOT: installed },
+      input: JSON.stringify({
+        cwd: probe,
+        tool_name: 'Write',
+        tool_input: { file_path: join(probe, 'tokens.css') },
+      }),
+    });
+    assert(
+      result.status === 2 && result.stderr.includes('semantic token declaration'),
+      `hook did not deliver high-severity feedback: ${result.status} ${result.stderr}`,
+    );
+  });
+
+  rmSync(join(dir, 'plugin-hook'), { recursive: true, force: true });
+
   check('the installed overview retains exceptions and coverage gaps', () => {
     const probe = join(dir, 'overview-limits');
     mkdirSync(probe);
@@ -248,7 +310,7 @@ try {
         r.stdout.includes('suppressed') && r.stdout.includes('Fixed export for a single-theme consumer.'),
         'exception hidden',
       );
-      assert(r.stdout.includes('tokens.json') && r.stdout.includes('cannot convert'), 'coverage gaps hidden');
+      assert(r.stdout.includes('tokens.json') && r.stdout.includes('cannot compare'), 'coverage gaps hidden');
       assert(!r.stdout.includes('✓ clean'), 'incomplete coverage was presented as clean');
     } finally {
       rmSync(probe, { recursive: true });
@@ -346,7 +408,7 @@ try {
     // walked two levels up from the *link* and reported that the skill was not
     // inside the package. `pwd -P` resolves the link; a copied directory falls
     // back to `ds-loop` on PATH.
-    const central = join(dir, 'central-skills');
+    const central = join(dir, '.agents', 'skills');
     mkdirSync(central, { recursive: true });
     const link = join(central, 'ds-loop');
     symlinkSync(join(dir, 'node_modules', 'ds-loop', 'skill'), link, 'dir');
@@ -365,10 +427,10 @@ try {
   });
 
   check('audit states the scope it covered', () => {
-    writeFileSync(join(dir, 'theme.scss'), '$brand: #1da1f2;\n');
+    writeFileSync(join(dir, 'theme.less'), '$brand: #1da1f2;\n');
     const r = run(['audit', '.']);
     assert(r.stdout.includes('scope — what this audit read'), 'no coverage section');
-    assert(/not read at all:.*\.scss/.test(r.stdout), 'an unreadable format should be named');
+    assert(/File types we cannot read:.*\.less/.test(r.stdout), 'an unreadable format should be named');
     const report = JSON.parse(run(['audit', '.', '--json']).stdout);
     assert(report.coverage, 'coverage missing from --json');
     assert(report.coverage.complete === false, 'complete should be false with an unread format');
@@ -390,7 +452,7 @@ try {
   check('an unreadable source is reported as not-checked, never as clean', () => {
     const sub = join(dir, 'unreadable');
     mkdirSync(sub, { recursive: true });
-    writeFileSync(join(sub, 'theme.scss'), '$brand: #1da1f2;\n');
+    writeFileSync(join(sub, 'theme.less'), '$brand: #1da1f2;\n');
     const r = run(['audit', 'unreadable']);
     assert(/not checked/.test(r.stdout), `expected a not-checked verdict, got: ${r.stdout.slice(0, 120)}`);
     assert(!/✓ clean/.test(r.stdout), 'an unread source must never print clean');
@@ -415,7 +477,7 @@ try {
     assert(result.status === 1, `expected findings, got ${result.status}`);
     const report = JSON.parse(result.stdout);
     assert(
-      report.manifest.adapter.includes('css-rule-bodies@0.2.0'),
+      report.manifest.adapter.includes('css-rule-bodies@0.3.0'),
       'style adapter missing from packed registry',
     );
     const spacing = report.findings.find(
@@ -478,7 +540,7 @@ try {
       'full human output omitted suggestion',
     );
     const summary = run(['audit', '.'], probe).stdout;
-    assert(summary.includes('--all') && summary.includes('--html'), 'summary omitted detail routes');
+    assert(summary.includes('--all') && summary.includes('ds-loop report'), 'summary omitted detail routes');
     assert(!summary.includes('suggest:'), 'default view expanded suggestion details');
     assert(
       !run(['fix', '--help'], probe).stdout.includes('--exact-tokens'),

@@ -1,0 +1,12 @@
+{
+  "name": "ds-loop",
+  "version": "0.4.0",
+  "description": "Design-system evidence, consulting playbooks and post-edit feedback.",
+  "author": {
+    "name": "owaizin"
+  },
+  "homepage": "https://design-system-loop.vercel.app",
+  "repository": "https://github.com/owaizin/ds-loop",
+  "license": "MIT",
+  "skills": "./skill"
+}
