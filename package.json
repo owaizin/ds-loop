@@ -9,7 +9,7 @@
   "exports": {
     ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
   },
-  "files": ["bin", "dist", "skill", "README.md", "LICENSE", "docs/guide"],
+  "files": ["bin", "dist", "skill", "README.md", "LICENSE", "docs/guide", "benchmarks/reference.json"],
   "engines": {
     "node": ">=22.6"
   },
@@ -24,7 +24,8 @@
     "site:examples": "node scripts/site-examples.mjs",
     "site:check": "node scripts/check-site.mjs && node scripts/site-examples.mjs --check",
     "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "benchmark": "node --experimental-strip-types scripts/benchmark.mjs"
   },
   "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",

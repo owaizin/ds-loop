@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { AuditReport } from '../commands/audit.ts';
 import { findingLocations } from './audit-summary.ts';
+import { type ReferenceSet, benchmarkHtml } from './benchmark.ts';
 import type { Claim, Consult } from './consult.ts';
 import { renderConsumersHtml } from './consumers-html.ts';
 import type { ConsumersReport } from './consumers.ts';
@@ -9,6 +10,7 @@ import { embedReport } from './embedded-report.ts';
 import { PLAIN_RULES, PLAIN_VERDICTS, plainCoverage } from './plain.ts';
 import { type Evidence, renderProposal } from './proposal.ts';
 import { renderAuditHtml } from './report-html.ts';
+import { formatTeamShape, teamShape } from './team-shape.ts';
 
 const esc = (v: unknown) =>
   String(v).replace(
@@ -39,6 +41,7 @@ export function renderConsultHtml(
   consumers: ConsumersReport,
   root: string,
   consult?: Consult,
+  against?: ReferenceSet,
 ): string {
   const ref = (value: string): string => {
     let href: string | undefined;
@@ -113,7 +116,11 @@ export function renderConsultHtml(
   const consumersView = consumers.packages.length
     ? `<h3>Component usage</h3>${embedReport(renderConsumersHtml(consumers, { label: r.manifest.fixtureLabel, generatedAt: r.manifest.ranAt }), 'consumer-map')}<h3>Recorded import locations</h3><ul>${consumers.consumers.flatMap((c) => c.uses.map((u) => `<li>${esc(c.package)} → ${esc(u.specifier)}: ${u.samples.map((s) => ref(`${s.file}:${s.line}`)).join(' · ')}</li>`)).join('')}</ul>`
     : '<p>Component usage not checked: no workspace packages were found at this source root.</p>';
-  const outro = `${consumersView}</section>${section(
+  const shape = teamShape(root, consumers);
+  const structure = `<h3>Team structure</h3><ul>${formatTeamShape(shape)
+    .map((f) => `<li>${esc(f)}</li>`)
+    .join('')}</ul>`;
+  const outro = `${structure}${benchmarkHtml(r, shape, against)}${consumersView}</section>${section(
     'ideal',
     'What good looks like',
     consult ? consult.practices.map((p) => `<h3>${esc(p.system)}</h3>${claim(p)}`).join('') : missing,

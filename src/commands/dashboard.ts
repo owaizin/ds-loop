@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { LoadedConfig } from '../config/load.ts';
+import type { ReferenceSet } from '../core/benchmark.ts';
 import { analyseConsumers } from '../core/consumers.ts';
 import { renderDashboardHtml } from '../core/dashboard-html.ts';
 import { audit } from './audit.ts';
@@ -10,7 +11,7 @@ import { scorecardRow } from './scorecard.ts';
 export function dashboard(
   path: string,
   loaded: LoadedConfig,
-  opts: { out?: string; historyDir?: string; configPath?: string } = {},
+  opts: { out?: string; historyDir?: string; configPath?: string; against?: ReferenceSet } = {},
 ): string {
   const target = resolve(path);
   const root = statSync(target).isDirectory() ? target : dirname(target);
@@ -22,13 +23,20 @@ export function dashboard(
   const consumers = analyseConsumers(root);
   const historyPath = resolve(opts.historyDir ?? process.cwd(), '.ds-scorecard/history.jsonl');
   const history = existsSync(historyPath) ? readFileSync(historyPath, 'utf8') : '';
-  const html = renderDashboardHtml(measured, scorecardRow(measured, consumers), consumers, history, path);
+  const html = renderDashboardHtml(
+    measured,
+    scorecardRow(measured, consumers),
+    consumers,
+    history,
+    path,
+    opts.against,
+  );
   const output = resolve(opts.out ?? 'ds-loop-dashboard.html');
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, html);
   // Remember the target/config for guard refresh, including custom output paths.
   const registry = resolve('node_modules/.cache/ds-loop/dashboards.json');
-  let entries: { target: string; out: string; config?: string }[] = [];
+  let entries: { target: string; out: string; config?: string; against?: ReferenceSet }[] = [];
   try {
     const saved = JSON.parse(readFileSync(registry, 'utf8'));
     if (Array.isArray(saved))
@@ -43,7 +51,12 @@ export function dashboard(
     /* no registry yet */
   }
   entries = entries.filter((e) => e.out !== output);
-  entries.push({ target, out: output, ...(opts.configPath ? { config: resolve(opts.configPath) } : {}) });
+  entries.push({
+    target,
+    out: output,
+    ...(opts.against ? { against: opts.against } : {}),
+    ...(opts.configPath ? { config: resolve(opts.configPath) } : {}),
+  });
   mkdirSync(dirname(registry), { recursive: true });
   writeFileSync(registry, JSON.stringify(entries));
   console.log(`  ds-loop dashboard — ${measured.manifest.fixtureLabel}`);

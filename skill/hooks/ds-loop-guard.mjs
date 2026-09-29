@@ -59,6 +59,7 @@ for (const entry of dashboards) {
   if (!existsSync(resolve(cwd, entry.out))) continue;
   const args = [CLI, 'dashboard', entry.target, '--out', entry.out];
   if (entry.config) args.push('--config', entry.config);
+  if (entry.against === 'products' || entry.against === 'systems') args.push('--against', entry.against);
   const refresh = spawnSync(process.execPath, args, { encoding: 'utf8', cwd, timeout: 15_000 });
   if (refresh.error || refresh.signal || refresh.status !== 0) {
     dashboardNote += `ds-loop dashboard — refresh failed for ${entry.out}; the existing dashboard may be stale. ${refresh.error?.message ?? refresh.stderr?.trim() ?? 'Run ds-loop dashboard again.'}\n`;

@@ -1,0 +1,939 @@
+{
+  "schemaVersion": 2,
+  "references": [
+    {
+      "name": "radix-ui/themes",
+      "url": "https://github.com/radix-ui/themes.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": "packages/radix-ui-themes",
+      "sha": "1faff10ac26ae17f09944d418c6949b93fc6b566",
+      "ratios": {
+        "style-tokenization-color": 0.97,
+        "style-tokenization-spacing": 0.842,
+        "style-tokenization-typography": 0.838,
+        "style-tokenization-radius": null,
+        "style-tokenization-shadow": 0.37,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "adapters": "css-custom-props@0.5.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {},
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 63,
+          "samples": [
+            "color(display-p3 0 0 0 / 0)",
+            "color(display-p3 0.9922 0.9843 0.902 / 0.8)",
+            "color(display-p3 0.1412 0.1176 0.0784 / 0.5)",
+            "color(display-p3 0.9529 0.9765 0.9961 / 0.8)"
+          ]
+        },
+        "undecided": {
+          "count": 2,
+          "samples": [
+            "rgba(0, 0, 0, 0.25)",
+            "rgb(0 0 0 / 0)"
+          ]
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedStyles": {
+          "count": 46,
+          "samples": [
+            "max(var(--radius-1), var(--radius-full))",
+            "max(var(--radius-2), var(--radius-full))",
+            "max(var(--radius-3), var(--radius-full))",
+            "max(var(--radius-4), var(--radius-full))"
+          ]
+        },
+        "complete": false
+      },
+      "occurrences": {
+        "style-tokenization-color": 335,
+        "style-tokenization-spacing": 417,
+        "style-tokenization-typography": 136,
+        "style-tokenization-radius": 75,
+        "style-tokenization-shadow": 119,
+        "style-tokenization-z-index": 11,
+        "style-tokenization-duration": 32
+      },
+      "totalValues": 3291
+    },
+    {
+      "name": "radix-ui/primitives",
+      "url": "https://github.com/radix-ui/primitives.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "f7ecd5ab16f5e1e820eb5786a1419a98a2d594ae",
+      "ratios": {
+        "style-tokenization-color": 0.558,
+        "style-tokenization-spacing": 0.039,
+        "style-tokenization-typography": null,
+        "style-tokenization-radius": null,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 249,
+        "style-tokenization-spacing": 128,
+        "style-tokenization-typography": 43,
+        "style-tokenization-radius": 50,
+        "style-tokenization-shadow": 25,
+        "style-tokenization-z-index": 3,
+        "style-tokenization-duration": 85
+      },
+      "totalValues": 602,
+      "adapters": "css-custom-props@0.5.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {},
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 0,
+          "samples": []
+        },
+        "couldNotJudge": [],
+        "complete": true
+      }
+    },
+    {
+      "name": "mantinedev/mantine",
+      "url": "https://github.com/mantinedev/mantine.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "f38933cb4f1c534600f4ff59ee3ddbb4685a4bc4",
+      "ratios": {
+        "style-tokenization-color": 0.933,
+        "style-tokenization-spacing": 0.472,
+        "style-tokenization-typography": 0.618,
+        "style-tokenization-radius": 0.641,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": 0.123,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 1212,
+        "style-tokenization-spacing": 962,
+        "style-tokenization-typography": 591,
+        "style-tokenization-radius": 443,
+        "style-tokenization-shadow": 39,
+        "style-tokenization-z-index": 179,
+        "style-tokenization-duration": 90
+      },
+      "totalValues": 5334,
+      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {},
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.4.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 32,
+          "samples": [
+            "rgba(173, 181, 189, 0.15)",
+            "rgba(105, 105, 105, 0.15)",
+            "rgba(66, 66, 66, 0.05)",
+            "rgba(206, 212, 218, 0.05)"
+          ]
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedStyles": {
+          "count": 202,
+          "samples": [
+            "light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8))",
+            "light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-8))",
+            "calc(var(--toc-link-offset) * var(--mantine-spacing-lg))",
+            "light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1))"
+          ]
+        },
+        "complete": false
+      }
+    },
+    {
+      "name": "primer/react",
+      "url": "https://github.com/primer/react.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "a89299ae77e8f444599f94d7e9ca368c17be3f9a",
+      "ratios": {
+        "style-tokenization-color": 0.928,
+        "style-tokenization-spacing": 0.695,
+        "style-tokenization-typography": 0.918,
+        "style-tokenization-radius": 0.798,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 830,
+        "style-tokenization-spacing": 998,
+        "style-tokenization-typography": 389,
+        "style-tokenization-radius": 178,
+        "style-tokenization-shadow": 68,
+        "style-tokenization-z-index": 31,
+        "style-tokenization-duration": 50
+      },
+      "totalValues": 3035,
+      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {
+          ".html": 1
+        },
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.4.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [
+          "packages/react/src/Token/Token.docs.json"
+        ],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 0,
+          "samples": []
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedStyles": {
+          "count": 23,
+          "samples": [
+            "calc(var(--base-size-8) - var(--borderWidth-thin))",
+            "calc(var(--control-medium-paddingInline-condensed) + var(--base-size-8))",
+            "calc(var(--control-medium-paddingBlock) - var(--base-size-2))",
+            "calc(var(--control-small-paddingBlock) - var(--base-size-2))"
+          ]
+        },
+        "complete": false
+      }
+    },
+    {
+      "name": "supabase/supabase",
+      "url": "https://github.com/supabase/supabase.git",
+      "set": "products",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE",
+      "scanPath": "apps/studio",
+      "sha": "93a262d185fcba2d919692c32e88ce0f97a9ec98",
+      "ratios": {
+        "style-tokenization-color": 0.787,
+        "style-tokenization-spacing": 0.169,
+        "style-tokenization-typography": null,
+        "style-tokenization-radius": null,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 108,
+        "style-tokenization-spacing": 130,
+        "style-tokenization-typography": 69,
+        "style-tokenization-radius": 12,
+        "style-tokenization-shadow": 5,
+        "style-tokenization-z-index": 3,
+        "style-tokenization-duration": 9
+      },
+      "totalValues": 952,
+      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {},
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.4.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 2,
+          "samples": [
+            "rgba(187, 128, 9, 0.15)",
+            "rgba(175, 184, 193, 0.2)"
+          ]
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedStyles": {
+          "count": 15,
+          "samples": [
+            "hsla(var(--color-neutral), var(--alpha-secondary))",
+            "hsla(var(--color-neutral), 1)",
+            "hsla(var(--color-neutral), var(--alpha-background-light))",
+            "calc(var(--border-radius-12) + var(--px-8))"
+          ]
+        },
+        "complete": false
+      }
+    },
+    {
+      "name": "appsmithorg/appsmith",
+      "url": "https://github.com/appsmithorg/appsmith.git",
+      "set": "products",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE",
+      "scanPath": "app/client",
+      "sha": "50a5bf0d71c3fac856f55a20f80fbdec7c57b100",
+      "ratios": {
+        "style-tokenization-color": 0.784,
+        "style-tokenization-spacing": 0.523,
+        "style-tokenization-typography": null,
+        "style-tokenization-radius": null,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 213,
+        "style-tokenization-spacing": 243,
+        "style-tokenization-typography": 42,
+        "style-tokenization-radius": 76,
+        "style-tokenization-shadow": 31,
+        "style-tokenization-z-index": 21,
+        "style-tokenization-duration": 18
+      },
+      "totalValues": 2092,
+      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {},
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.4.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 5,
+          "samples": [
+            "#e22c2c14",
+            "#e0b30e14",
+            "rgba(206, 1, 211, 0.2)"
+          ]
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedStyles": {
+          "count": 9,
+          "samples": [
+            "calc(var(--icon-size-1) + var(--inner-spacing-1))",
+            "calc(var(--icon-size-3) + var(--inner-spacing-1))",
+            "calc(\n    var(--border-radius-elevation-3) - var(--inner-spacing-1)\n  )",
+            "calc(\n      var(--icon-size-4) + var(--inner-spacing-3) + var(--inner-spacing-2)\n    )"
+          ]
+        },
+        "complete": false
+      }
+    },
+    {
+      "name": "refinedev/refine",
+      "url": "https://github.com/refinedev/refine.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "2352eb5b6539e2f39ad9aef652279ad1dcf2c467",
+      "ratios": {
+        "style-tokenization-color": 0.184,
+        "style-tokenization-spacing": 0.006,
+        "style-tokenization-typography": 0,
+        "style-tokenization-radius": null,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 206,
+        "style-tokenization-spacing": 351,
+        "style-tokenization-typography": 119,
+        "style-tokenization-radius": 59,
+        "style-tokenization-shadow": 11,
+        "style-tokenization-z-index": 12,
+        "style-tokenization-duration": 26
+      },
+      "totalValues": 3565,
+      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {
+          ".html": 187,
+          ".svelte": 4
+        },
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.4.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 27,
+          "samples": [
+            "rgba(255, 255, 255, 0.05)",
+            "oklch(1 0 0 / 10%)",
+            "oklch(1 0 0 / 15%)",
+            "rgba(0, 0, 0, 0.075)"
+          ]
+        },
+        "couldNotJudge": [
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedStyles": {
+          "count": 2,
+          "samples": [
+            "all var(--ifm-transition-fast)\n    var(--ifm-transition-timing-default)",
+            "border var(--ifm-transition-fast) ease"
+          ]
+        },
+        "complete": false
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "name": "tldraw/tldraw",
+      "reason": "Not selected: an MIT/Apache/BSD licence was not verified in this run."
+    },
+    {
+      "name": "calcom/cal.com",
+      "reason": "Not selected: an MIT/Apache/BSD licence was not verified in this run."
+    },
+    {
+      "name": "hoppscotch/hoppscotch",
+      "reason": "Deferred: Vue template extraction is outside the current adapters; source and licence could not be verified with network unavailable."
+    }
+  ],
+  "candidates": [
+    {
+      "name": "payloadcms/payload",
+      "url": "https://github.com/payloadcms/payload.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": ""
+    },
+    {
+      "name": "radix-ui/colors",
+      "url": "https://github.com/radix-ui/colors.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": ""
+    },
+    {
+      "name": "hoppscotch/hoppscotch",
+      "url": "https://github.com/hoppscotch/hoppscotch.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": "packages/hoppscotch-common"
+    },
+    {
+      "name": "tremorlabs/tremor",
+      "url": "https://github.com/tremorlabs/tremor.git",
+      "set": "products",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE",
+      "scanPath": "."
+    }
+  ],
+  "candidateStatus": "Unmeasured shortlist. Licences and scan scopes are provisional until a pinned checkout is inspected. Candidates never contribute to comparisons.",
+  "unmeasurable": [
+    {
+      "name": "excalidraw/excalidraw",
+      "url": "https://github.com/excalidraw/excalidraw.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "5a406e51875157bece389b9bc92d41ff241d5f3d",
+      "reason": "Styles with SCSS, which no adapter reads.",
+      "adapters": "css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {
+          ".scss": 84,
+          ".html": 2
+        },
+        "partialReads": [
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 0,
+          "samples": []
+        },
+        "couldNotJudge": [],
+        "complete": false
+      },
+      "measurementStatus": "Occurrence recomputation pending: GitHub DNS unavailable. Exclusion reason from the Phase 3b brief; coverage retained from the previous run."
+    },
+    {
+      "name": "FlowiseAI/Flowise",
+      "url": "https://github.com/FlowiseAI/Flowise.git",
+      "set": "products",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE.md",
+      "scanPath": "packages/ui",
+      "sha": "9291856d1ea4a4ceea9f8fef8ce14f4f6c81e8eb",
+      "reason": "Styles with MUI CSS-in-JS, which no adapter reads.",
+      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {
+          ".html": 1,
+          ".scss": 2
+        },
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.5.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.4.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 0,
+          "samples": []
+        },
+        "couldNotJudge": [],
+        "complete": false
+      },
+      "measurementStatus": "Occurrence recomputation pending: GitHub DNS unavailable. Exclusion reason from the Phase 3b brief; coverage retained from the previous run."
+    },
+    {
+      "name": "chakra-ui/chakra-ui",
+      "url": "https://github.com/chakra-ui/chakra-ui.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "961161428b8c59157ad921dd23303b73c294d73f",
+      "reason": "Styles with CSS-in-JS, which no adapter reads.",
+      "adapters": "css-rule-bodies@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "unreadFormats": {
+          ".html": 6
+        },
+        "partialReads": [
+          {
+            "adapter": "css-rule-bodies@0.2.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 0,
+          "samples": []
+        },
+        "couldNotJudge": [],
+        "complete": false
+      },
+      "measurementStatus": "Occurrence recomputation pending: GitHub DNS unavailable. Exclusion reason from the Phase 3b brief; coverage retained from the previous run."
+    }
+  ],
+  "pendingMeasurements": [
+    {
+      "name": "shadcn-ui/ui",
+      "url": "https://github.com/shadcn-ui/ui.git",
+      "set": "systems",
+      "license": "MIT",
+      "licenseFile": "LICENSE.md",
+      "scanPath": ".",
+      "sha": "db2db460a26fa84fb65c8d903b213925fbdee9ed",
+      "previousMeasurement": {
+        "ratios": {
+          "literal-colors-per-distinct": 6.818,
+          "colors-per-distinct-in-scope": 2.394,
+          "ambiguous-share": 0.017,
+          "style-tokenization-color": 0.592,
+          "style-tokenization-spacing": 0.169,
+          "style-tokenization-typography": 0.114,
+          "style-tokenization-radius": 0.455,
+          "style-tokenization-duration": 0
+        },
+        "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+        "configHash": "3c93c488",
+        "date": "2026-09-29",
+        "coverage": {
+          "unreadFormats": {
+            ".html": 5,
+            ".astro": 4
+          },
+          "partialReads": [
+            {
+              "adapter": "css-custom-props@0.5.0",
+              "extensions": [
+                ".css"
+              ],
+              "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+            },
+            {
+              "adapter": "tailwind-jsx@0.4.0",
+              "extensions": [
+                ".jsx",
+                ".tsx",
+                ".js",
+                ".ts",
+                ".mjs"
+              ],
+              "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+            },
+            {
+              "adapter": "css-rule-bodies@0.2.0",
+              "extensions": [
+                ".css"
+              ],
+              "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+            }
+          ],
+          "unreadTokenFiles": [],
+          "unconvertible": {
+            "count": 0,
+            "samples": []
+          },
+          "undecided": {
+            "count": 40,
+            "samples": [
+              "oklch(1 0 0 / 10%)",
+              "oklch(1 0 0 / 15%)",
+              "oklch(1 0 0 / 0.2)"
+            ]
+          },
+          "couldNotJudge": [
+            "token/tier-model-undetectable",
+            "token/raw-value-in-style"
+          ],
+          "unclassifiedStyles": {
+            "count": 6,
+            "samples": [
+              "linear-gradient(\n      to bottom,\n      transparent,\n      rgb(var(--background-end-rgb))\n    )\n    rgb(var(--background-start-rgb))"
+            ]
+          },
+          "complete": false
+        }
+      },
+      "reason": "Pinned measurement needs occurrence counts; GitHub DNS failed during Phase 3b recomputation. Previous ratios are not eligible for comparison."
+    },
+    {
+      "name": "langflow-ai/langflow",
+      "url": "https://github.com/langflow-ai/langflow.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": "src/frontend",
+      "sha": "df9711c952a8e798e8fbbad8f25fe60be5ff6018",
+      "previousMeasurement": {
+        "ratios": {
+          "literal-colors-per-distinct": 1.623,
+          "colors-per-distinct-in-scope": 1.347,
+          "ambiguous-share": 0.008,
+          "style-tokenization-color": 0.5,
+          "style-tokenization-spacing": 0.028,
+          "style-tokenization-typography": 0,
+          "style-tokenization-radius": 0.125,
+          "style-tokenization-shadow": 0,
+          "style-tokenization-z-index": 0,
+          "style-tokenization-duration": 0
+        },
+        "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+        "configHash": "3c93c488",
+        "date": "2026-09-29",
+        "coverage": {
+          "unreadFormats": {
+            ".html": 1
+          },
+          "partialReads": [
+            {
+              "adapter": "css-custom-props@0.5.0",
+              "extensions": [
+                ".css"
+              ],
+              "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+            },
+            {
+              "adapter": "tailwind-jsx@0.4.0",
+              "extensions": [
+                ".jsx",
+                ".tsx",
+                ".js",
+                ".ts",
+                ".mjs"
+              ],
+              "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+            },
+            {
+              "adapter": "css-rule-bodies@0.2.0",
+              "extensions": [
+                ".css"
+              ],
+              "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+            }
+          ],
+          "unreadTokenFiles": [],
+          "unconvertible": {
+            "count": 0,
+            "samples": []
+          },
+          "undecided": {
+            "count": 7,
+            "samples": [
+              "hsl(240, 4%, 46%, 0.2)",
+              "hsl(240, 4%, 46%, 0.15)",
+              "hsl(240, 5%, 65%, 0.2)",
+              "hsl(240, 5%, 65%, 0.15)"
+            ]
+          },
+          "couldNotJudge": [
+            "token/tier-model-undetectable"
+          ],
+          "complete": false
+        }
+      },
+      "reason": "Pinned measurement needs occurrence counts; GitHub DNS failed during Phase 3b recomputation. Previous ratios are not eligible for comparison."
+    }
+  ]
+}

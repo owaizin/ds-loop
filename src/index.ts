@@ -33,3 +33,8 @@ export type { FindingSuggestion, TokenSuggestion, TokenCandidate } from './core/
 
 export { reportData, expandReportData } from './core/report-data.ts';
 export type { SerializedAuditReport } from './core/report-data.ts';
+
+export { teamShape, formatTeamShape } from './core/team-shape.ts';
+export type { TeamShape, ShapeFact } from './core/team-shape.ts';
+export { referenceSet, compareReferences, readReferences } from './core/benchmark.ts';
+export type { Reference, ReferenceSet, Dimension } from './core/benchmark.ts';

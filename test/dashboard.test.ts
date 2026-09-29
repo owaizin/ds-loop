@@ -133,7 +133,16 @@ test('guard preserves a custom dashboard target on non-style edits and reports r
     const cli = resolve('src/cli.ts');
     const generate = spawnSync(
       process.execPath,
-      ['--experimental-strip-types', cli, 'dashboard', 'source', '--out', 'custom.html'],
+      [
+        '--experimental-strip-types',
+        cli,
+        'dashboard',
+        'source',
+        '--out',
+        'custom.html',
+        '--against',
+        'systems',
+      ],
       { cwd: dir, encoding: 'utf8' },
     );
     assert.equal(generate.status, 0, generate.stderr);
@@ -146,6 +155,7 @@ test('guard preserves a custom dashboard target on non-style edits and reports r
       });
     assert.equal(hook().status, 0);
     assert.match(readFileSync(join(dir, 'custom.html'), 'utf8'), /source · <time>/);
+    assert.match(readFileSync(join(dir, 'custom.html'), 'utf8'), /Compared with public systems/);
     const registry = JSON.parse(
       readFileSync(join(dir, 'node_modules/.cache/ds-loop/dashboards.json'), 'utf8'),
     );

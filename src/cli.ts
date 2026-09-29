@@ -38,10 +38,10 @@ const FIX_USAGE = `
 const USAGE = `
 ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
 
-  dashboard [path] [--out <file.html>]
+  dashboard [path] [--out <file.html>] [--against products|systems]
       Save today’s state and saved trends (default: ds-loop-dashboard.html).
 
-  report [path] [--consult <file.json>] [--out <file.html>]
+  report [path] [--consult <file.json>] [--out <file.html>] [--against products|systems]
       Save a self-contained consulting report (default: ds-loop-report.html).
 
   Start here:  ds-loop            verdict for this directory, and what to run next
@@ -140,21 +140,36 @@ function main(argv: string[]): void {
     '--config',
     '--scope',
     '--consult',
+    '--against',
   ]);
   const positional = rest.filter((a, i) => !a.startsWith('-') && !valueFlags.has(rest[i - 1] ?? ''));
 
+  const against = flag(rest, 'against');
+  if ((has(rest, 'against') || against !== undefined) && against !== 'products' && against !== 'systems')
+    throw new Error('--against must be products or systems');
+  if (has(rest, 'against') && cmd !== 'report' && cmd !== 'dashboard')
+    throw new Error('--against is supported by report and dashboard');
+  const referenceOverride = against === 'products' || against === 'systems' ? against : undefined;
   switch (cmd) {
     case 'dashboard': {
       if (has(rest, 'out') && (!flag(rest, 'out') || flag(rest, 'out')!.startsWith('-')))
         throw new Error('--out needs a file path');
-      dashboard(positional[0] ?? '.', loaded, { out: flag(rest, 'out'), configPath: flag(rest, 'config') });
+      dashboard(positional[0] ?? '.', loaded, {
+        against: referenceOverride,
+        out: flag(rest, 'out'),
+        configPath: flag(rest, 'config'),
+      });
       break;
     }
     case 'report': {
       for (const name of ['consult', 'out'])
         if (has(rest, name) && (!flag(rest, name) || flag(rest, name)!.startsWith('-')))
           throw new Error(`--${name} needs a file path`);
-      report(positional[0] ?? '.', loaded, { consult: flag(rest, 'consult'), out: flag(rest, 'out') });
+      report(positional[0] ?? '.', loaded, {
+        against: referenceOverride,
+        consult: flag(rest, 'consult'),
+        out: flag(rest, 'out'),
+      });
       break;
     }
     case 'audit': {

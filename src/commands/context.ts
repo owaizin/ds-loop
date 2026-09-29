@@ -6,6 +6,7 @@ import type { LoadedConfig } from '../config/load.ts';
 import { renderContract } from '../core/contract.ts';
 import { buildCoverage, formatCoverage } from '../core/coverage.ts';
 import { resolveSource } from '../core/source.ts';
+import { formatTeamShape, teamShape } from '../core/team-shape.ts';
 
 /** the contract's home, and the first place `INTENT_SOURCES` looks for it */
 const CONTRACT = 'DESIGN-SYSTEM.md';
@@ -116,6 +117,9 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
     console.log('              again before calling any change complete: the guard');
     console.log('              filters at high severity and will not surface it.');
   }
+
+  console.log('\n  Team structure');
+  for (const fact of formatTeamShape(teamShape(source.root))) console.log(`    ${fact}`);
 
   const contractPath = join(source.root, CONTRACT);
   const hasContract = existsSync(contractPath);

@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { LoadedConfig } from '../config/load.ts';
+import type { ReferenceSet } from '../core/benchmark.ts';
 import { renderConsultHtml } from '../core/consult-html.ts';
 import { type Consult, checkConsult } from '../core/consult.ts';
 import { analyseConsumers } from '../core/consumers.ts';
@@ -11,7 +12,7 @@ import { audit } from './audit.ts';
 export function report(
   path: string,
   loaded: LoadedConfig,
-  opts: { consult?: string; out?: string } = {},
+  opts: { consult?: string; out?: string; against?: ReferenceSet } = {},
 ): string {
   let consult: Consult | undefined;
   if (opts.consult) {
@@ -30,7 +31,7 @@ export function report(
   });
   const extractedRoot = resolveSource(path).source.root;
   const evidenceRoot = statSync(extractedRoot).isDirectory() ? extractedRoot : dirname(extractedRoot);
-  const html = renderConsultHtml(measured, analyseConsumers(root), evidenceRoot, consult);
+  const html = renderConsultHtml(measured, analyseConsumers(root), evidenceRoot, consult, opts.against);
   const output = resolve(opts.out ?? 'ds-loop-report.html');
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, html);

@@ -135,7 +135,9 @@ type Comparability =
  * Two rows are comparable only when the instrument did not move between them.
  * This is the whole reason the row records `adapters` and `configHash`.
  */
-export function comparability(prev: ScorecardRow | null, next: ScorecardRow): Comparability {
+type Instrument = Pick<ScorecardRow, 'adapters' | 'configHash' | 'consumersVersion'>;
+
+export function comparability(prev: Instrument | null, next: Instrument): Comparability {
   if (!prev) return { clean: true };
   const changed: ('adapter' | 'config' | 'consumers')[] = [];
   if (prev.adapters !== next.adapters) changed.push('adapter');

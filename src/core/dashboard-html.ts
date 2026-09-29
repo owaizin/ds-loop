@@ -1,8 +1,10 @@
 import type { AuditReport } from '../commands/audit.ts';
 import { type ScorecardRow, comparability } from '../commands/scorecard.ts';
+import { type ReferenceSet, benchmarkHtml } from './benchmark.ts';
 import type { ConsumersReport } from './consumers.ts';
 import { PLAIN_RULES, PLAIN_VERDICTS, plainCoverage } from './plain.ts';
 import { REPORT_CSS } from './report-html-assets.ts';
+import { teamShape } from './team-shape.ts';
 import { escapeHtml as esc } from './visual-system.ts';
 
 /** Reject an invalid history as a whole: skipping a row could join unrelated instruments. */
@@ -79,6 +81,7 @@ export function renderDashboardHtml(
   consumers: ConsumersReport,
   history: string,
   target: string,
+  against?: ReferenceSet,
 ): string {
   const parsed = dashboardHistory(history, today.label);
   // Ratios plotted here have a 0–1 domain. Never clip bad data into a plausible graph.
@@ -124,5 +127,6 @@ main{max-width:1440px;padding:32px clamp(20px,5vw,80px)}h1{font-size:clamp(32px,
 ${parsed.note || invalid ? `<p class="notice">${esc(parsed.note ?? 'History contains an out-of-range ratio; no trend shown.')}</p>` : ''}
 ${!trend.length ? `<p class="notice">Fewer than two saved rows for this source. Showing today’s state alone. ${rows.length === 1 ? `One baseline recorded at ${esc(rows[0].ranAt)}.` : 'No usable baseline recorded.'} Record ${rows.length === 1 ? 'the next run' : 'the first baseline'} with <code>ds-loop scorecard ${esc(JSON.stringify(target))}</code>, then regenerate this dashboard.</p>` : '<p class="basis">Saved runs below; dates and all values are available under each chart. Dashed dividers mark instrument changes. No line crosses a divider. History matches source labels, not full paths; numeric direction does not establish product quality.</p>'}
 ${notices.map((n) => `<p class="notice">${esc(n)}</p>`).join('')}
+${benchmarkHtml(report, teamShape(consumers.root, consumers), against)}
 <div class="dashboard-grid"><div><section><h2>Tokenization over time</h2><p class="basis">Reference-only values / (literal + reference + mixed values). Not reference resolution. Missing measurements remain not checked.</p><div class="series-grid">${tokens.map((k) => chart(k, trend, today)).join('')}</div></section><section><h2>Shared-component share per package</h2><p class="basis">Production shared JSX / (shared + local JSX). Static usage, not runtime adoption.</p><div class="series-grid">${shares.map((k) => chart(k, trend, today)).join('') || '<p>not checked — no shared/local production JSX measured.</p>'}</div></section></div><aside><section><h2>Findings by theme</h2>${[...themes].map(([theme, findings]) => `<h3>${esc(theme)}</h3><ul class="theme-list">${findings.join('')}</ul>`).join('') || '<p>No findings reported; read the coverage limits.</p>'}</section><section><h2>Coverage</h2><ul>${[...plainCoverage(report.coverage), ...consumers.limits].map((s) => `<li>${esc(s)}</li>`).join('')}</ul><p class="basis">Use <code>ds-loop audit --require-coverage</code> as your CI gate. Regenerating this file does not record a baseline.</p></section></aside></div></main><script>document.getElementById('theme').addEventListener('change',e=>{document.documentElement.dataset.theme=e.target.value;});</script></body></html>`;
 }

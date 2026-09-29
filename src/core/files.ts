@@ -62,7 +62,7 @@ export function surveyTree(root: string): Map<string, number> {
 }
 
 /** every file under `root` with one of `exts`, sorted; `root` may itself be a file */
-export function listFiles(root: string, exts: string[]): string[] {
+export function listFiles(root: string, exts: string[], onError?: () => void): string[] {
   const match = (name: string) => exts.includes(extname(name).toLowerCase());
   const out: string[] = [];
   const walk = (dir: string) => {
@@ -77,7 +77,7 @@ export function listFiles(root: string, exts: string[]): string[] {
     if (statSync(root).isDirectory()) walk(root);
     else if (match(root)) out.push(root);
   } catch {
-    /* missing path — return empty */
+    onError?.(); // Structural callers must distinguish incomplete discovery from absence.
   }
   return out.sort();
 }
