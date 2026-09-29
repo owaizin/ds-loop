@@ -213,14 +213,14 @@ h1{font-size:clamp(24px,4vw,36px);letter-spacing:-.03em;margin:4px 0}h2{font-siz
 .summary{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.summary span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
 .warn{border:1px solid var(--bad);color:var(--bad);border-radius:10px;padding:10px 14px;margin:12px 0}.warn ul{margin:6px 0;padding-left:18px}
 .lane{border-top:2px solid var(--ink);padding:12px 0 18px}.lane header{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}.row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:10px}
-.node{background:var(--card);border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:12px 14px;min-width:0;min-height:96px;display:flex;flex-direction:column;box-shadow:var(--shadow-1);overflow-wrap:anywhere}.node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.node{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0;min-height:96px;display:flex;flex-direction:column;box-shadow:var(--shadow-1);overflow-wrap:anywhere}.node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .s-observed{border-left-color:var(--obs)}.s-inferred{border-left-color:var(--inf);border-left-style:dashed}.s-proposed{border-left-color:var(--pro);border-left-style:double;border-left-width:6px}.s-not-checked{border-left-color:var(--nc);border-left-style:dotted}
 .tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 8px;display:inline-flex;align-items:center;gap:5px}.node.hl{outline:2px solid var(--accent)}
 details summary{cursor:pointer;color:var(--accent);font-size:13px;padding-top:6px}.ev{margin:4px 0;padding-left:16px;font-size:12px}.edge-line{font-size:13px;margin-top:8px}.unsupported{color:var(--bad);font-size:12px;font-weight:600}
 .legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}
 .icon{width:1.05em;height:1.05em;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.18em;flex-shrink:0}
 .icon.s-observed{color:var(--obs)}.icon.s-inferred{color:var(--inf)}.icon.s-proposed{color:var(--pro)}.icon.s-not-checked{color:var(--nc)}
-.node-map{position:relative;border-radius:14px;box-shadow:var(--shadow-1);background-image:radial-gradient(circle,color-mix(in srgb,var(--ink) 22%,transparent) 1px,transparent 1px);background-size:16px 16px}
+.node-map{position:relative;border-radius:14px;background-image:radial-gradient(circle,color-mix(in srgb,var(--ink) 22%,transparent) 1px,transparent 1px);background-size:16px 16px}
 .edge-layer{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .edge-layer path{fill:none;stroke:var(--nc);stroke-width:2;opacity:.75;transition:stroke .15s,stroke-width .15s,opacity .15s}
 .edge-layer path.s-observed{stroke:var(--obs)}.edge-layer path.s-inferred{stroke:var(--inf);stroke-dasharray:2 4}.edge-layer path.s-proposed{stroke:var(--pro);stroke-dasharray:6 4}
@@ -230,7 +230,7 @@ details summary{cursor:pointer;color:var(--accent);font-size:13px;padding-top:6p
 code{font:12px ui-monospace,monospace}a{color:var(--accent)}
 @media print{.node{break-inside:avoid}details{display:block}.node-map{background-image:none}.edge-layer{display:none}}
 </style></head><body>${ICON_SPRITE}<main>
-<p class="kicker">Proposal${date ? ` · ${esc(date)}` : ''}</p><h1>${esc(p.title)}</h1>${p.scope ? `<p class="muted">${esc(p.scope)}</p>` : ''}
+<h1>${esc(p.title)}</h1>${date ? `<p class="muted">${esc(date)}</p>` : ''}${p.scope ? `<p class="muted">${esc(p.scope)}</p>` : ''}
 <div class="summary"><span>${counts.observed} observed</span><span>${counts.inferred} inferred</span><span>${counts.proposed} proposed</span><span>${counts['not-checked']} not checked</span><span>${edges.length} links</span></div>
 <div class="legend"><span>${icon('status-observed', 's-observed')}observed — seen in source or a rendered check</span><span>${icon('status-inferred', 's-inferred')}inferred — reasoned from cited evidence</span><span>${icon('status-proposed', 's-proposed')}proposed — a change, not current architecture</span><span>${icon('status-not-checked', 's-not-checked')}not checked — no result, never a pass</span></div>
 ${warnings.length ? `<div class="warn" role="note"><b>${warnings.length} claim${warnings.length > 1 ? 's' : ''} without a linked fact</b><ul>${warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}

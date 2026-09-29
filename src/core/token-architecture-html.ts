@@ -8,7 +8,7 @@ const lanes = ['upstream', 'primitive', 'semantic', 'component', 'use sites', 'u
 export function architectureHtml(a?: TokenArchitecture): string {
   if (!a)
     return '<section id="tokens"><h2>Token architecture</h2><p>No token architecture recorded for this audit.</p></section>';
-  return `<section id="tokens"><p class="kicker">Observed token architecture</p><h2>Layers and the references between them</h2><p>${a.tokens.length} declared names · ${a.tokens.reduce((n, t) => n + t.declarations.length, 0)} declarations · ${a.references.length} var() references. Layers use configured naming patterns. Lane order is not a reference edge.</p>
+  return `<section id="tokens"><h2>Layers and the references between them</h2><p>${a.tokens.length} declared names · ${a.tokens.reduce((n, t) => n + t.declarations.length, 0)} declarations · ${a.references.length} var() references. Layers use configured naming patterns. Lane order is not a reference edge.</p>
   <div class="token-lanes">${lanes
     .map((lane) => {
       const groups = a.groups.filter((g) => g.lane === lane);
