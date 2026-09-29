@@ -3,12 +3,12 @@ import { relative } from 'node:path';
 import { isUnparsedColorFunction, looksLikeColor } from '../color/convert.ts';
 import { channelReference } from '../core/channel-reference.ts';
 import { filesInScope } from '../core/files.ts';
-import { isLengthLiteral } from '../core/literals.ts';
+import { isKeywordValue, isLengthLiteral, keywordExclusions, keywordParts } from '../core/literals.ts';
 import type { RawValue, ValueCategory, ValueClassification } from '../core/provenance.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 const ID = 'css-rule-bodies';
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 const EXTS = ['.css'];
 
 /**
@@ -34,16 +34,17 @@ export const cssRuleBodiesAdapter: Adapter = {
       for (const d of declarations(readFileSync(file, 'utf8'))) {
         const category = categoryOf(d.property);
         if (category === null) continue;
-        const value = mask(d.value, true)
+        const value = mask(d.value, false)
           .replace(/\s*!important\s*$/i, '')
           .trim();
         // Keep the original value in raw, including !important. Analyze a masked
         // copy so quoted URLs/content cannot masquerade as literals/references.
-        const visible = mask(value, true).replace(/url\([^)]*\)/gi, '');
+        const visible = mask(value, category !== 'typography').replace(/url\([^)]*\)/gi, '');
         const refs = [...visible.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1]);
-        const classification = classify(category, visible, refs);
+        const classification = classifyStyle(category, visible, refs, d.property);
         out.push({
           raw: d.value,
+          ...keywordExclusions(d.value),
           ...(refs.length ? { refs } : {}),
           provenance: {
             file: relative(source.root, file) || file,
@@ -75,7 +76,7 @@ export const cssRuleBodiesAdapter: Adapter = {
   },
 };
 
-function categoryOf(property: string): ValueCategory | null {
+export function categoryOf(property: string): ValueCategory | null {
   if (
     /^(color|background(?:-color)?|border(?:-(?:top|right|bottom|left|block|inline)(?:-start|-end)?)?-color)$/.test(
       property,
@@ -87,7 +88,7 @@ function categoryOf(property: string): ValueCategory | null {
     /^(?:row-|column-)?gap$/.test(property)
   )
     return 'spacing';
-  if (/^(font-size|font-weight|line-height)$/.test(property)) return 'typography';
+  if (/^(font-family|font-size|font-weight|line-height)$/.test(property)) return 'typography';
   if (
     /^border-(?:(?:top-left|top-right|bottom-left|bottom-right|start-start|start-end|end-start|end-end)-)?radius$/.test(
       property,
@@ -100,12 +101,18 @@ function categoryOf(property: string): ValueCategory | null {
   return null;
 }
 
-const KEYWORDS = /^(?:inherit|initial|unset|revert|revert-layer|none|auto|normal|currentcolor)$/i;
 const NUMBER = /(?:^|[\s,(+*/-])(?:\d*\.\d+|\d+)(?:[a-z%]+)?(?=$|[\s,)/+*-])/i;
 
-function classify(category: ValueCategory, text: string, refs: string[]): ValueClassification {
-  const value = text.trim();
-  if (!value || KEYWORDS.test(value)) return 'excluded';
+export function classifyStyle(
+  category: ValueCategory,
+  text: string,
+  refs: string[],
+  property?: string,
+): ValueClassification {
+  const value = keywordParts(text)
+    .remainder.trim()
+    .replace(/^[,\s]+|[,\s]+$/g, '');
+  if (!value || isKeywordValue(text)) return 'excluded';
   const channel = channelReference(value);
   if (channel !== null) return channel;
   const remainder = removeVars(value).trim();
@@ -127,13 +134,18 @@ function classify(category: ValueCategory, text: string, refs: string[]): ValueC
     if (refs.length) return hasTime ? 'mixed' : 'ambiguous';
     return hasTime ? 'style-literal' : 'excluded';
   }
+  if (property === 'font-family' && /^[\w\s,"'-]+$/.test(remainder))
+    return refs.length ? 'mixed' : 'style-literal';
   if (refs.length)
-    return NUMBER.test(remainder) || /#[\da-f]{3,8}\b/i.test(remainder) ? 'mixed' : 'ambiguous';
+    return NUMBER.test(remainder) ||
+      /#[\da-f]{3,8}\b/i.test(remainder) ||
+      (category === 'color' && /\b[a-z]+\b/i.test(remainder))
+      ? 'mixed'
+      : 'ambiguous';
   if (category === 'color') {
     if (looksLikeColor(value)) return 'color';
     if (isUnparsedColorFunction(value)) return 'ambiguous';
-    if (/^[a-z]+$/i.test(value) || /#|\b(?:rgb|hsl|oklch|gradient|transparent)\b/i.test(value))
-      return 'style-literal';
+    if (/^[a-z]+$/i.test(value) || /#|\b(?:rgb|hsl|oklch|gradient)\b/i.test(value)) return 'style-literal';
     return 'ambiguous';
   }
   if (isLengthLiteral(value)) return 'dimension';

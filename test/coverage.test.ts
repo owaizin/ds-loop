@@ -23,7 +23,7 @@ test('audit reports the formats it could not read', () => {
   const coverage = inTree(
     {
       'tokens.css': ':root{--brand:#1da1f2}\n',
-      'theme.scss': '$brand: #1da1f2;\n',
+      'theme.less': '@brand: #1da1f2;\n',
       'Widget.vue': '<template><div class="p-[13px]" /></template>\n',
       'package.json': '{"name":"x"}\n',
       'README.md': '# x\n',
@@ -32,7 +32,7 @@ test('audit reports the formats it could not read', () => {
     (root) => audit(root, { silent: true }).coverage,
   );
 
-  assert.deepEqual(coverage.unreadFormats, { '.scss': 1, '.vue': 1 });
+  assert.deepEqual(coverage.unreadFormats, { '.less': 1, '.vue': 1 });
   // package.json and README.md are not styling; flagging them would bury the real gaps
   assert.ok(!('.json' in coverage.unreadFormats), 'package.json must not read as unread styling');
   assert.ok(!('.md' in coverage.unreadFormats));
@@ -120,11 +120,11 @@ test('three outcomes stay distinguishable: empty, unreadable, unjudgeable', () =
   assert.deepEqual(empty.coverage.partialReads, []);
 
   const unreadable = inTree(
-    { 'theme.scss': '$brand: #1da1f2;\n', 'W.vue': '<template><div/></template>\n' },
+    { 'theme.less': '@brand: #1da1f2;\n', 'W.vue': '<template><div/></template>\n' },
     (root) => audit(root, { silent: true }),
   );
   assert.equal(unreadable.verdict, 'not-checked', 'styling nothing reads is not a pass');
-  assert.deepEqual(unreadable.coverage.unreadFormats, { '.scss': 1, '.vue': 1 });
+  assert.deepEqual(unreadable.coverage.unreadFormats, { '.less': 1, '.vue': 1 });
 
   const unjudgeable = inTree({ 'tokens.css': ':root{--brand:#1da1f2;--accent:var(--brand)}\n' }, (root) =>
     audit(root, { silent: true }),

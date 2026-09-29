@@ -2,7 +2,7 @@
 
 Your tokens and components are only useful when product code uses them. Design System Loop finds hardcoded styles and measures shared-component usage from your code.
 
-**Works with:** CSS custom properties, ordinary CSS rules, and Tailwind classes in JavaScript/TypeScript. **Not yet:** SCSS, Vue/Svelte, CSS-in-JS or token JSON.
+**Works with:** CSS custom properties, ordinary CSS rules, Tailwind classes in JavaScript/TypeScript, DTCG/Style Dictionary token JSON, and bounded SCSS/Sass extraction. **Not yet:** Vue/Svelte or CSS-in-JS. Sass evaluation and composite JSON values remain coverage limits.
 
 ```sh
 npx ds-loop@0.3.0

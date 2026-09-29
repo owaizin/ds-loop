@@ -113,6 +113,14 @@ export const PLAIN_COVERAGE = {
     title: 'Style expressions we cannot interpret',
     description: 'These expressions were read but could not be classified.',
   },
+  excludedKeywords: {
+    title: 'CSS keywords and generic fonts recognised and excluded',
+    description: 'These components are not tokenizable literals.',
+  },
+  unclassifiedDeclarations: {
+    title: 'Token values we cannot interpret',
+    description: 'Aliases or composite values could not be evaluated.',
+  },
   couldNotJudge: {
     title: 'Checks that could not reach a conclusion',
     description: 'These checks did not establish a clean result.',
@@ -128,7 +136,13 @@ export function plainCoverage(c: Coverage): string[] {
     lines.push(`${PLAIN_COVERAGE.unreadFormats.title}: ${count} ${ext} files`);
   if (c.unreadTokenFiles.length)
     lines.push(`${PLAIN_COVERAGE.unreadTokenFiles.title}: ${c.unreadTokenFiles.join(', ')}`);
-  for (const key of ['unconvertible', 'undecided', 'unclassifiedStyles'] as const) {
+  for (const key of [
+    'unconvertible',
+    'undecided',
+    'unclassifiedStyles',
+    'unclassifiedDeclarations',
+    'excludedKeywords',
+  ] as const) {
     const row = c[key];
     if (row?.count) lines.push(`${PLAIN_COVERAGE[key].title}: ${row.count} — ${row.samples.join(', ')}`);
   }

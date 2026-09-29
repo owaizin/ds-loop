@@ -4,8 +4,9 @@ import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/conve
 import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { filesInScope } from '../core/files.ts';
-import { isLengthLiteral } from '../core/literals.ts';
+import { isKeywordValue, isLengthLiteral, keywordExclusions, keywordParts } from '../core/literals.ts';
 import type { RawValue, ValueClassification } from '../core/provenance.ts';
+import { classifyStyle } from './css-rule-bodies.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 const ID = 'tailwind-jsx';
@@ -17,7 +18,7 @@ const ID = 'tailwind-jsx';
 // 0.2.0 run never emitted, so every ratio with a values-total denominator moves.
 // 0.4.0: numeric opacity modifiers reach extraction; detection uses the loaded
 // taxonomy, so custom palette families no longer need a default-family trigger.
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 const EXTS = ['.jsx', '.tsx', '.js', '.ts', '.mjs'];
 
 /**
@@ -71,16 +72,18 @@ export const tailwindJsxAdapter: Adapter = {
         const { variants, util, value } = (parsed ?? named)!;
 
         const refs = parsed ? [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1]!) : [];
-        const { classification, reason } = named
-          ? {
-              classification: 'palette-utility' as const,
-              reason: `utility ${util} names the framework palette entry ${value}, not a theme token`,
-            }
-          : classify(util, value, refs, config.taxonomy);
-        if (classification === 'excluded') continue;
+        const { classification, reason } =
+          named && !isKeywordValue(value)
+            ? {
+                classification: 'palette-utility' as const,
+                reason: `utility ${util} names the framework palette entry ${value}, not a theme token`,
+              }
+            : classify(util, value, refs, config.taxonomy);
+        if (classification === 'excluded' && !keywordParts(value).excluded.length) continue;
 
         out.push({
           raw: value,
+          ...keywordExclusions(value),
           ...(refs.length > 0 ? { refs } : {}),
           provenance: {
             file: rel,
@@ -94,7 +97,12 @@ export const tailwindJsxAdapter: Adapter = {
             // literal" apart from "a component hardcoded one".
             tokenName: null,
             surface: 'markup',
-            category: null,
+            category:
+              classification === 'mixed'
+                ? config.taxonomy.colorUtilities.includes(util)
+                  ? 'color'
+                  : 'spacing'
+                : null,
             classification,
             reason,
             fixtureSha: source.fixtureSha,
@@ -162,7 +170,7 @@ export function parseNamed(
   if (util === undefined) return null;
   const value = base === util ? '' : base.slice(util.length + 1);
   const family = value.split('-')[0] ?? '';
-  if (!taxonomy.stockPaletteFamilies.includes(family)) return null;
+  if (!taxonomy.stockPaletteFamilies.includes(family) && !isKeywordValue(value)) return null;
   return { variants, util, value };
 }
 
@@ -199,9 +207,18 @@ function classify(
   refs: string[],
   taxonomy: Taxonomy,
 ): { classification: ValueClassification; reason: string } {
+  if (isKeywordValue(value))
+    return {
+      classification: 'excluded',
+      reason: 'CSS keyword or generic font family; not a tokenizable literal',
+    };
+  const hasKeywords = keywordParts(value).excluded.length > 0;
+  value = keywordParts(value).remainder.trim();
   if (refs.length > 0) {
     return {
-      classification: 'reference',
+      classification: hasKeywords
+        ? classifyStyle(taxonomy.colorUtilities.includes(util) ? 'color' : 'spacing', value, refs)
+        : 'reference',
       reason: `arbitrary value references ${refs.length} token(s): ${refs.join(', ')}`,
     };
   }

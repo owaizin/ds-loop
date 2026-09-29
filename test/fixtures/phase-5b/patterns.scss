@@ -1,0 +1,11 @@
+// Frozen regression patterns from the Phase 5b Excalidraw review, not a source snapshot.
+.actions {
+  background-color: transparent;
+  background: transparent;
+  color: #123456;
+  color: var(--popup-bg-color);
+  border-color: transparent transparent var(--popup-bg-color) var(--popup-bg-color);
+  border-color: transparent #abcdef var(--popup-bg-color) var(--popup-bg-color);
+  font-family: system-ui, sans-serif;
+  font-family: "Example Sans", sans-serif;
+}

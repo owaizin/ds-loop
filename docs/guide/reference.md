@@ -270,12 +270,15 @@ palette families during detection. Re-measure a baseline before comparing it wit
 | Tailwind JSX 0.4.0 | Arbitrary-value strings and framework-palette colour utilities in `.jsx`, `.tsx`, `.js`, `.ts`, `.mjs` | Utilities naming your own theme tokens, arbitrary variants/bracketed opacity, inline style objects, CSS-in-JS |
 | CSS rule bodies 0.2.0 | Selected ordinary CSS properties, literals and `var()` references, including nested at-rules | Custom-property declarations, declaration at-rules such as `@font-face`, preprocessors, import/cascade resolution |
 
+| Token JSON 0.1.0 | DTCG `$value`/`$type`, Style Dictionary `value`/`type`, inherited types, nested groups, aliases and exact value lines in `.json` | Theme merging, `$extends`, composite evaluation; ambiguous aliases when targets are missing, duplicated or cyclic |
+| SCSS 0.1.0 | Variables, custom properties, selected rule properties, nested/conditional contexts, `map.get`, `.scss` and indented `.sass`; records `@use`/`@forward` | Module resolution, Sass evaluation, interpolation and mixin/function expansion |
+
 Colour covers colour/background/border-colour properties; spacing covers padding,
 margin and gap; typography covers font size, weight and line height. Radius,
 box shadow, z-index and transition/animation duration properties complete the
 seven categories. This is not every CSS property.
 
-Sass maps, design-token JSON and other unsupported formats remain outside these adapters. Recognized colors that cannot be converted are reported as ambiguous. A file extension is not a promise of full syntax coverage.
+Sass maps are recorded without evaluation. JSON composite values and unresolved or cyclic aliases remain ambiguous; coverage lists these separately from undecided colour roles. Recognized colors that cannot be converted are reported as ambiguous. A file extension is not a promise of full syntax coverage.
 
 `clean`, `issues` and `not-checked` are different verdicts. Read `coverage.couldNotJudge` even when severity filtering hides the associated finding. `context` runs no rules, and the hook filters at high severity; an unfiltered audit is the channel for all judgment limitations.
 
@@ -453,3 +456,5 @@ still fails the job; writing HTML isn't a replacement gate.
 Consultation plan steps accept optional `effort` text. Missing effort displays
 “not estimated”; the engine does not invent estimates. The report cover uses three
 source ratios, and print CSS gives the cover its own page with 18mm margins.
+
+JSON token names retain dotted paths. Tier patterns test the original names and a separator-normalized form; semantic namespaces and reserved terms recognize dotted segments. Configure naming patterns for the source before interpreting tier findings. JSON aliases do not require CSS `var()` fallbacks. SCSS assignment modifiers (`!default`/`!global`) are omitted from the extracted value.

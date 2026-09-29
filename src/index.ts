@@ -38,3 +38,6 @@ export { teamShape, formatTeamShape } from './core/team-shape.ts';
 export type { TeamShape, ShapeFact } from './core/team-shape.ts';
 export { referenceSet, compareReferences, readReferences } from './core/benchmark.ts';
 export type { Reference, ReferenceSet, Dimension } from './core/benchmark.ts';
+
+export { tokenJsonAdapter } from './adapters/token-json.ts';
+export { scssAdapter } from './adapters/scss.ts';

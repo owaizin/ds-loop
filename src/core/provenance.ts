@@ -62,6 +62,8 @@ export type RawValue = {
   raw: string;
   /** when classification is `reference`: the token names this value points at, in order */
   refs?: string[];
+  /** Recognised non-tokenizable components; the parent remains one occurrence. */
+  excludedKeywords?: import('./literals.ts').ExcludedKeyword[];
   provenance: Provenance;
 };
 

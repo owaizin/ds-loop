@@ -107,7 +107,7 @@ test('the guard row disappears once the guard is installed', () => {
 });
 
 test('a not-checked source is sent to context, not to more auditing', () => {
-  inTree({ 'theme.scss': '$brand: #1da1f2;\n' }, (dir) => {
+  inTree({ 'theme.less': '@brand: #1da1f2;\n' }, (dir) => {
     const { out } = run(['audit', '.'], dir);
     assert.match(out, /not checked/);
     assert.match(out, /ds-loop context \./);
@@ -266,7 +266,7 @@ test('summary shows each plain finding title, coverage first, and both detail ro
 });
 
 test('--all does not change JSON, filters, strict coverage, or exit codes', () => {
-  inTree({ ...FIXABLE, 'theme.scss': '$space: 1px' }, (dir) => {
+  inTree({ ...FIXABLE, 'theme.less': '@space: 1px' }, (dir) => {
     for (const flags of [[], ['--min-severity', 'high'], ['--require-coverage']]) {
       const brief = run(['audit', '.', '--json', ...flags], dir);
       const full = run(['audit', '.', '--all', '--json', ...flags], dir);

@@ -124,7 +124,7 @@ test('untrusted claim text is escaped and unsupported claims remain visible', ()
 test('CLI defaults, invalid input, output directories and not-checked summary', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ds-loop-consult-'));
   try {
-    writeFileSync(join(dir, 'theme.scss'), '$brand: red;');
+    writeFileSync(join(dir, 'theme.less'), '@brand: red;');
     const result = run(['report'], dir);
     assert.equal(result.status, 0, result.stderr);
     const html = readFileSync(join(dir, 'ds-loop-report.html'), 'utf8');

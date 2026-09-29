@@ -1,0 +1,15 @@
+{
+  "label": "@sanity-labs/design-tokens public package subset",
+  "upstream": "https://github.com/sanity-labs/design-tokens-poc",
+  "fixtureSha": "npm:@sanity-labs/design-tokens@0.0.2-alpha.4",
+  "retrievedAt": "2026-09-29",
+  "path": "tokens",
+  "shippedPrimitiveCount": null,
+  "fileSha256": {
+    "dist/json/color.tokens.json": "c5525a60210088ec4a1e5e5eb2de18c1127d1f021cbcbfb2b166ef2fc1860aba",
+    "dist/json/radius.tokens.json": "0454770dfa510edd8ee6c2cf77162b1ccd15bf37dd5a85e1a44460788fe0ab2f",
+    "dist/json/fontWeight.tokens.json": "15ae1a4c60a8ecd9947f57c51cb8275309d7bba9603ddfb9b9a7bceed051dce9"
+  },
+  "license": "MIT",
+  "notes": "Copied unchanged from an installed public npm package. Package version and individual file SHA-256 digests pin these bytes; upstream Git SHA could not be verified because GitHub DNS failed. This supplemental fixture does not satisfy the two-public-repository precision gate."
+}

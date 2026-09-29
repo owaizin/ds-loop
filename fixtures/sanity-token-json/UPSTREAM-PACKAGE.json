@@ -1,0 +1,60 @@
+{
+  "name": "@sanity-labs/design-tokens",
+  "version": "0.0.2-alpha.4",
+  "description": "POC for Sanity Design Tokens",
+  "keywords": [],
+  "homepage": "https://github.com/sanity-labs/design-tokens-poc#readme",
+  "bugs": {
+    "url": "https://github.com/sanity-labs/design-tokens-poc/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/sanity-labs/design-tokens-poc.git"
+  },
+  "license": "MIT",
+  "author": "Cole Peters <cole@colepeters.com>",
+  "sideEffects": [
+    "./dist/css/*.css"
+  ],
+  "type": "module",
+  "exports": {
+    "./css/*.css": "./dist/css/*.css",
+    "./json/*.json": "./dist/json/*.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:json && npm run build:css && npm run build:css-manifest",
+    "build:css": "node ./scripts/build-css.js",
+    "build:css-manifest": "node ./scripts/build-css-manifest.js",
+    "build:json": "node ./scripts/build-json.js",
+    "format": "prettier --write --cache --ignore-unknown .",
+    "lint": "eslint . --ext .cjs,.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "lint-staged": {
+    "*": [
+      "prettier --write --cache --ignore-unknown"
+    ]
+  },
+  "prettier": "@sanity/prettier-config",
+  "devDependencies": {
+    "@sanity/client": "^7.20.0",
+    "@sanity/pkg-utils": "^9.2.3",
+    "@sanity/prettier-config": "^1.0.6",
+    "dotenv": "^17.3.1",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "groq": "^5.18.0",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.8.1",
+    "style-dictionary": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.19 <22 || >=22.12"
+  }
+}

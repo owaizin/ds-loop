@@ -10,29 +10,38 @@
       "scanPath": "packages/radix-ui-themes",
       "sha": "1faff10ac26ae17f09944d418c6949b93fc6b566",
       "ratios": {
-        "style-tokenization-color": 0.97,
+        "style-tokenization-color": 0.991,
         "style-tokenization-spacing": 0.842,
-        "style-tokenization-typography": 0.838,
+        "style-tokenization-typography": 0.851,
         "style-tokenization-radius": null,
         "style-tokenization-shadow": 0.37,
         "style-tokenization-z-index": null,
         "style-tokenization-duration": null
       },
-      "adapters": "css-custom-props@0.5.0 + css-rule-bodies@0.2.0",
+      "adapters": "css-custom-props@0.6.0 + css-rule-bodies@0.3.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 96,
+          "samples": [
+            "initial",
+            "none",
+            "transparent",
+            "normal"
+          ]
+        },
         "unreadFormats": {},
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
@@ -61,7 +70,7 @@
           "token/raw-value-in-style"
         ],
         "unclassifiedStyles": {
-          "count": 46,
+          "count": 45,
           "samples": [
             "max(var(--radius-1), var(--radius-full))",
             "max(var(--radius-2), var(--radius-full))",
@@ -72,15 +81,15 @@
         "complete": false
       },
       "occurrences": {
-        "style-tokenization-color": 335,
+        "style-tokenization-color": 328,
         "style-tokenization-spacing": 417,
-        "style-tokenization-typography": 136,
+        "style-tokenization-typography": 154,
         "style-tokenization-radius": 75,
         "style-tokenization-shadow": 119,
         "style-tokenization-z-index": 11,
         "style-tokenization-duration": 32
       },
-      "totalValues": 3291
+      "totalValues": 3345
     },
     {
       "name": "radix-ui/primitives",
@@ -91,7 +100,7 @@
       "scanPath": ".",
       "sha": "f7ecd5ab16f5e1e820eb5786a1419a98a2d594ae",
       "ratios": {
-        "style-tokenization-color": 0.558,
+        "style-tokenization-color": 0.574,
         "style-tokenization-spacing": 0.039,
         "style-tokenization-typography": null,
         "style-tokenization-radius": null,
@@ -100,30 +109,39 @@
         "style-tokenization-duration": null
       },
       "occurrences": {
-        "style-tokenization-color": 249,
+        "style-tokenization-color": 242,
         "style-tokenization-spacing": 128,
-        "style-tokenization-typography": 43,
+        "style-tokenization-typography": 56,
         "style-tokenization-radius": 50,
         "style-tokenization-shadow": 25,
         "style-tokenization-z-index": 3,
         "style-tokenization-duration": 85
       },
-      "totalValues": 602,
-      "adapters": "css-custom-props@0.5.0 + css-rule-bodies@0.2.0",
+      "totalValues": 622,
+      "adapters": "css-custom-props@0.6.0 + css-rule-bodies@0.3.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 36,
+          "samples": [
+            "sans-serif",
+            "inherit",
+            "transparent",
+            "none"
+          ]
+        },
         "unreadFormats": {},
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
@@ -152,39 +170,48 @@
       "scanPath": ".",
       "sha": "f38933cb4f1c534600f4ff59ee3ddbb4685a4bc4",
       "ratios": {
-        "style-tokenization-color": 0.933,
+        "style-tokenization-color": 0.867,
         "style-tokenization-spacing": 0.472,
-        "style-tokenization-typography": 0.618,
+        "style-tokenization-typography": 0.645,
         "style-tokenization-radius": 0.641,
         "style-tokenization-shadow": null,
         "style-tokenization-z-index": 0.123,
         "style-tokenization-duration": null
       },
       "occurrences": {
-        "style-tokenization-color": 1212,
+        "style-tokenization-color": 1305,
         "style-tokenization-spacing": 962,
-        "style-tokenization-typography": 591,
+        "style-tokenization-typography": 643,
         "style-tokenization-radius": 443,
         "style-tokenization-shadow": 39,
         "style-tokenization-z-index": 179,
         "style-tokenization-duration": 90
       },
-      "totalValues": 5334,
-      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "totalValues": 5428,
+      "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 175,
+          "samples": [
+            "auto",
+            "transparent",
+            "none",
+            "unset"
+          ]
+        },
         "unreadFormats": {},
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "tailwind-jsx@0.4.0",
+            "adapter": "tailwind-jsx@0.5.0",
             "extensions": [
               ".jsx",
               ".tsx",
@@ -195,7 +222,7 @@
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
@@ -221,12 +248,12 @@
           "token/raw-value-in-style"
         ],
         "unclassifiedStyles": {
-          "count": 202,
+          "count": 53,
           "samples": [
-            "light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8))",
-            "light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-8))",
             "calc(var(--toc-link-offset) * var(--mantine-spacing-lg))",
-            "light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1))"
+            "light-dark(\n      var(--mantine-color-blue-0),\n      alpha(var(--mantine-color-blue-6), 0.17)\n    )",
+            "alpha(var(--mantine-color-body), 0.85)",
+            "calc(var(--docs-navbar-width) + var(--docs-inline-spacing))"
           ]
         },
         "complete": false
@@ -241,41 +268,50 @@
       "scanPath": ".",
       "sha": "a89299ae77e8f444599f94d7e9ca368c17be3f9a",
       "ratios": {
-        "style-tokenization-color": 0.928,
+        "style-tokenization-color": 0.977,
         "style-tokenization-spacing": 0.695,
-        "style-tokenization-typography": 0.918,
+        "style-tokenization-typography": 0.921,
         "style-tokenization-radius": 0.798,
         "style-tokenization-shadow": null,
         "style-tokenization-z-index": null,
         "style-tokenization-duration": null
       },
       "occurrences": {
-        "style-tokenization-color": 830,
+        "style-tokenization-color": 788,
         "style-tokenization-spacing": 998,
-        "style-tokenization-typography": 389,
+        "style-tokenization-typography": 404,
         "style-tokenization-radius": 178,
-        "style-tokenization-shadow": 68,
+        "style-tokenization-shadow": 69,
         "style-tokenization-z-index": 31,
         "style-tokenization-duration": 50
       },
-      "totalValues": 3035,
-      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "totalValues": 3060,
+      "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 159,
+          "samples": [
+            "transparent",
+            "none",
+            "inherit",
+            "auto"
+          ]
+        },
         "unreadFormats": {
           ".html": 1
         },
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "tailwind-jsx@0.4.0",
+            "adapter": "tailwind-jsx@0.5.0",
             "extensions": [
               ".jsx",
               ".tsx",
@@ -286,7 +322,7 @@
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
@@ -309,7 +345,7 @@
           "token/raw-value-in-style"
         ],
         "unclassifiedStyles": {
-          "count": 23,
+          "count": 22,
           "samples": [
             "calc(var(--base-size-8) - var(--borderWidth-thin))",
             "calc(var(--control-medium-paddingInline-condensed) + var(--base-size-8))",
@@ -329,7 +365,7 @@
       "scanPath": "apps/studio",
       "sha": "93a262d185fcba2d919692c32e88ce0f97a9ec98",
       "ratios": {
-        "style-tokenization-color": 0.787,
+        "style-tokenization-color": null,
         "style-tokenization-spacing": 0.169,
         "style-tokenization-typography": null,
         "style-tokenization-radius": null,
@@ -338,30 +374,39 @@
         "style-tokenization-duration": null
       },
       "occurrences": {
-        "style-tokenization-color": 108,
+        "style-tokenization-color": 99,
         "style-tokenization-spacing": 130,
-        "style-tokenization-typography": 69,
+        "style-tokenization-typography": 74,
         "style-tokenization-radius": 12,
         "style-tokenization-shadow": 5,
         "style-tokenization-z-index": 3,
         "style-tokenization-duration": 9
       },
-      "totalValues": 952,
-      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "totalValues": 1132,
+      "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 217,
+          "samples": [
+            "none",
+            "transparent",
+            "inherit",
+            "auto"
+          ]
+        },
         "unreadFormats": {},
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "tailwind-jsx@0.4.0",
+            "adapter": "tailwind-jsx@0.5.0",
             "extensions": [
               ".jsx",
               ".tsx",
@@ -372,7 +417,7 @@
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
@@ -416,7 +461,7 @@
       "scanPath": "app/client",
       "sha": "50a5bf0d71c3fac856f55a20f80fbdec7c57b100",
       "ratios": {
-        "style-tokenization-color": 0.784,
+        "style-tokenization-color": 0.903,
         "style-tokenization-spacing": 0.523,
         "style-tokenization-typography": null,
         "style-tokenization-radius": null,
@@ -425,30 +470,39 @@
         "style-tokenization-duration": null
       },
       "occurrences": {
-        "style-tokenization-color": 213,
+        "style-tokenization-color": 185,
         "style-tokenization-spacing": 243,
-        "style-tokenization-typography": 42,
+        "style-tokenization-typography": 55,
         "style-tokenization-radius": 76,
         "style-tokenization-shadow": 31,
         "style-tokenization-z-index": 21,
         "style-tokenization-duration": 18
       },
-      "totalValues": 2092,
-      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "totalValues": 2258,
+      "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0 + token-json@0.2.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 71,
+          "samples": [
+            "transparent",
+            "none",
+            "normal",
+            "unset"
+          ]
+        },
         "unreadFormats": {},
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "tailwind-jsx@0.4.0",
+            "adapter": "tailwind-jsx@0.5.0",
             "extensions": [
               ".jsx",
               ".tsx",
@@ -459,11 +513,18 @@
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
             "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          },
+          {
+            "adapter": "token-json@0.2.0",
+            "extensions": [
+              ".json"
+            ],
+            "reads": "DTCG $value/$type and Style Dictionary value/type declarations in .json, inherited types and aliases — no theme merging, $extends or composite evaluation; unresolved/cyclic aliases remain ambiguous"
           }
         ],
         "unreadTokenFiles": [],
@@ -483,6 +544,15 @@
           "token/tier-model-undetectable",
           "token/raw-value-in-style"
         ],
+        "unclassifiedDeclarations": {
+          "count": 46,
+          "samples": [
+            "{\n        \"0\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"12777[415:4]-12781[415:8]\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"12823[416:4]-12831[416:12]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"12859[417:4]-12863[417:8]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"12888[418:4]-12899[418:15]\"\n          },\n          \"capture\": {\n            \"!type\": \"string\",\n            \"!span\": \"12912[419:4]-12919[419:11]\"\n          }\n        },\n        \"1\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"13002[422:4]-13006[422:8]\",\n            \"!doc\": \"Name (subject) (RDNSequence)\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"13048[423:4]-13056[423:12]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"13084[424:4]-13088[424:8]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"13114[425:4]-13125[425:15]\"\n          },\n          \"captureAsn1\": {\n            \"!type\": \"string\",\n            \"!span\": \"13137[426:4]-13148[426:15]\"\n          }\n        },\n        \"2\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"6195[231:2]-6199[231:6]\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"6227[232:2]-6235[232:10]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"6261[233:2]-6265[233:6]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"6289[234:2]-6300[234:13]\"\n          },\n          \"captureAsn1\": {\n            \"!type\": \"string\",\n            \"!span\": \"6310[235:2]-6321[235:13]\"\n          },\n          \"value\": {\n            \"0\": {\n              \"name\": {\n                \"!type\": \"string\",\n                \"!span\": \"6363[237:4]-6367[237:8]\"\n              },\n              \"tagClass\": {\n                \"!type\": \"number\",\n                \"!span\": \"6417[238:4]-6425[238:12]\"\n              },\n              \"type\": {\n                \"!type\": \"number\",\n                \"!span\": \"6453[239:4]-6457[239:8]\"\n              },\n              \"constructed\": {\n                \"!type\": \"bool\",\n                \"!span\": \"6483[240:4]-6494[240:15]\"\n              },\n              \"value\": {\n                \"<i>\": {\n                  \"name\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"6522[242:6]-6526[242:10]\"\n                  },\n                  \"tagClass\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"6567[243:6]-6575[243:14]\"\n                  },\n                  \"type\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"6605[244:6]-6609[244:10]\"\n                  },\n                  \"constructed\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"6632[245:6]-6643[245:17]\"\n                  },\n                  \"capture\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"6658[246:6]-6665[246:13]\"\n                  }\n                }\n              }\n            },\n            \"1\": {\n              \"name\": {\n                \"!type\": \"string\",\n                \"!span\": \"6724[250:4]-6728[250:8]\",\n                \"!doc\": \"subjectPublicKey\"\n              },\n              \"tagClass\": {\n                \"!type\": \"number\",\n                \"!span\": \"6775[251:4]-6783[251:12]\"\n              },\n              \"type\": {\n                \"!type\": \"number\",\n                \"!span\": \"6811[252:4]-6815[252:8]\"\n              },\n              \"constructed\": {\n                \"!type\": \"bool\",\n                \"!span\": \"6842[253:4]-6853[253:15]\"\n              },\n              \"value\": {\n                \"<i>\": {\n                  \"name\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"6904[256:6]-6908[256:10]\",\n                    \"!doc\": \"RSAPublicKey\"\n                  },\n                  \"tagClass\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"6970[257:6]-6978[257:14]\"\n                  },\n                  \"type\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"7008[258:6]-7012[258:10]\"\n                  },\n                  \"constructed\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"7040[259:6]-7051[259:17]\"\n                  },\n                  \"optional\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"7065[260:6]-7073[260:14]\"\n                  },\n                  \"captureAsn1\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"7087[261:6]-7098[261:17]\"\n                  }\n                }\n              }\n            }\n          }\n        },\n        \"3\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"13245[431:4]-13249[431:8]\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"13294[432:4]-13302[432:12]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"13337[433:4]-13341[433:8]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"13350[434:4]-13361[434:15]\"\n          },\n          \"optional\": {\n            \"!type\": \"bool\",\n            \"!span\": \"13373[435:4]-13381[435:12]\"\n          },\n          \"capture\": {\n            \"!type\": \"string\",\n            \"!span\": \"13393[436:4]-13400[436:11]\"\n          },\n          \"value\": {\n            \"<i>\": {\n              \"name\": {\n                \"!type\": \"string\",\n                \"!span\": \"13460[438:6]-13464[438:10]\"\n              },\n              \"tagClass\": {\n                \"!type\": \"number\",\n                \"!span\": \"13511[439:6]-13519[439:14]\"\n              },\n              \"type\": {\n                \"!type\": \"number\",\n                \"!span\": \"13549[440:6]-13553[440:10]\"\n              },\n              \"constructed\": {\n                \"!type\": \"bool\",\n                \"!span\": \"13581[441:6]-13592[441:17]\"\n              },\n              \"value\": {\n                \"0\": {\n                  \"name\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"13624[443:8]-13628[443:12]\"\n                  },\n                  \"tagClass\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13682[444:8]-13690[444:16]\"\n                  },\n                  \"type\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13722[445:8]-13726[445:12]\"\n                  },\n                  \"constructed\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"13751[446:8]-13762[446:19]\"\n                  }\n                },\n                \"1\": {\n                  \"name\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"13789[448:8]-13793[448:12]\"\n                  },\n                  \"tagClass\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13848[449:8]-13856[449:16]\"\n                  },\n                  \"type\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13888[450:8]-13892[450:12]\"\n                  },\n                  \"constructed\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"13917[451:8]-13928[451:19]\"\n                  }\n                }\n              }\n            }\n          }\n        }\n      }",
+            "{\n        \"!type\": \"string\",\n        \"!span\": \"36520[1251:22]-36525[1251:27]\"\n      }",
+            "{\n              \"!type\": \"string\",\n              \"!span\": \"36520[1251:22]-36525[1251:27]\"\n            }",
+            "{\n        \"0\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"12777[415:4]-12781[415:8]\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"12823[416:4]-12831[416:12]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"12859[417:4]-12863[417:8]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"12888[418:4]-12899[418:15]\"\n          },\n          \"capture\": {\n            \"!type\": \"string\",\n            \"!span\": \"12912[419:4]-12919[419:11]\"\n          }\n        },\n        \"1\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"13002[422:4]-13006[422:8]\",\n            \"!doc\": \"Name (subject) (RDNSequence)\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"13048[423:4]-13056[423:12]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"13084[424:4]-13088[424:8]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"13114[425:4]-13125[425:15]\"\n          },\n          \"captureAsn1\": {\n            \"!type\": \"string\",\n            \"!span\": \"13137[426:4]-13148[426:15]\"\n          }\n        },\n        \"2\": \"publicKeyValidator\",\n        \"3\": {\n          \"name\": {\n            \"!type\": \"string\",\n            \"!span\": \"13245[431:4]-13249[431:8]\"\n          },\n          \"tagClass\": {\n            \"!type\": \"number\",\n            \"!span\": \"13294[432:4]-13302[432:12]\"\n          },\n          \"type\": {\n            \"!type\": \"number\",\n            \"!span\": \"13337[433:4]-13341[433:8]\"\n          },\n          \"constructed\": {\n            \"!type\": \"bool\",\n            \"!span\": \"13350[434:4]-13361[434:15]\"\n          },\n          \"optional\": {\n            \"!type\": \"bool\",\n            \"!span\": \"13373[435:4]-13381[435:12]\"\n          },\n          \"capture\": {\n            \"!type\": \"string\",\n            \"!span\": \"13393[436:4]-13400[436:11]\"\n          },\n          \"value\": {\n            \"<i>\": {\n              \"name\": {\n                \"!type\": \"string\",\n                \"!span\": \"13460[438:6]-13464[438:10]\"\n              },\n              \"tagClass\": {\n                \"!type\": \"number\",\n                \"!span\": \"13511[439:6]-13519[439:14]\"\n              },\n              \"type\": {\n                \"!type\": \"number\",\n                \"!span\": \"13549[440:6]-13553[440:10]\"\n              },\n              \"constructed\": {\n                \"!type\": \"bool\",\n                \"!span\": \"13581[441:6]-13592[441:17]\"\n              },\n              \"value\": {\n                \"0\": {\n                  \"name\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"13624[443:8]-13628[443:12]\"\n                  },\n                  \"tagClass\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13682[444:8]-13690[444:16]\"\n                  },\n                  \"type\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13722[445:8]-13726[445:12]\"\n                  },\n                  \"constructed\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"13751[446:8]-13762[446:19]\"\n                  }\n                },\n                \"1\": {\n                  \"name\": {\n                    \"!type\": \"string\",\n                    \"!span\": \"13789[448:8]-13793[448:12]\"\n                  },\n                  \"tagClass\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13848[449:8]-13856[449:16]\"\n                  },\n                  \"type\": {\n                    \"!type\": \"number\",\n                    \"!span\": \"13888[450:8]-13892[450:12]\"\n                  },\n                  \"constructed\": {\n                    \"!type\": \"bool\",\n                    \"!span\": \"13917[451:8]-13928[451:19]\"\n                  }\n                }\n              }\n            }\n          }\n        }\n      }"
+          ]
+        },
         "unclassifiedStyles": {
           "count": 9,
           "samples": [
@@ -504,42 +574,51 @@
       "scanPath": ".",
       "sha": "2352eb5b6539e2f39ad9aef652279ad1dcf2c467",
       "ratios": {
-        "style-tokenization-color": 0.184,
+        "style-tokenization-color": 0.19,
         "style-tokenization-spacing": 0.006,
-        "style-tokenization-typography": 0,
+        "style-tokenization-typography": 0.023,
         "style-tokenization-radius": null,
         "style-tokenization-shadow": null,
         "style-tokenization-z-index": null,
         "style-tokenization-duration": null
       },
       "occurrences": {
-        "style-tokenization-color": 206,
+        "style-tokenization-color": 200,
         "style-tokenization-spacing": 351,
-        "style-tokenization-typography": 119,
+        "style-tokenization-typography": 129,
         "style-tokenization-radius": 59,
         "style-tokenization-shadow": 11,
         "style-tokenization-z-index": 12,
         "style-tokenization-duration": 26
       },
-      "totalValues": 3565,
-      "adapters": "css-custom-props@0.5.0 + tailwind-jsx@0.4.0 + css-rule-bodies@0.2.0",
+      "totalValues": 3759,
+      "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0",
       "configHash": "3c93c488",
       "date": "2026-09-29",
       "coverage": {
+        "excludedKeywords": {
+          "count": 230,
+          "samples": [
+            "transparent",
+            "none",
+            "inherit",
+            "auto"
+          ]
+        },
         "unreadFormats": {
           ".html": 187,
           ".svelte": 4
         },
         "partialReads": [
           {
-            "adapter": "css-custom-props@0.5.0",
+            "adapter": "css-custom-props@0.6.0",
             "extensions": [
               ".css"
             ],
             "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
           },
           {
-            "adapter": "tailwind-jsx@0.4.0",
+            "adapter": "tailwind-jsx@0.5.0",
             "extensions": [
               ".jsx",
               ".tsx",
@@ -550,7 +629,7 @@
             "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
           },
           {
-            "adapter": "css-rule-bodies@0.2.0",
+            "adapter": "css-rule-bodies@0.3.0",
             "extensions": [
               ".css"
             ],
@@ -579,6 +658,224 @@
           "samples": [
             "all var(--ifm-transition-fast)\n    var(--ifm-transition-timing-default)",
             "border var(--ifm-transition-fast) ease"
+          ]
+        },
+        "complete": false
+      }
+    },
+    {
+      "name": "excalidraw/excalidraw",
+      "url": "https://github.com/excalidraw/excalidraw.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": ".",
+      "sha": "5a406e51875157bece389b9bc92d41ff241d5f3d",
+      "adapters": "css-rule-bodies@0.3.0 + scss@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "ratios": {
+        "style-tokenization-color": 0.846,
+        "style-tokenization-spacing": 0.022,
+        "style-tokenization-typography": 0.042,
+        "style-tokenization-radius": 0.447,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": null,
+        "style-tokenization-duration": null
+      },
+      "occurrences": {
+        "style-tokenization-color": 436,
+        "style-tokenization-spacing": 541,
+        "style-tokenization-typography": 283,
+        "style-tokenization-radius": 150,
+        "style-tokenization-shadow": 55,
+        "style-tokenization-z-index": 55,
+        "style-tokenization-duration": 40
+      },
+      "totalValues": 2376,
+      "coverage": {
+        "excludedKeywords": {
+          "count": 164,
+          "samples": [
+            "transparent",
+            "none",
+            "sans-serif",
+            "auto"
+          ]
+        },
+        "unreadFormats": {
+          ".html": 2
+        },
+        "partialReads": [
+          {
+            "adapter": "css-rule-bodies@0.3.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          },
+          {
+            "adapter": "scss@0.2.0",
+            "extensions": [
+              ".scss",
+              ".sass"
+            ],
+            "reads": ".scss and indented .sass variables, CSS custom properties, selected nested rule properties and map.get references; @use/@forward recorded, not resolved — no Sass evaluation, interpolation, mixin/function expansion or CSS-in-JS"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 0,
+          "samples": []
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedDeclarations": {
+          "count": 43,
+          "samples": [
+            "0 0 0 1px rgba(0, 0, 0, 0.08)",
+            "env(safe-area-inset-bottom)",
+            "env(safe-area-inset-left)",
+            "env(safe-area-inset-right)"
+          ]
+        },
+        "unclassifiedStyles": {
+          "count": 181,
+          "samples": [
+            "\"../../packages/excalidraw/css/variables.module.scss\"",
+            "\"../packages/excalidraw/css/variables.module.scss\"",
+            "isMobile",
+            "transform var(--zen-mode-transition-duration) ease-in-out"
+          ]
+        },
+        "complete": false
+      }
+    },
+    {
+      "name": "PostHog/posthog",
+      "url": "https://github.com/PostHog/posthog.git",
+      "set": "products",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "scanPath": "frontend",
+      "sha": "d6225edecf52e800edb6ff846bd966ae9ed8f92a",
+      "ratios": {
+        "style-tokenization-color": 0.817,
+        "style-tokenization-spacing": 0.04,
+        "style-tokenization-typography": 0.058,
+        "style-tokenization-radius": 0.431,
+        "style-tokenization-shadow": null,
+        "style-tokenization-z-index": 0.322,
+        "style-tokenization-duration": 0.006
+      },
+      "occurrences": {
+        "style-tokenization-color": 885,
+        "style-tokenization-spacing": 894,
+        "style-tokenization-typography": 514,
+        "style-tokenization-radius": 297,
+        "style-tokenization-shadow": 59,
+        "style-tokenization-z-index": 115,
+        "style-tokenization-duration": 163
+      },
+      "totalValues": 5546,
+      "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0 + token-json@0.2.0 + scss@0.2.0",
+      "configHash": "3c93c488",
+      "date": "2026-09-29",
+      "coverage": {
+        "excludedKeywords": {
+          "count": 389,
+          "samples": [
+            "none",
+            "transparent",
+            "auto",
+            "inherit"
+          ]
+        },
+        "unreadFormats": {
+          ".html": 4
+        },
+        "partialReads": [
+          {
+            "adapter": "css-custom-props@0.6.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "custom-property declarations (--token: value) — not rule bodies, not at-rules"
+          },
+          {
+            "adapter": "tailwind-jsx@0.5.0",
+            "extensions": [
+              ".jsx",
+              ".tsx",
+              ".js",
+              ".ts",
+              ".mjs"
+            ],
+            "reads": "Tailwind arbitrary values and stock-palette colour utilities inside string literals — not inline style objects, not CSS-in-JS"
+          },
+          {
+            "adapter": "css-rule-bodies@0.3.0",
+            "extensions": [
+              ".css"
+            ],
+            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
+          },
+          {
+            "adapter": "token-json@0.2.0",
+            "extensions": [
+              ".json"
+            ],
+            "reads": "DTCG $value/$type and Style Dictionary value/type declarations in .json, inherited types and aliases — no theme merging, $extends or composite evaluation; unresolved/cyclic aliases remain ambiguous"
+          },
+          {
+            "adapter": "scss@0.2.0",
+            "extensions": [
+              ".scss",
+              ".sass"
+            ],
+            "reads": ".scss and indented .sass variables, CSS custom properties, selected nested rule properties and map.get references; @use/@forward recorded, not resolved — no Sass evaluation, interpolation, mixin/function expansion or CSS-in-JS"
+          }
+        ],
+        "unreadTokenFiles": [],
+        "unconvertible": {
+          "count": 0,
+          "samples": []
+        },
+        "undecided": {
+          "count": 12,
+          "samples": [
+            "rgb(190 190 190 / 20%)",
+            "rgb(129 129 129 / 24%)",
+            "rgb(219 55 7 / 10%)",
+            "rgb(247 165 1 / 10%)"
+          ]
+        },
+        "couldNotJudge": [
+          "token/tier-model-undetectable",
+          "token/raw-value-in-style"
+        ],
+        "unclassifiedDeclarations": {
+          "count": 181,
+          "samples": [
+            "{\n                    \"$ref\": \"#/definitions/PropertyFilterValue\"\n                }",
+            "{\n                    \"type\": \"number\"\n                }",
+            "{\n                    \"description\": \"Only use property values from the plan. Always use strings as values. If you have a number, convert it to a string first. If you have a boolean, convert it to a string \\\"true\\\" or \\\"false\\\".\",\n                    \"items\": {\n                        \"type\": \"string\"\n                    },\n                    \"type\": \"array\"\n                }",
+            "{\n                    \"$ref\": \"#/definitions/InlineBehavioralType\"\n                }"
+          ]
+        },
+        "unclassifiedStyles": {
+          "count": 98,
+          "samples": [
+            "'../styles/mixins'",
+            "'../styles/global'",
+            "screen($md)",
+            "'../../styles/vars'"
           ]
         },
         "complete": false
@@ -637,46 +934,6 @@
   ],
   "candidateStatus": "Unmeasured shortlist. Licences and scan scopes are provisional until a pinned checkout is inspected. Candidates never contribute to comparisons.",
   "unmeasurable": [
-    {
-      "name": "excalidraw/excalidraw",
-      "url": "https://github.com/excalidraw/excalidraw.git",
-      "set": "products",
-      "license": "MIT",
-      "licenseFile": "LICENSE",
-      "scanPath": ".",
-      "sha": "5a406e51875157bece389b9bc92d41ff241d5f3d",
-      "reason": "Styles with SCSS, which no adapter reads.",
-      "adapters": "css-rule-bodies@0.2.0",
-      "configHash": "3c93c488",
-      "date": "2026-09-29",
-      "coverage": {
-        "unreadFormats": {
-          ".scss": 84,
-          ".html": 2
-        },
-        "partialReads": [
-          {
-            "adapter": "css-rule-bodies@0.2.0",
-            "extensions": [
-              ".css"
-            ],
-            "reads": "selected ordinary CSS properties and var() references, including nested rules — no cascade/import resolution, inline styles, or preprocessor syntax; unsupported expressions remain ambiguous"
-          }
-        ],
-        "unreadTokenFiles": [],
-        "unconvertible": {
-          "count": 0,
-          "samples": []
-        },
-        "undecided": {
-          "count": 0,
-          "samples": []
-        },
-        "couldNotJudge": [],
-        "complete": false
-      },
-      "measurementStatus": "Occurrence recomputation pending: GitHub DNS unavailable. Exclusion reason from the Phase 3b brief; coverage retained from the previous run."
-    },
     {
       "name": "FlowiseAI/Flowise",
       "url": "https://github.com/FlowiseAI/Flowise.git",

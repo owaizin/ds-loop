@@ -4,8 +4,15 @@ import { alphaOf, isUnparsedColorFunction, looksLikeColor } from '../color/conve
 import type { DsOpsConfig } from '../config/schema.ts';
 import { channelReference } from '../core/channel-reference.ts';
 import { filesInScope } from '../core/files.ts';
-import { isLengthLiteral, unitlessNumber } from '../core/literals.ts';
+import {
+  isKeywordValue,
+  isLengthLiteral,
+  keywordExclusions,
+  keywordParts,
+  unitlessNumber,
+} from '../core/literals.ts';
 import type { RawValue, ValueClassification } from '../core/provenance.ts';
+import { classifyStyle } from './css-rule-bodies.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 const ID = 'css-custom-props';
@@ -16,7 +23,7 @@ const ID = 'css-custom-props';
 // a compact block is no longer missed. Verified to change nothing in any corpus
 // fixture (all of them use trailing semicolons), so 0.2.0 numbers stand.
 // 0.5.0: retain unitless numeric declarations for property-specific suggestions.
-const VERSION = '0.5.0';
+const VERSION = '0.6.0';
 const EXTS = ['.css'];
 
 /**
@@ -107,10 +114,13 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
           // channels and unsupported colour expressions from pure references.
           out.push({
             raw: value,
+            ...keywordExclusions(value),
             refs,
             provenance: {
               ...base,
-              classification: channel ?? 'reference',
+              classification: keywordParts(value).excluded.length
+                ? classifyStyle('color', value, refs)
+                : (channel ?? 'reference'),
               reason:
                 channel === 'mixed'
                   ? 'colour expression contains token references and active literal channels'
@@ -122,11 +132,12 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
           continue;
         }
 
-        const { classification, reason } = classify(tokenName, value, taxonomy);
+        const { classification, reason } = classifyDeclaration(tokenName, value, taxonomy);
         if (classification === 'excluded' && reason === 'not a color value') continue;
 
         out.push({
           raw: value,
+          ...keywordExclusions(value),
           provenance: { ...base, classification, reason },
         });
       }
@@ -135,11 +146,17 @@ export function extractWith(source: SourceRef, taxonomy: Taxonomy): RawValue[] {
   return out;
 }
 
-function classify(
+export function classifyDeclaration(
   tokenName: string,
   value: string,
   taxonomy: Taxonomy,
 ): { classification: ValueClassification; reason: string } {
+  if (isKeywordValue(value))
+    return {
+      classification: 'excluded',
+      reason: 'CSS keyword or generic font family; not a tokenizable literal',
+    };
+  value = keywordParts(value).remainder.trim();
   const name = tokenName.toLowerCase();
 
   if (taxonomy.nonColorTokenHints.some((h) => name.includes(h))) {

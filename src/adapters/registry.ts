@@ -2,7 +2,9 @@ import { DEFAULT_CONFIG } from '../config/defaults.ts';
 import type { DsOpsConfig } from '../config/schema.ts';
 import { cssCustomPropsAdapter } from './css-custom-props.ts';
 import { cssRuleBodiesAdapter } from './css-rule-bodies.ts';
+import { scssAdapter } from './scss.ts';
 import { tailwindJsxAdapter } from './tailwind-jsx.ts';
+import { tokenJsonAdapter } from './token-json.ts';
 import type { Adapter, SourceRef } from './types.ts';
 
 /**
@@ -14,7 +16,13 @@ import type { Adapter, SourceRef } from './types.ts';
  * not an audit. Values stay attributable: each one carries its own
  * `adapterId`/`adapterVersion`.
  */
-export const ADAPTERS: Adapter[] = [cssCustomPropsAdapter, tailwindJsxAdapter, cssRuleBodiesAdapter];
+export const ADAPTERS: Adapter[] = [
+  cssCustomPropsAdapter,
+  tailwindJsxAdapter,
+  cssRuleBodiesAdapter,
+  tokenJsonAdapter,
+  scssAdapter,
+];
 
 export function adaptersFor(source: SourceRef, config: DsOpsConfig = DEFAULT_CONFIG): Adapter[] {
   return ADAPTERS.filter((a) => a.detect(source, config));

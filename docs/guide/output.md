@@ -89,8 +89,8 @@ This example contains a Vue template and an SCSS variable. Neither adapter reads
   ✗ not checked — no adapter reads any styling format found here.
 
   scope — what this audit read
-    not read at all: 1× .vue, 1× .scss — no adapter handles these
-    formats present: 1× .vue, 1× .scss
+    not read at all: 1× .vue, 1× .less — no adapter handles these
+    formats present: 1× .vue, 1× .less
 
   This is not a clean result. Nothing was judged.
 ```

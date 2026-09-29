@@ -111,7 +111,7 @@ test('README: the not-checked sample is real output', () => {
   const block = verifiedBlocks().get('audit-not-checked');
   assert.ok(block, 'the audit-not-checked block is missing from README.md');
   const actual = inTemp(
-    { 'theme.scss': '$brand: #1da1f2;\n', 'W.vue': '<template><div/></template>\n' },
+    { 'theme.less': '@brand: #1da1f2;\n', 'W.vue': '<template><div/></template>\n' },
     (dir) => run(['audit', '.'], dir),
   );
   assertBlockIsReal('audit-not-checked', block, actual);

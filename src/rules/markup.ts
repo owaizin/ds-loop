@@ -26,11 +26,15 @@ export const rawValueInMarkupRule: Rule = {
       (v) =>
         v.provenance.tokenName === null &&
         v.provenance.surface === 'markup' &&
-        (v.provenance.classification === 'color' || v.provenance.classification === 'dimension'),
+        (v.provenance.classification === 'color' ||
+          v.provenance.classification === 'dimension' ||
+          v.provenance.classification === 'mixed'),
     );
     if (offenders.length === 0) return [];
 
-    const colors = offenders.filter((v) => v.provenance.classification === 'color');
+    const colors = offenders.filter(
+      (v) => v.provenance.classification === 'color' || v.provenance.category === 'color',
+    );
     const dims = offenders.length - colors.length;
     const distinct = new Set(offenders.map((v) => v.raw.toLowerCase())).size;
 

@@ -1,0 +1,14 @@
+{
+  "label": "@fontsource/inter public package subset",
+  "upstream": "https://github.com/fontsource/font-files",
+  "fixtureSha": "npm:@fontsource/inter@5.3.0",
+  "retrievedAt": "2026-09-29",
+  "path": "scss",
+  "shippedPrimitiveCount": null,
+  "fileSha256": {
+    "scss/metadata.scss": "d377a354c14dea1f70e8ffe8ed5aa1044705b41c5b5a567837189f5498aa745d",
+    "scss/mixins.scss": "7c978d8fa8d971fc220363b404ba9e9087e0d5dd4614c29d645285c5150ad867"
+  },
+  "license": "OFL-1.1",
+  "notes": "Copied unchanged from an installed public npm package. Package version and individual file SHA-256 digests pin these bytes; upstream Git SHA could not be verified because GitHub DNS failed. This supplemental fixture does not satisfy the two-public-repository precision gate."
+}

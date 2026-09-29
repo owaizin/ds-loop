@@ -43,6 +43,9 @@ export type Coverage = {
   unclassifiedStyles?: { count: number; samples: string[] };
   /** rules that returned nothing because they could not judge, not because it was clean */
   couldNotJudge: string[];
+  /** Recognised keyword components, including those in mixed declarations. */
+  excludedKeywords?: { count: number; samples: string[] };
+  unclassifiedDeclarations?: { count: number; samples: string[] };
   /**
    * True only when an adapter actually read something AND nothing was unread,
    * unconvertible, or unjudged. With no adapter there is no coverage to be complete
@@ -95,15 +98,31 @@ export function buildCoverage(
   // a file called tokens.json is a design-token source; package.json is not
   const tokenFiles = listFiles(root, ['.json', '.yaml', '.yml', '.json5'])
     .filter((f) => TOKEN_FILE.test(basename(f)))
+    .filter(
+      (f) =>
+        !adapters.some(
+          (a) =>
+            a.extensions.includes('.json') &&
+            a.detect({ root: f, label: 'coverage', fixtureSha: 'coverage' }),
+        ),
+    )
     .map((f) => relative(root, f) || f);
 
   const ambiguous = values.filter((v) => v.provenance.classification === 'ambiguous');
-  const cannotConvert = ambiguous.filter((v) => isUnparsedColorFunction(v.raw));
+  const unconvertible = (v: RawValue) =>
+    isUnparsedColorFunction(v.raw) || v.provenance.reason === 'declared colour this version cannot convert';
+  const cannotConvert = ambiguous.filter(unconvertible);
+  const declarations = ambiguous.filter(
+    (v) =>
+      v.provenance.tokenName !== null &&
+      !unconvertible(v) &&
+      /alias|composite|not evaluated|unsupported/.test(v.provenance.reason),
+  );
   const roleUndecided = ambiguous.filter(
-    (v) => v.provenance.surface !== 'style' && !isUnparsedColorFunction(v.raw),
+    (v) => v.provenance.surface !== 'style' && !unconvertible(v) && !declarations.includes(v),
   );
   const unclassifiedStyles = ambiguous.filter(
-    (v) => v.provenance.surface === 'style' && !isUnparsedColorFunction(v.raw),
+    (v) => v.provenance.surface === 'style' && !unconvertible(v) && !declarations.includes(v),
   );
   const sample = (vs: typeof ambiguous) => [...new Set(vs.map((v) => v.raw))].slice(0, 4);
 
@@ -113,7 +132,16 @@ export function buildCoverage(
     ...new Set([...firedRuleIds.filter((id) => id.endsWith('-undetectable')), ...unjudgedRuleIds]),
   ];
 
+  const keywords = values.flatMap((v) => v.excludedKeywords ?? []);
   return {
+    ...(keywords.length
+      ? {
+          excludedKeywords: {
+            count: keywords.length,
+            samples: [...new Set(keywords.map((k) => k.raw))].slice(0, 4),
+          },
+        }
+      : {}),
     unreadFormats,
     partialReads: adapters.map((a) => ({
       adapter: `${a.id}@${a.version}`,
@@ -124,6 +152,9 @@ export function buildCoverage(
     unconvertible: { count: cannotConvert.length, samples: sample(cannotConvert) },
     undecided: { count: roleUndecided.length, samples: sample(roleUndecided) },
     couldNotJudge,
+    ...(declarations.length
+      ? { unclassifiedDeclarations: { count: declarations.length, samples: sample(declarations) } }
+      : {}),
     ...(unclassifiedStyles.length
       ? { unclassifiedStyles: { count: unclassifiedStyles.length, samples: sample(unclassifiedStyles) } }
       : {}),
@@ -134,6 +165,7 @@ export function buildCoverage(
       Object.keys(unreadFormats).length === 0 &&
       tokenFiles.length === 0 &&
       cannotConvert.length === 0 &&
+      declarations.length === 0 &&
       unclassifiedStyles.length === 0 &&
       couldNotJudge.length === 0,
   };
@@ -159,7 +191,16 @@ export function formatCoverage(c: Coverage): string[] {
     lines.push(
       `    ${c.unreadTokenFiles.length} design-token file(s) not read: ${c.unreadTokenFiles.slice(0, 3).join(', ')}`,
     );
-    lines.push('      a tokens-studio-json adapter would read these; none exists yet');
+    lines.push(
+      '      unsupported or malformed token data; token-json reads DTCG and Style Dictionary JSON shapes',
+    );
+  }
+
+  if (c.excludedKeywords?.count) {
+    lines.push(
+      `    ${c.excludedKeywords.count} CSS keyword/generic font component(s) recognised and excluded: ${c.excludedKeywords.samples.join(', ')}`,
+    );
+    lines.push('      not tokenizable literals; excluded from tokenization denominators');
   }
 
   if (c.unconvertible.count > 0) {
@@ -167,6 +208,13 @@ export function formatCoverage(c: Coverage): string[] {
       `    ${c.unconvertible.count} colour value(s) this version cannot convert: ${c.unconvertible.samples.join(', ')}`,
     );
     lines.push('      excluded from every colour rule — a gap in the engine, not in your code');
+  }
+
+  if (c.unclassifiedDeclarations?.count) {
+    lines.push(
+      `    ${c.unclassifiedDeclarations.count} token declaration(s) unclassified: ${c.unclassifiedDeclarations.samples.join(', ')}`,
+    );
+    lines.push('      unresolved aliases or unsupported values; inspect source and adapter limits');
   }
 
   if (c.undecided.count > 0) {
