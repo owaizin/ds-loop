@@ -40,7 +40,7 @@ function isOurs(h: HookEntry): boolean {
   return h.command.includes('ds-loop-guard.mjs');
 }
 
-export function guard(action: 'on' | 'off' | 'status'): void {
+export function guard(action: 'on' | 'off' | 'status', opts: { dryRun?: boolean } = {}): void {
   const p = settingsPath();
   const settings = readSettings();
   const postToolUse = settings.hooks?.PostToolUse ?? [];
@@ -70,7 +70,7 @@ export function guard(action: 'on' | 'off' | 'status'): void {
     // an empty `"PostToolUse": []` left behind is noise in someone's settings
     const { PostToolUse: _removed, ...otherEvents } = settings.hooks ?? {};
     settings.hooks = cleaned.length > 0 ? { ...otherEvents, PostToolUse: cleaned } : otherEvents;
-    write(settings);
+    write(settings, opts.dryRun);
     console.log('  ds-loop guard: removed. Other hooks left in place.');
     return;
   }
@@ -82,9 +82,9 @@ export function guard(action: 'on' | 'off' | 'status'): void {
   }
   const entry: Matcher = { matcher: MATCHER, hooks: [{ type: 'command', command: HOOK_COMMAND }] };
   settings.hooks = { ...settings.hooks, PostToolUse: [...postToolUse, entry] };
-  write(settings);
+  write(settings, opts.dryRun);
   console.log(`\n  ${chip('ds-loop guard')}`);
-  say(railStep('Hook installed', p));
+  say(railStep(opts.dryRun ? 'Hook would be installed' : 'Hook installed', p));
   say(
     railStep(
       'Reports high-severity findings after an Edit/Write to a .css / .jsx / .tsx file',
@@ -95,7 +95,11 @@ export function guard(action: 'on' | 'off' | 'status'): void {
   console.log(`  ${rail.close()}\n`);
 }
 
-function write(settings: Settings): void {
+function write(settings: Settings, dryRun = false): void {
+  if (dryRun) {
+    console.log(`  ${settingsPath()}: would write\n${JSON.stringify(settings, null, 2)}\n`);
+    return;
+  }
   const dir = join(process.cwd(), '.claude');
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(settingsPath(), `${JSON.stringify(settings, null, 2)}\n`);

@@ -10,6 +10,7 @@ import { decide } from './commands/decide.ts';
 import { fix } from './commands/fix.ts';
 import { guard } from './commands/guard.ts';
 import { impact } from './commands/impact.ts';
+import { install } from './commands/install.ts';
 import { overview } from './commands/overview.ts';
 import { report } from './commands/report.ts';
 import { scan } from './commands/scan.ts';
@@ -48,6 +49,10 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
 
   Start here:  ds-loop            read this directory, save a first report, and name the next step
                ds-loop start      the same, spelled out
+
+  ds-loop install [--agent claude|cursor|codex|all] [--dry-run] [--guard]
+      Detect agents and append a companion skill reference to their project instructions.
+      Preview exact blocks with --dry-run; --guard opts into Claude post-edit feedback.
 
   Orient yourself
 
@@ -138,6 +143,19 @@ function main(argv: string[]): void {
         throw new Error(`fix does not support ${arg}; run ds-loop fix --help`);
       }
     }
+  }
+  if (cmd === 'install') {
+    for (let i = 0; i < rest.length; i++) {
+      const arg = rest[i];
+      if (arg === '--agent') {
+        if (!rest[i + 1] || rest[i + 1].startsWith('-')) throw new Error('--agent needs a value');
+        i++;
+      } else if (arg !== '--dry-run' && arg !== '--guard') {
+        throw new Error(`install does not support ${arg}; run ds-loop install --help`);
+      }
+    }
+    install({ agent: flag(rest, 'agent'), dryRun: has(rest, 'dry-run'), guard: has(rest, 'guard') });
+    return;
   }
   const loaded = loadConfig(flag(rest, 'config'));
   const { config } = loaded;

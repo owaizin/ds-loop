@@ -223,6 +223,36 @@ try {
     assert(r.stdout.includes('npx --no-install ds-loop'), 'no local command guidance');
   });
 
+  check('installed wiring previews, appends and stays byte-identical on a second run', () => {
+    const probe = join(dir, 'install-probe');
+    mkdirSync(join(probe, '.claude'), { recursive: true });
+    try {
+      const preview = run(['install', '--dry-run'], probe);
+      assert(preview.status === 0, preview.stderr);
+      assert(preview.stdout.includes('CLAUDE.md: would write'), 'preview omitted destination');
+      assert(!existsSync(join(probe, 'CLAUDE.md')), 'dry-run wrote instructions');
+      const first = run(['install'], probe);
+      assert(first.status === 0, first.stderr);
+      const content = readFileSync(join(probe, 'CLAUDE.md'), 'utf8');
+      assert(preview.stdout.includes(content.trim()), 'preview differs from installed block');
+      // A relative path, and never this machine's. The block is committed and shared,
+      // so an absolute checkout path is valid for whoever ran `install` and broken for
+      // every teammate who pulls it. Terminal output may print an absolute path — that
+      // is read once, on the machine it names. A file the team keeps may not.
+      assert(
+        content.includes('`node_modules/ds-loop/skill/SKILL.md`'),
+        'skill path is not the relative installed path',
+      );
+      assert(!content.includes(dir), 'a machine-local absolute path was written into CLAUDE.md');
+      assert(content.includes('`npx ds-loop`'), 'first command missing');
+      assert(run(['install'], probe).status === 0, 'second install failed');
+      assert(readFileSync(join(probe, 'CLAUDE.md'), 'utf8') === content, 'second install changed bytes');
+      assert(!existsSync(join(probe, '.claude', 'settings.json')), 'guard was installed without consent');
+    } finally {
+      rmSync(probe, { recursive: true, force: true });
+    }
+  });
+
   check('tar listing includes plugin, playbooks, roles, practices and benchmarks', () => {
     const entries = execFileSync('tar', ['-tzf', join(dir, tgz)], { encoding: 'utf8' }).split('\n');
     for (const file of [

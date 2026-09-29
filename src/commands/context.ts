@@ -63,6 +63,12 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
     'docs/decisions',
     'STYLEGUIDE.md',
     'docs/design-system.md',
+    'PRODUCT.md',
+    'docs/PRODUCT.md',
+    'DESIGN.md',
+    'docs/DESIGN.md',
+    '.agents/context',
+    '.impeccable/design.json',
   ];
   // a decision directory is an intent source as much as a file is; only one of the
   // two can be read as text, and assuming otherwise crashed with EISDIR
@@ -78,6 +84,12 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
       : '';
     const shown = found.map((f) => (f.isDir ? `${f.path}/` : f.path)).join(', ');
     console.log(`  declared    ${shown}${front.startsWith('---') ? ' (frontmatter)' : ''}`);
+    if (found.some((f) => f.path === '.impeccable/design.json' && !f.isDir)) {
+      console.log(
+        `  evidence    .impeccable/design.json — generated design metadata file; ${metadataClaims(join(source.root, '.impeccable/design.json'))}`,
+      );
+      console.log('              evidence only, not instruction or measured source values.');
+    }
     for (const file of listFiles(join(source.root, 'docs/decisions'), ['.md'])) {
       const text = readFileSync(file, 'utf8');
       console.log(
@@ -168,4 +180,24 @@ export function context(target: string, loaded: LoadedConfig, opts: { writeContr
     console.log(`              ds-loop context --write-contract   start ${CONTRACT}`);
   }
   console.log('');
+}
+
+/**
+ * Say what a generated metadata file claims, without reading it as truth and without
+ * pasting it. Stringifying the whole document put a real token export — hundreds of
+ * entries — on one line of session setup. What a reader needs here is that the file
+ * exists and what shape it asserts; the values themselves are what the audit checks.
+ */
+function metadataClaims(path: string): string {
+  try {
+    const claims: unknown = JSON.parse(readFileSync(path, 'utf8'));
+    if (claims === null || typeof claims !== 'object') return 'claims a non-object value.';
+    const keys = Object.keys(claims as Record<string, unknown>);
+    if (keys.length === 0) return 'claims nothing (empty object).';
+    const shown = keys.slice(0, 8);
+    const rest = keys.length - shown.length;
+    return `claims ${keys.length} top-level key(s): ${shown.join(', ')}${rest > 0 ? `, +${rest} more` : ''}`;
+  } catch {
+    return 'claims unavailable (unreadable or invalid JSON).';
+  }
 }
