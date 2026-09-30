@@ -20,6 +20,35 @@ export type FileImports = {
 };
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.mts', '.cts', '.css', '.scss', '.json'];
 const script = /\.[cm]?[jt]sx?$/;
+const style = /\.(?:css|scss|sass|less)$/;
+
+/**
+ * `@import`, `@use` and `@forward` in a stylesheet. Without these a stylesheet could
+ * only ever be reached from JavaScript, so every sheet a sheet pulls in read as having
+ * no importer — and most findings in this tool live in stylesheets. Excalidraw is the
+ * case: `variables.module.scss` is `@use`d by `theme.scss` and nothing else.
+ */
+function styleImports(text: string): { specifier: string; line: number }[] {
+  const out: { specifier: string; line: number }[] = [];
+  const lines = text.split(/\r?\n/);
+  for (const [index, line] of lines.entries()) {
+    for (const m of line.matchAll(/@(?:import|use|forward)\s+(?:url\()?['"]([^'"]+)['"]/g)) {
+      const specifier = m[1];
+      if (specifier && !/^(?:https?:)?\/\//.test(specifier)) out.push({ specifier, line: index + 1 });
+    }
+  }
+  return out;
+}
+
+/**
+ * Sass resolves `foo` to `_foo.scss`, and a partial is written with the underscore it
+ * is imported without.
+ */
+function styleCandidates(path: string): string[] {
+  const dir = dirname(path);
+  const name = path.slice(dir.length + 1);
+  return [path, join(dir, `_${name}`)];
+}
 
 type Settings = { base: string; paths: Record<string, string[]>; incomplete: boolean };
 
@@ -47,11 +76,20 @@ export function analyseFileImports(target: string, extraFiles: string[] = []): F
   target = resolve(target);
   const single = statSync(target).isFile();
   const root = single ? dirname(target) : target;
-  let incomplete = single;
+  /**
+   * Directory prefixes whose absence claims cannot be established, `''` meaning the
+   * whole tree. Uncertainty used to be one boolean, and one unresolved specifier
+   * anywhere turned every importerless file in the tree unresolved — so across Primer,
+   * Excalidraw and PostHog the label fired on exactly zero files. A monorepo always
+   * has at least one specifier this resolver cannot follow. Uncertainty has to reach
+   * as far as its cause does and no further.
+   */
+  const uncertain = new Set<string>();
+  if (single) uncertain.add('');
   const files = single
     ? [target]
     : listFiles(root, extensions, () => {
-        incomplete = true;
+        uncertain.add('');
       });
   const known = new Set(files.map((f) => resolve(f)));
   const rel = (f: string) => relative(root, f).split('\\').join('/');
@@ -155,14 +193,44 @@ export function analyseFileImports(target: string, extraFiles: string[] = []): F
   }
   for (const file of [...files.map(rel), ...extraFiles])
     result.files[file] = { state: 'no-static-importer', basis: 'No static importer found.', importers: [] };
-  for (const file of files.filter((f) => script.test(f))) {
-    const ctx = context(dirname(file));
-    if (ctx.config?.incomplete) incomplete = true;
+  for (const file of files.filter((f) => style.test(f))) {
     let text: string;
     try {
       text = readFileSync(file, 'utf8');
     } catch {
-      incomplete = true;
+      uncertain.add(rel(dirname(file)));
+      continue;
+    }
+    for (const { specifier, line } of styleImports(text)) {
+      const basis = { file: rel(file), line, specifier };
+      // A bare stylesheet specifier is a package or a build alias; `~` and `@` prefixes
+      // are the common alias spellings. Only a relative one can be resolved here.
+      const relative_ = specifier.startsWith('.');
+      const hit = relative_
+        ? styleCandidates(resolve(dirname(file), specifier))
+            .flatMap((p) => [p, ...['.css', '.scss', '.sass', '.less'].map((e) => p + e)])
+            .find((p) => known.has(p))
+        : undefined;
+      if (hit && hit !== file) result.files[rel(hit)]?.importers.push(basis);
+      else if (!hit)
+        result.unresolved.push({
+          ...basis,
+          reason: relative_
+            ? 'Stylesheet import could not be resolved to a file in this tree.'
+            : 'Stylesheet import uses a package or build alias, which is outside this resolver.',
+        });
+    }
+  }
+  for (const file of files.filter((f) => script.test(f))) {
+    const ctx = context(dirname(file));
+    // A config this resolver could not follow clouds the package it governs, not the
+    // repository: a broken tsconfig under `apps/web` says nothing about `packages/ui`.
+    if (ctx.config?.incomplete) uncertain.add(rel(dirname(file)));
+    let text: string;
+    try {
+      text = readFileSync(file, 'utf8');
+    } catch {
+      uncertain.add(rel(dirname(file)));
       continue;
     }
     for (const occurrence of importSpecifiers(text)) {
@@ -227,15 +295,57 @@ export function analyseFileImports(target: string, extraFiles: string[] = []): F
       }
     }
   }
-  for (const entry of Object.values(result.files)) {
+  /**
+   * What an unresolved specifier could have named. `~/scenes/App` could be
+   * `frontend/src/scenes/App.tsx`; it could not be `packages/ui/Button.css`. Matching
+   * on the specifier's own tail keeps each unresolved import clouding the files it
+   * might plausibly point at, instead of the whole repository.
+   */
+  const clouded = new Set<string>();
+  for (const { specifier } of result.unresolved) {
+    // A workspace package names a directory, so an import of it this resolver could
+    // not follow — a missing root export, an entry it cannot read — could have meant
+    // any file inside that package. Tail matching is too narrow: the specifier
+    // carries the package's name, not its file's.
+    const pkg = workspace.find((w) => specifier === w.name || specifier.startsWith(`${w.name}/`));
+    if (pkg) {
+      for (const file of Object.keys(result.files))
+        if (file === pkg.dir || file.startsWith(`${pkg.dir}/`)) clouded.add(file);
+      continue;
+    }
+    const tail = specifier
+      .replace(/^[~@]?\//, '')
+      .split('/')
+      .filter(Boolean);
+    if (tail.length === 0) continue;
+    const last = tail[tail.length - 1]!.replace(/\.[^.]+$/, '');
+    // A single-segment specifier with no path is a package name — `react`, `semver`,
+    // `axe-core`. Node resolves those from node_modules, never from an arbitrary path
+    // in this tree, so one that is simply undeclared in a package.json clouds nothing.
+    // Treating them as tree-wide uncertainty is what kept the whole repository
+    // unresolved: Primer had ten of them and they flipped all 789 files.
+    if (tail.length === 1 && !specifier.includes('/')) continue;
+    for (const file of Object.keys(result.files)) {
+      const stem = file.replace(/\.[^./]+$/, '');
+      if (stem.endsWith(`/${last}`) || stem === last || stem.endsWith(`/${last}/index`)) clouded.add(file);
+    }
+  }
+  const underUncertainScope = (file: string) =>
+    [...uncertain].some((scope) => scope === '' || file === scope || file.startsWith(`${scope}/`));
+
+  for (const [file, entry] of Object.entries(result.files)) {
     if (entry.importers.length) {
       entry.state = 'reached';
       entry.basis = 'Static importer found in this tree.';
-    } else if (incomplete || result.unresolved.length) {
+    } else if (single) {
       entry.state = 'unresolved';
-      entry.basis = single
-        ? 'Single-file scan: importer tree not checked.'
-        : 'Import resolution is incomplete; absence of an importer cannot be established.';
+      entry.basis = 'Single-file scan: importer tree not checked.';
+    } else if (clouded.has(file)) {
+      entry.state = 'unresolved';
+      entry.basis = 'A static import this resolver could not follow may name this file.';
+    } else if (underUncertainScope(file)) {
+      entry.state = 'unresolved';
+      entry.basis = 'Import resolution is incomplete here; absence of an importer cannot be established.';
     }
   }
   return result;

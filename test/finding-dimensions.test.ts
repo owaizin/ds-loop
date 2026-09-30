@@ -194,3 +194,47 @@ test('a workspace subpath export is not substituted for an absent root export', 
     },
   );
 });
+
+// Uncertainty has to reach as far as its cause does and no further. This was one
+// boolean: any specifier the resolver could not follow turned every importerless file
+// in the tree unresolved, so across Primer, Excalidraw and PostHog the absence label
+// fired on exactly zero files. A monorepo always has at least one such specifier.
+test('an import that cannot be followed clouds what it might name, not the whole tree', () => {
+  project(
+    {
+      'package.json': '{}',
+      'app/main.ts': "import '@theme/Layout';\nimport './used.ts';",
+      'app/used.ts': 'export const a = 1;',
+      'app/Layout.ts': 'export const layout = 1;',
+      'unrelated/orphan.css': '.a{color:#111}',
+    },
+    (root) => {
+      const graph = analyseFileImports(root);
+      assert.equal(graph.files['app/used.ts'].state, 'reached');
+      // `@theme/Layout` could be this file, so its absence cannot be established.
+      assert.equal(graph.files['app/Layout.ts'].state, 'unresolved');
+      // It could not be this one, and a far-away unresolved import must not say so.
+      assert.equal(graph.files['unrelated/orphan.css'].state, 'no-static-importer');
+    },
+  );
+});
+
+// Stylesheets are where most findings in this tool live, and a sheet pulled in by
+// another sheet has no JavaScript importer at all. Excalidraw is the case:
+// `variables.module.scss` is reached only through Sass `@use`.
+test('a stylesheet reached only by @use or @import is reached', () => {
+  project(
+    {
+      'package.json': '{}',
+      'css/_variables.scss': '$brand: #3b5bdb;',
+      'css/theme.scss': "@use './variables';\n",
+      'css/base.css': "@import './theme.css';\n",
+      'css/theme.css': '.a{color:#111}',
+    },
+    (root) => {
+      const graph = analyseFileImports(root);
+      assert.equal(graph.files['css/_variables.scss'].state, 'reached');
+      assert.equal(graph.files['css/theme.css'].state, 'reached');
+    },
+  );
+});
