@@ -239,7 +239,7 @@ ds-loop audit .</code></pre>
 </table>
 </div>
 <p>An importer is an incoming reference, including from a test or story; it does not prove a path from a product entry point. The resolver follows relative paths, <code>tsconfig</code>/<code>jsconfig</code> paths and baseUrl, and workspace source exports. It also handles bounded relative stylesheet <code>@import</code>, <code>@use</code> and <code>@forward</code> references, including Sass partial names.</p>
-<p>Limits: this is not runtime usage or a deletion verdict. Dynamic imports, <code>require</code>, route manifests, globs, build-time copies and consumers outside the tree are not checked. Build-tool aliases and package-based config inheritance are not evaluated. The report still lists CSS <code>@import</code> as outside its signal; bounded stylesheet handling does not establish full CSS import resolution. Resolution gaps can leave affected files without a known importer unresolved, as can a single-file import scan or a finding without complete locations.</p>
+<p>Limits: this is not runtime usage or a deletion verdict. Dynamic imports, <code>require</code>, route manifests, globs, HTML <code>&lt;link&gt;</code> tags, build-time copies and consumers outside the tree are not checked. Build-tool aliases, package stylesheet imports and package-based config inheritance are not evaluated. An import of a declared package never names a local file; undeclared names may be build aliases and stay uncertain. Resolution gaps can leave affected files without a known importer unresolved, as can a single-file import scan or a finding without complete locations.</p>
 <h3>Importer evidence in <code>audit --json</code></h3>
 <div class="table-scroll">
 <table>

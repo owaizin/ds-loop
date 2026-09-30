@@ -156,11 +156,12 @@ It also recognizes bounded relative stylesheet `@import`, `@use` and `@forward`
 references, including Sass partial names.
 
 Limits: this is not runtime usage, product relevance or a deletion verdict. Dynamic
-imports, `require` calls, route manifests, globs, build-time copies and consumers
-outside the scanned tree are not checked. Build-tool aliases and package-based
-configuration inheritance are not evaluated. The report's `fileImports.limits`
-still lists CSS `@import` as outside the signal; the bounded stylesheet handling
-above does not establish full CSS import resolution. Unresolved specifiers or
+imports, `require` calls, route manifests, globs, HTML `<link>` tags, build-time
+copies and consumers outside the scanned tree are not checked. Build-tool aliases,
+package stylesheet imports and package-based configuration inheritance are not
+evaluated. An import of a package declared in any `package.json` in the tree is
+treated as resolving from `node_modules`, never as naming a local file; undeclared
+names, scoped ones included, may be build aliases and stay uncertain. Unresolved specifiers or
 incomplete configuration can leave affected files without a known importer
 `unresolved`. A single-file import scan cannot establish the importer tree, and
 finding groups without complete locations remain unresolved.
