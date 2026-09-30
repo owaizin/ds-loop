@@ -13,9 +13,11 @@
 const f = (n: number) => (Math.round(n * 100) / 100).toString();
 const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 
-/** Film grain. Sits over the artwork at low opacity — the texture the flat gradients lacked. */
-export const grainFilter = (id: string, frequency = 0.9): string =>
-  `<filter id="${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${frequency}" numOctaves="3" seed="7" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer></filter>`;
+/** Film grain, clipped to the artwork's own alpha and blended back over it. A full-bleed
+ * noise rect with an overlay blend lightens the whole frame on a dark page, which reads as
+ * a pasted box rather than texture. */
+export const grainFilter = (id: string, frequency = 0.9, strength = 0.42): string =>
+  `<filter id="${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${frequency}" numOctaves="3" seed="7" stitchTiles="stitch" result="n"/><feColorMatrix in="n" type="saturate" values="0" result="g"/><feComponentTransfer in="g" result="ga"><feFuncA type="linear" slope="${strength}"/></feComponentTransfer><feComposite in="ga" in2="SourceAlpha" operator="in" result="gc"/><feBlend in="gc" in2="SourceGraphic" mode="overlay"/></filter>`;
 
 /** Signed field of a lens: the overlap of two equal circles, which is the petal in the
  * reference marks. Centres sit `e` either side of the middle, so a larger `e` gives a
@@ -59,12 +61,13 @@ export function halftoneComet(id: string, w = 420, h = 520, step = 10.5, maxR = 
 }
 
 /** The hero panel: a hard quarter-disc and a lens cut from a mesh gradient, with a
- * halftone field beside them whose dots grow toward the warm corner. */
+ * halftone field beside them whose dots grow toward the warm corner.
+ * The overlap blend is `--art-blend`: multiply reads on a light page, screen on a dark one. */
 export function meshPanel(id: string, w = 440, h = 550, step = 12, maxR = 5.2): string {
   const field = (x: number, y: number) => {
     const t = (x / w) * 0.62 + (1 - y / h) * 0.58 - 0.34;
     return t * (0.35 + 0.85 * (x / w));
   };
   const grid = dots(w, h, step, maxR, field).filter((d) => d.x > w * 0.42);
-  return `<svg class="art" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><defs><linearGradient id="${id}-a" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${f(w * 0.8)}" y2="${f(h * 0.7)}"><stop offset="0" stop-color="var(--art-cool)"/><stop offset="1" stop-color="var(--art-mid)"/></linearGradient><radialGradient id="${id}-b" gradientUnits="userSpaceOnUse" cx="${f(w * 0.46)}" cy="${f(h * 0.46)}" r="${f(w * 0.62)}"><stop offset="0" stop-color="var(--art-warm)"/><stop offset="1" stop-color="var(--art-mid)"/></radialGradient><linearGradient id="${id}-c" gradientUnits="userSpaceOnUse" x1="${f(w)}" y1="0" x2="${f(w * 0.44)}" y2="${f(h)}"><stop offset="0" stop-color="var(--art-warm)"/><stop offset=".62" stop-color="var(--art-mid)"/><stop offset="1" stop-color="var(--art-cool)"/></linearGradient>${grainFilter(`${id}-n`, 0.75)}</defs><path d="M0 0 H${f(w * 0.42)} A${f(w * 0.42)} ${f(w * 0.42)} 0 0 1 0 ${f(w * 0.42)} Z" fill="url(#${id}-a)" transform="translate(${f(w * 0.06)} ${f(h * 0.05)}) scale(1.55)"/><ellipse cx="${f(w * 0.42)}" cy="${f(h * 0.56)}" rx="${f(w * 0.3)}" ry="${f(h * 0.34)}" transform="rotate(-24 ${f(w * 0.42)} ${f(h * 0.56)})" fill="url(#${id}-b)" style="mix-blend-mode:multiply"/><g>${circles(grid, `url(#${id}-c)`)}</g><rect width="${w}" height="${h}" filter="url(#${id}-n)" opacity=".22" style="mix-blend-mode:overlay"/></svg>`;
+  return `<svg class="art" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><defs><linearGradient id="${id}-a" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${f(w * 0.8)}" y2="${f(h * 0.7)}"><stop offset="0" stop-color="var(--art-cool)"/><stop offset="1" stop-color="var(--art-mid)"/></linearGradient><radialGradient id="${id}-b" gradientUnits="userSpaceOnUse" cx="${f(w * 0.46)}" cy="${f(h * 0.46)}" r="${f(w * 0.62)}"><stop offset="0" stop-color="var(--art-warm)"/><stop offset="1" stop-color="var(--art-mid)"/></radialGradient><linearGradient id="${id}-c" gradientUnits="userSpaceOnUse" x1="${f(w)}" y1="0" x2="${f(w * 0.44)}" y2="${f(h)}"><stop offset="0" stop-color="var(--art-warm)"/><stop offset=".62" stop-color="var(--art-mid)"/><stop offset="1" stop-color="var(--art-cool)"/></linearGradient>${grainFilter(`${id}-n`, 0.75)}</defs><g filter="url(#${id}-n)"><path d="M0 0 H${f(w * 0.42)} A${f(w * 0.42)} ${f(w * 0.42)} 0 0 1 0 ${f(w * 0.42)} Z" fill="url(#${id}-a)" transform="translate(${f(w * -0.2)} ${f(h * -0.16)}) scale(1.78)"/><ellipse cx="${f(w * 0.42)}" cy="${f(h * 0.56)}" rx="${f(w * 0.3)}" ry="${f(h * 0.34)}" transform="rotate(-24 ${f(w * 0.42)} ${f(h * 0.56)})" fill="url(#${id}-b)" style="mix-blend-mode:var(--art-blend,multiply)"/><g>${circles(grid, `url(#${id}-c)`)}</g></g></svg>`;
 }

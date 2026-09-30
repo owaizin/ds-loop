@@ -75,7 +75,7 @@ a,code{overflow-wrap:anywhere}
 .cover-band .cta{margin-top:0;flex-shrink:0}
 .rail-art{display:block;position:relative;margin:auto -14px 0;height:180px;overflow:hidden;flex-shrink:0}
 .rail-art .art{position:absolute;inset:0;width:100%;height:100%;display:block}
-.cover-art{grid-column:2;grid-row:1;position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--accent) 5%,var(--card))}
+.cover-art{grid-column:2;grid-row:1;position:relative;aspect-ratio:4/5;overflow:hidden;--art-blend:screen;background:transparent;border-radius:0;-webkit-mask-image:radial-gradient(84% 76% at 56% 44%,#000 0 50%,rgb(0 0 0/.4) 80%,transparent 100%);mask-image:radial-gradient(84% 76% at 56% 44%,#000 0 50%,rgb(0 0 0/.4) 80%,transparent 100%)}
 .cover-art .art{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cover-eyebrow{display:flex;align-items:center;gap:9px;font:500 14px/1.4 system-ui,sans-serif;color:var(--muted);margin:0 0 22px}
 .cover h1{font-size:clamp(40px,4.9vw,72px);max-width:15ch;margin:0}
@@ -278,8 +278,8 @@ body,:root[data-theme=dark],:root[data-theme=dark] body{color-scheme:dark}
 :root[data-theme=light] .cover-band{margin-left:calc(clamp(24px,4vw,72px)*-1);padding:30px clamp(24px,4vw,72px);border:none;border-radius:0;background:var(--rail-bg);color:var(--rail-ink)}
 :root[data-theme=light] .cover-band .lead{color:var(--rail-ink)}
 @media(prefers-color-scheme:light){:root:not([data-theme=dark]) .cover-band{margin-left:calc(clamp(24px,4vw,72px)*-1);padding:30px clamp(24px,4vw,72px);border:none;border-radius:0;background:var(--rail-bg);color:var(--rail-ink)}:root:not([data-theme=dark]) .cover-band .lead{color:var(--rail-ink)}}
-:root[data-theme=light] .cover-art{border-radius:0}
-@media(prefers-color-scheme:light){:root:not([data-theme=dark]) .cover-art{border-radius:0}}
+:root[data-theme=light] .cover-art{--art-blend:multiply;background:var(--card);-webkit-mask-image:none;mask-image:none}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]) .cover-art{--art-blend:multiply;background:var(--card);-webkit-mask-image:none;mask-image:none}}
 `;
 
 /** Highlights the current section in the sticky nav. Purely additive: plain links work with no JS. */
