@@ -48,3 +48,6 @@ export type { Decision } from './commands/decide.ts';
 export { documentationCoverage } from './rules/docs.ts';
 export type { DocumentationCoverage } from './rules/docs.ts';
 export { adoptionReport } from './core/adoption.ts';
+export { analyseFileImports, FILE_IMPORTS_VERSION } from './core/file-imports.ts';
+export type { FileImports, FileReach } from './core/file-imports.ts';
+export type { FindingDimensions } from './core/finding-dimensions.ts';

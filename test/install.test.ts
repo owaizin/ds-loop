@@ -102,7 +102,11 @@ test('install with no detected agent reports it and writes nothing even with --g
   project((dir) => {
     const r = run(dir, '--guard');
     assert.equal(r.status, 0);
-    assert.match(r.stdout, /No agent detected; nothing written/);
+    assert.match(r.stdout, /No agent detected, so nothing was written/);
+    // A plain repository is the ordinary first run, and the handover now sends people
+    // here — so this case has to end on commands they can run, not on a menu of flags.
+    for (const agent of ['claude', 'cursor', 'codex'])
+      assert.match(r.stdout, new RegExp(`ds-loop install --agent ${agent}\\s+writes \\S+`));
     assert.deepEqual(readdirSync(dir), []);
   }));
 

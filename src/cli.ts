@@ -84,7 +84,7 @@ ds-loop ${pkg.version} — deterministic token checks and post-edit feedback
   ds-loop decide [path] --decision <text> --alternatives <text> --evidence <refs> --owner <name>
       Append a Markdown record in docs/decisions/. Evidence refs are comma-separated.
       Optional: --date YYYY-MM-DD --status accepted|proposed --problem <text>
-      --consequences <text> --reconsider <text> --json
+      --consequences <text> --reconsider <text> --covers <json-array> --json
 
   ds-loop consumers [<path>] [--scope <@org>] [--json] [--html <file>]
       Which workspace package imports which shared package: specifiers, named
@@ -179,6 +179,7 @@ function main(argv: string[]): void {
     '--problem',
     '--consequences',
     '--reconsider',
+    '--covers',
     '--target',
     '--out',
     '--html',
@@ -223,6 +224,7 @@ function main(argv: string[]): void {
         problem: flag(rest, 'problem'),
         consequences: flag(rest, 'consequences'),
         reconsider: flag(rest, 'reconsider'),
+        covers: has(rest, 'covers') ? JSON.parse(required('covers')) : undefined,
       });
       console.log(has(rest, 'json') ? JSON.stringify({ file }) : `Decision recorded: ${file}`);
       break;

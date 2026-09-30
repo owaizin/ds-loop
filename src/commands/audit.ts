@@ -8,8 +8,11 @@ import { gutter, severityTag, wrapTo } from '../core/ansi.ts';
 import { auditSummary } from '../core/audit-summary.ts';
 import { findWorkspace } from '../core/consumers.ts';
 import { type Coverage, buildCoverage, formatCoverage } from '../core/coverage.ts';
+import { type FileImports, analyseFileImports } from '../core/file-imports.ts';
 import { surveyTree } from '../core/files.ts';
+import { annotateFindings, dimensionTotals, formatDimensions } from '../core/finding-dimensions.ts';
 import { type NextAction, auditViewActions, formatNext, nextAfterAudit } from '../core/next.ts';
+import type { RawValue } from '../core/provenance.ts';
 import { reportData } from '../core/report-data.ts';
 import { changedFiles, resolveSource } from '../core/source.ts';
 import { type StyleInventory, styleInventory } from '../core/style-inventory.ts';
@@ -22,6 +25,19 @@ import { rulesForTarget } from '../rules/registry.ts';
 import { type Finding, type RuleTarget, SEVERITY_ORDER, type Severity } from '../rules/types.ts';
 
 export type AuditReport = {
+  fileImports?: FileImports;
+  /** Before recorded exceptions and severity filtering; never removes evidence. */
+  findingEvidence?: Finding[];
+  findingTotals?: {
+    all: number;
+    reached: number;
+    noStaticImporter: number;
+    unresolved: number;
+    basis: string;
+  };
+  reachedStyleInventory?: StyleInventory;
+  /** Null means no reached denominator or a non-file-based ratio. */
+  reachedRatios?: Record<string, number | null>;
   documentation?: DocumentationCoverage;
   tokenArchitecture?: TokenArchitecture;
   manifest: {
@@ -140,11 +156,25 @@ export function audit(
   // this whole tool exists to avoid.
   const suppressions: Suppression[] = [];
   const impactOf = new Map(rules.map((r) => [r.id, r.impact]));
+  // Preserve historical extraction/ratio semantics while retaining hint-covered colors as evidence.
+  const evidenceConfig = { ...config, taxonomy: { ...config.taxonomy, nonColorTokenHints: [] } };
+  const evidenceValues = config.taxonomy.nonColorTokenHints.length
+    ? adapters.flatMap((a) => a.extract(source, evidenceConfig))
+    : values;
+  const evidenceContext = {
+    ...ctx,
+    values: evidenceValues,
+    colors: evidenceValues.filter((v) => v.provenance.classification === 'color'),
+  };
+  const unsuppressed: Finding[] = [];
+  const graph = analyseFileImports(source.root, [...new Set(values.map((v) => v.provenance.file))]);
   const allFindings = rules
     .flatMap((r) => {
       const { values: seen, suppressions: hits } = applyIgnores(r.id, values, config.ignore);
       suppressions.push(...hits);
-      if (seen.length === values.length) return r.run(ctx);
+      const original = r.run(ctx);
+      unsuppressed.push(...(evidenceValues === values ? original : r.run(evidenceContext)));
+      if (seen.length === values.length) return original;
       return r.run({
         ...ctx,
         values: seen,
@@ -154,78 +184,33 @@ export function audit(
     .map((f) => (overrides[f.ruleId] ? { ...f, severity: overrides[f.ruleId]! } : f))
     .map((f) => ({ ...f, impact: f.impact ?? impactOf.get(f.ruleId) }));
 
-  const findings = allFindings
+  const findings = annotateFindings(allFindings, graph, config, source.root)
     .filter((f) => SEVERITY_ORDER[f.severity] <= minRank)
     .sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
 
-  const norm = (raw: string) => raw.replace(/\s+/g, ' ').trim().toLowerCase();
-  const declared = colors.filter((v) => v.provenance.tokenName !== null);
-
-  // Scope-aware duplication. `literal-colors-per-distinct` counts declarations
-  // against distinct values across the whole source, which a themed system
-  // inflates for free: light and dark declare every token once each. On the
-  // calibration corpus that ranked a maintained design system below an
-  // ungoverned SaaS repo. Counting within a selector scope removes the theme
-  // count and leaves the signal the ratio was meant to carry: one value re-typed
-  // under several names in the same scope.
-  const byScope = new Map<string, string[]>();
-  for (const v of declared) {
-    const key = `${v.provenance.file}::${v.provenance.selector ?? '(none)'}`;
-    const list = byScope.get(key) ?? [];
-    list.push(norm(v.raw));
-    byScope.set(key, list);
-  }
-  let scopedDecls = 0;
-  let scopedDistinct = 0;
-  for (const list of byScope.values()) {
-    scopedDecls += list.length;
-    scopedDistinct += new Set(list).size;
-  }
-
-  // Declarations only. Early calibration rows were measured before a markup adapter existed,
-  // so this ratio was declarations-only by construction. Once `tailwind-jsx`
-  // shipped, the same name silently began counting use-site literals too, which
-  // moved one corpus source's figure by more than an order of magnitude. That is
-  // a different quantity under an unchanged name, the one thing a calibration
-  // metric may never do. Use-site volume is reported by
-  // `token/raw-value-in-markup`.
-  const distinctDeclared = new Set(declared.map((v) => norm(v.raw))).size;
-
   const inventory = styleInventory(values);
-  const ratios: Record<string, number> = {
-    // theme-confounded; kept because the calibration corpus quotes it. See row 007.
-    'literal-colors-per-distinct': round(declared.length / Math.max(distinctDeclared, 1)),
-    // theme-independent: the same measurement taken within each selector scope
-    'colors-per-distinct-in-scope': round(scopedDecls / Math.max(scopedDistinct, 1)),
-    'ambiguous-share': round(
-      values.filter((v) => v.provenance.classification === 'ambiguous').length / Math.max(values.length, 1),
-    ),
-    // `findings-per-rule` was retired: its denominator is the size of the rule
-    // set, so it moved from 0.714 to 0.455 across the corpus when rules were
-    // added and nothing about any source changed. It described the tool.
-  };
-
-  for (const [category, row] of Object.entries(inventory)) {
-    if (row.tokenizationRatio !== null)
-      ratios[`style-tokenization-${category}`] = round(row.tokenizationRatio);
+  const ratios = sourceRatios(values, source.root);
+  const reachedValues = values.filter((v) => graph.files[v.provenance.file]?.state === 'reached');
+  if (reachedValues.length) {
+    for (const [key, value] of Object.entries(sourceRatios(reachedValues, source.root))) {
+      if (
+        ['literal-colors-per-distinct', 'colors-per-distinct-in-scope'].includes(key) &&
+        !reachedValues.some((v) => v.provenance.classification === 'color' && v.provenance.tokenName !== null)
+      )
+        continue;
+      ratios[`${key}:reached`] = value;
+    }
   }
-
-  const workspace = findWorkspace(source.root).packages;
-  for (const pkg of workspace) {
-    const prefix = `${pkg.dir}/`;
-    const inventory = styleInventory(
-      values.filter(
-        (v) =>
-          v.provenance.file.startsWith(prefix) &&
-          !workspace.some(
-            (p) => p !== pkg && p.dir.startsWith(prefix) && v.provenance.file.startsWith(`${p.dir}/`),
-          ),
-      ),
-    );
-    for (const [category, row] of Object.entries(inventory))
-      if (row.tokenizationRatio !== null)
-        ratios[`style-tokenization-${category}:${pkg.name}`] = round(row.tokenizationRatio);
-  }
+  const findingEvidence = annotateFindings(
+    unsuppressed.map((f) => ({
+      ...f,
+      severity: overrides[f.ruleId] ?? f.severity,
+      impact: f.impact ?? impactOf.get(f.ruleId),
+    })),
+    graph,
+    config,
+    source.root,
+  ).map(({ suggestion: _suggestion, ...finding }) => finding);
 
   for (const p of documentation.packages)
     for (const [category, ratio] of Object.entries(p.ratios))
@@ -250,6 +235,15 @@ export function audit(
     coverage.complete = false;
   }
   const report: AuditReport = {
+    fileImports: graph,
+    findingEvidence,
+    findingTotals: dimensionTotals(findingEvidence),
+    reachedStyleInventory: styleInventory(reachedValues),
+    reachedRatios: Object.fromEntries(
+      Object.keys(ratios)
+        .filter((key) => !key.endsWith(':reached'))
+        .map((key) => [key, ratios[`${key}:reached`] ?? null]),
+    ),
     documentation,
     manifest: {
       tool: 'ds-loop',
@@ -286,7 +280,17 @@ export function audit(
   if (!suppressed) {
     if (opts.json) console.log(JSON.stringify(reportData(report), null, 2));
     else if (opts.all) printReport(report, { live });
-    else console.log(auditSummary(report, targetPath).join('\n'));
+    else {
+      const lines = auditSummary(report, targetPath);
+      const next = lines.findIndex((line) => line.trim() === 'next');
+      lines.splice(
+        next < 0 ? lines.length : Math.max(0, next - 1),
+        0,
+        ...formatDimensions(report.findingEvidence ?? []),
+        '',
+      );
+      console.log(lines.join('\n'));
+    }
   }
 
   writeReport(report, meta, opts.outDir);
@@ -415,6 +419,7 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
       for (const line of body('fix:', f.fix)) console.log(line);
       if (f.suggestion)
         for (const line of body('suggest:', formatSuggestion(f.suggestion))) console.log(line);
+      for (const line of formatDimensions([f]).slice(1)) console.log(line);
       console.log('');
     }
     const bySev = r.findings.reduce<Record<string, number>>((acc, f) => {
@@ -470,8 +475,13 @@ function printReport(r: AuditReport, opts: { live: boolean } = { live: false }):
   // thing on screen — where a first-time reader has nothing to compare them to.
   // They stay; the handover goes last.
   console.log('\n  scorecard ratios  (a baseline for the next run, not a grade)');
-  for (const [k, v] of Object.entries(r.ratios)) console.log(`    ${k.padEnd(28)} ${v}`);
+  for (const [k, v] of Object.entries(r.ratios)) {
+    if (k.endsWith(':reached')) continue;
+    console.log(`    ${k.padEnd(28)} ${v} · reached ${r.reachedRatios?.[k] ?? 'not measured'}`);
+  }
 
+  for (const line of formatDimensions(r.findingEvidence ?? [])) console.log(line);
+  for (const limit of r.fileImports?.limits ?? []) console.log(`    ${limit}`);
   const next = formatNext(r.next);
   if (next.length > 0) {
     console.log('');
@@ -489,3 +499,77 @@ function writeReport(report: AuditReport, meta: { label: string }, outDir: strin
 }
 
 const round = (n: number) => Math.round(n * 1000) / 1000;
+
+function sourceRatios(values: RawValue[], root: string): Record<string, number> {
+  const colors = values.filter((v) => v.provenance.classification === 'color');
+  const norm = (raw: string) => raw.replace(/\s+/g, ' ').trim().toLowerCase();
+  const declared = colors.filter((v) => v.provenance.tokenName !== null);
+
+  // Scope-aware duplication. `literal-colors-per-distinct` counts declarations
+  // against distinct values across the whole source, which a themed system
+  // inflates for free: light and dark declare every token once each. On the
+  // calibration corpus that ranked a maintained design system below an
+  // ungoverned SaaS repo. Counting within a selector scope removes the theme
+  // count and leaves the signal the ratio was meant to carry: one value re-typed
+  // under several names in the same scope.
+  const byScope = new Map<string, string[]>();
+  for (const v of declared) {
+    const key = `${v.provenance.file}::${v.provenance.selector ?? '(none)'}`;
+    const list = byScope.get(key) ?? [];
+    list.push(norm(v.raw));
+    byScope.set(key, list);
+  }
+  let scopedDecls = 0;
+  let scopedDistinct = 0;
+  for (const list of byScope.values()) {
+    scopedDecls += list.length;
+    scopedDistinct += new Set(list).size;
+  }
+
+  // Declarations only. Early calibration rows were measured before a markup adapter existed,
+  // so this ratio was declarations-only by construction. Once `tailwind-jsx`
+  // shipped, the same name silently began counting use-site literals too, which
+  // moved one corpus source's figure by more than an order of magnitude. That is
+  // a different quantity under an unchanged name, the one thing a calibration
+  // metric may never do. Use-site volume is reported by
+  // `token/raw-value-in-markup`.
+  const distinctDeclared = new Set(declared.map((v) => norm(v.raw))).size;
+
+  const inventory = styleInventory(values);
+  const ratios: Record<string, number> = {
+    // theme-confounded; kept because the calibration corpus quotes it. See row 007.
+    'literal-colors-per-distinct': round(declared.length / Math.max(distinctDeclared, 1)),
+    // theme-independent: the same measurement taken within each selector scope
+    'colors-per-distinct-in-scope': round(scopedDecls / Math.max(scopedDistinct, 1)),
+    'ambiguous-share': round(
+      values.filter((v) => v.provenance.classification === 'ambiguous').length / Math.max(values.length, 1),
+    ),
+    // `findings-per-rule` was retired: its denominator is the size of the rule
+    // set, so it moved from 0.714 to 0.455 across the corpus when rules were
+    // added and nothing about any source changed. It described the tool.
+  };
+
+  for (const [category, row] of Object.entries(inventory)) {
+    if (row.tokenizationRatio !== null)
+      ratios[`style-tokenization-${category}`] = round(row.tokenizationRatio);
+  }
+
+  const workspace = findWorkspace(root).packages;
+  for (const pkg of workspace) {
+    const prefix = `${pkg.dir}/`;
+    const inventory = styleInventory(
+      values.filter(
+        (v) =>
+          v.provenance.file.startsWith(prefix) &&
+          !workspace.some(
+            (p) => p !== pkg && p.dir.startsWith(prefix) && v.provenance.file.startsWith(`${p.dir}/`),
+          ),
+      ),
+    );
+    for (const [category, row] of Object.entries(inventory))
+      if (row.tokenizationRatio !== null)
+        ratios[`style-tokenization-${category}:${pkg.name}`] = round(row.tokenizationRatio);
+  }
+
+  return ratios;
+}

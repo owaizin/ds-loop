@@ -44,6 +44,7 @@ export const semanticLiteralRule: Rule = {
     const primitives = ctx.colors.filter((v) => isPrimitive(v.provenance.tokenName, ctx.config)).length;
     return [
       {
+        evidence: offenders,
         ruleId: this.id,
         severity: 'high',
         summary: `${offenders.length} semantic token declaration(s) hold a literal colour instead of referencing a primitive${distinctNames < offenders.length ? ` (${distinctNames} distinct token names across ${files} file(s))` : ''}`,

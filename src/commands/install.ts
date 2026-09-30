@@ -69,7 +69,13 @@ export function install(opts: { agent?: string; dryRun?: boolean; guard?: boolea
         ? [opts.agent as Agent]
         : [...new Set(found.map(([agent]) => agent))];
   if (agents.length === 0) {
-    console.log('  No agent detected; nothing written. Select one with --agent claude|cursor|codex|all.');
+    // A plain repository is the ordinary first run, not an error: nobody has a
+    // `.claude/` directory before they have a reason for one. Naming the exact
+    // commands turns the dead end into a choice; guessing an agent and writing
+    // to someone's repository on that guess is the thing this command must not do.
+    console.log('  No agent detected, so nothing was written. Pick the one you use:');
+    for (const [agent, path] of Object.entries(FILES))
+      console.log(`    ds-loop install --agent ${agent.padEnd(6)}   writes ${path}`);
     return;
   }
   console.log(`  Selected agents: ${agents.join(', ')}${opts.agent ? ' (explicit --agent)' : ''}.`);

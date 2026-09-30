@@ -241,3 +241,62 @@ From `CLAUDE.md`, non-negotiable:
 `npm run check && npm run type-check && npm test && npm run build && npm run smoke`, then the thing
 tests cannot do: install into a temp repo, run the first-run path as a stranger, and read the
 output as someone who has never seen the tool.
+
+---
+
+## F. Tell a reader which findings are reachable
+
+Added 2026-09-30, after the Caliper pilot review. It rated coverage clarity 6/10 for one reason:
+"counts included legacy code and domain colors". Imported package CSS was the third cause and is
+fixed. These two are not.
+
+**The problem.** A finding's location says nothing about whether it matters. A literal in a file
+nothing imports, in a directory the team abandoned, or in a chart palette costs a reader exactly the
+same attention as one in the button on the signup page. So the ratio understates a system that is
+actually fine, and the list buries the findings worth acting on. That is the same failure family as
+the benchmark blind spot: a number describing our reach rather than their system.
+
+**Three separate facts, never one "actionable" score.** Collapsing them into a single judgement is
+the trap, because each has a different basis and a different strength of evidence.
+
+1. **Reached** — does any file in this tree statically import the file this finding sits in?
+   Sourced from the import graph `consumers` and `impact` already build.
+2. **Declared intentional** — is there a recorded decision or exception covering it? `suppress.ts`
+   already applies exceptions and `decide` already writes `docs/decisions/`.
+3. **Domain value** — is this a colour whose role is not a design token: a chart series, a brand
+   illustration, a data-visualisation scale? `taxonomy.nonColorTokenHints` already exists and is the
+   right seam.
+
+### The constraint that governs all of it
+
+**Annotate, never remove.** A finding gains a dimension; it never disappears. Every count ships in
+both forms — all findings, and findings in reached files — and a report that shows one shows the
+other beside it.
+
+Two reasons, both already written into this project the hard way. Absence is never a pass, which is
+why `clean`, `issues` and `not-checked` stay distinct. And a severity floor filters findings but
+never coverage, because a tool that can silently drop findings has numbers nobody can audit.
+"Unreachable" would be the first filter in this codebase that removes evidence rather than ranking
+it.
+
+**"No static importer found" is the only claim available.** Never "dead", never "unused", never
+"safe to delete". A file can be reached by a dynamic import, a route manifest, a glob, a CSS
+`@import`, a build-time copy, or a string the bundler resolves. `impact` already carries this
+limit — it reports import locations and makes no deletion-safety claim — and this must carry the
+same one, in the same words.
+
+### Ratios
+
+Add reached-only ratios **beside** the existing ones, never replacing them. Rule ids and ratio keys
+are stable: scorecard rows and the calibration corpus key on them, so replacing a ratio silently
+rewrites history. A row that gains a key is comparable; a row whose key changed meaning is not.
+
+### Acceptance
+
+- A fixture with a literal in a file nothing imports reports that finding, marked, and counted in
+  the unfiltered total.
+- The word "dead", "unused" and "safe to delete" appear nowhere in the output — pinned by a test.
+- A finding covered by a recorded decision names the decision.
+- Existing ratio keys keep their meaning; new keys sit beside them.
+- Measured on a public repo nobody here wrote, with the reached/unreached split read by hand
+  against reality before it is trusted.

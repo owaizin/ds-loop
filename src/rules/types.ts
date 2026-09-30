@@ -12,6 +12,9 @@ export type Severity = 'blocking' | 'high' | 'medium' | 'low';
 export type RuleTarget = 'docs' | 'tokens' | 'color' | 'spacing' | 'typography' | 'elevation' | 'motion';
 
 export type Finding = {
+  /** Complete source values for per-location annotations; absent means location scope unresolved. */
+  evidence?: RawValue[];
+  dimensions?: import('../core/finding-dimensions.ts').FindingDimensions;
   ruleId: string;
   severity: Severity;
   /** one-line statement of the defect */

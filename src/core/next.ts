@@ -26,6 +26,17 @@ export type NextAction = {
   command: string;
   /** why this, now — one line, in the tool's own vocabulary */
   why: string;
+  /**
+   * Wiring, rather than more analysis. The compact summary keeps only these, because
+   * the entrance has room for one instruction and "connect this to your agent" is a
+   * better one than "audit again with a different flag".
+   *
+   * It used to select them by matching the string `ds-loop context`, so every other
+   * setup row was silently dropped from the one view a first-time reader sees —
+   * including `install`, whose entire purpose is to stop that reader retyping the
+   * skill path the same screen had just printed at them.
+   */
+  setup?: true;
 };
 
 export type NextContext = {
@@ -49,6 +60,20 @@ function historyRows(root: string): number {
   }
 }
 
+/**
+ * Has this project been wired to an agent yet? The marker is what `install` writes,
+ * so a project that already has the block is not offered it again — the same rule
+ * the guard row follows.
+ */
+function agentWired(root: string): boolean {
+  for (const file of ['CLAUDE.md', 'AGENTS.md', join('.cursor', 'rules', 'ds-loop.mdc')]) {
+    try {
+      if (readFileSync(join(root, file), 'utf8').includes('<!-- ds-loop:start -->')) return true;
+    } catch {}
+  }
+  return false;
+}
+
 /** is the edit-time hook already installed in this project? */
 function guardInstalled(root: string): boolean {
   const file = join(root, '.claude', 'settings.json');
@@ -69,6 +94,7 @@ export function nextAfterAudit(report: AuditReport, ctx: NextContext): NextActio
     actions.push({
       command: `ds-loop context ${p}`,
       why: 'which formats are here, and which of them any adapter can read',
+      setup: true,
     });
     return actions;
   }
@@ -107,6 +133,17 @@ export function nextAfterAudit(report: AuditReport, ctx: NextContext): NextActio
         ? 'pin these ratios as run 1 — a ratio only says something against a previous row'
         : `compare against ${rows} recorded row(s)`,
   });
+
+  // The entrance printed the skill's absolute path and named no way to act on it,
+  // which is the retyping `install` was built to remove — and `install` appeared
+  // nowhere in the handover, so the one run where it matters never mentioned it.
+  if (!agentWired(ctx.root)) {
+    actions.push({
+      command: 'ds-loop install',
+      why: 'wire your coding agent to the skill, instead of pasting that path yourself',
+      setup: true,
+    });
+  }
 
   if (!guardInstalled(ctx.root)) {
     actions.push({

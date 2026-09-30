@@ -108,12 +108,7 @@ export function auditSummary(
   return [
     ...(compact ? body.filter(Boolean) : body),
     '',
-    ...formatNext(
-      auditViewActions(
-        compact ? report.next.filter((a) => a.command.startsWith('ds-loop context')) : report.next,
-        path,
-      ),
-    ),
+    ...formatNext(auditViewActions(compact ? report.next.filter((a) => a.setup) : report.next, path)),
     '',
   ];
 }

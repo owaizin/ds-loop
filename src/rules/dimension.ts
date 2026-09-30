@@ -31,6 +31,7 @@ export const rawDimensionRule: Rule = {
     if (offenders.length === 0) return [];
     return [
       {
+        evidence: offenders,
         ruleId: this.id,
         severity: 'high',
         summary: `${offenders.length} token(s) hold a raw length / number instead of referencing a primitive`,

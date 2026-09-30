@@ -39,6 +39,10 @@ export type ScorecardRow = {
   ratios: Record<string, number>;
   findings: Record<string, number>;
   findingCount: number;
+  findingEvidenceTotals?: AuditReport['findingTotals'];
+  reachedFindingCount?: number;
+  reachedFindings?: Record<string, number>;
+  fileImportsVersion?: string;
   /** false when the audit could not read part of the source */
   coverageComplete: boolean;
 };
@@ -99,6 +103,14 @@ export function scorecardRow(
       return counts;
     }, {}),
     findingCount: report.findings.length,
+    findingEvidenceTotals: report.findingTotals,
+    fileImportsVersion: report.fileImports?.version,
+    reachedFindingCount: report.findings.filter((f) => (f.dimensions?.occurrences.reached ?? 0) > 0).length,
+    reachedFindings: report.findings.reduce<Record<string, number>>((counts, f) => {
+      if (f.dimensions?.occurrences.reached !== null && f.dimensions?.occurrences.reached !== undefined)
+        counts[f.ruleId] = (counts[f.ruleId] ?? 0) + f.dimensions.occurrences.reached;
+      return counts;
+    }, {}),
     coverageComplete: report.coverage.complete,
   };
 }
@@ -192,7 +204,9 @@ function print(row: ScorecardRow, prev: ScorecardRow | null, path: string, dryRu
   if (!prev) {
     console.log('  first row for this source — nothing to compare against yet.\n');
     for (const k of keys) console.log(`    ${k.padEnd(30)} ${fmt(row.ratios[k])}`);
-    console.log(`\n    ${'findings'.padEnd(30)} ${row.findingCount}`);
+    console.log(
+      `\n    ${'findings'.padEnd(30)} ${row.findingCount} all · ${row.reachedFindingCount ?? 'not recorded'} reached`,
+    );
     console.log('\n  Run it again after the next change. The delta is the point.\n');
     return;
   }
@@ -226,7 +240,9 @@ function print(row: ScorecardRow, prev: ScorecardRow | null, path: string, dryRu
       const a = prev.findings[id] ?? 0;
       const b = row.findings[id] ?? 0;
       if (a === b) continue;
-      console.log(`    ${id.padEnd(44)} ${a} → ${b}  ${arrow(a, b)}`);
+      console.log(
+        `    ${id.padEnd(44)} ${a} → ${b}  ${arrow(a, b)} · all; ${prev.reachedFindings?.[id] ?? 'not recorded'} → ${row.reachedFindings?.[id] ?? 'unresolved'} reached`,
+      );
     }
   }
 

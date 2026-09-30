@@ -2,6 +2,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 export type Decision = {
+  /** Explicit rule/file/value scope; evidence links alone do not declare permission. */
+  covers?: { rule: string; files: string[]; value?: string }[];
   decision: string;
   alternatives: string;
   evidence: string[];
@@ -23,6 +25,21 @@ export function decide(root: string, input: Decision): string {
     input.evidence.some((e) => typeof e !== 'string' || !e.trim())
   )
     throw new Error('decide requires evidence refs');
+  if (
+    input.covers !== undefined &&
+    (!Array.isArray(input.covers) ||
+      input.covers.some(
+        (c) =>
+          !c ||
+          typeof c.rule !== 'string' ||
+          !c.rule.trim() ||
+          !Array.isArray(c.files) ||
+          !c.files.length ||
+          c.files.some((f) => typeof f !== 'string' || !f.trim() || f.includes('*')) ||
+          (c.value !== undefined && (typeof c.value !== 'string' || !c.value.trim())),
+      ))
+  )
+    throw new Error('decide covers needs a rule, exact file paths and an optional string value');
   const date = input.date ?? new Date().toISOString().slice(0, 10);
   if (
     !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
@@ -48,7 +65,9 @@ export function decide(root: string, input: Decision): string {
   ]
     .filter(([, v]) => v)
     .map(([heading, value]) => `\n## ${heading}\n\n${value}\n`)
-    .join('')}`;
+    .join(
+      '',
+    )}${input.covers?.length ? `\n## Covers\n\n${input.covers.map((c) => `- ${JSON.stringify(c)}`).join('\n')}\n` : ''}`;
   for (let n = 1; ; n++) {
     const file = join(dir, `${date}-${slug}${n === 1 ? '' : `-${n}`}.md`);
     try {

@@ -265,6 +265,31 @@ function lineIndex(text: string): (index: number) => number {
   };
 }
 
+/** Shared import lexer for package consumers, impact and file evidence. */
+export function importSpecifiers(text: string) {
+  const code = codeMask(text);
+  const lineAt = lineIndex(text);
+  return [...text.matchAll(SPECIFIER)].flatMap((m) => {
+    if (!/^(?:import|export|require)\b/.test(code.slice(m.index))) return [];
+    const specifier = m[3] ?? m[4] ?? m[5] ?? m[6] ?? m[7];
+    if (!specifier) return [];
+    return [
+      {
+        specifier,
+        line: lineAt(m.index),
+        names: m[2] === undefined ? [] : namedImports(m[2]),
+        kind: (m[4]
+          ? 'reexport'
+          : m[5]
+            ? 'dynamic'
+            : m[6]
+              ? 'require'
+              : 'static') as ImportOccurrence['kind'],
+      },
+    ];
+  });
+}
+
 /** resolves `@scope/pkg/sub` to a workspace package and subpath, longest name first */
 function resolveTarget(spec: string, names: string[]): { target: string; subpath: string } | undefined {
   for (const name of names) {
@@ -314,35 +339,29 @@ export function analyseConsumers(root: string, opts: { scope?: string } = {}): C
           ...componentUses(text, rel, pkg.name, names, opts.scope, dependencies, aliases),
         );
       }
-      const code = codeMask(text);
-      let lineAt: ((index: number) => number) | undefined;
-      for (const m of text.matchAll(SPECIFIER)) {
-        if (!/^(?:import|export|require)\b/.test(code.slice(m.index))) continue;
-        const spec = m[3] ?? m[4] ?? m[5] ?? m[6] ?? m[7];
-        if (!spec) continue;
+      for (const occurrence of importSpecifiers(text)) {
+        const spec = occurrence.specifier;
         if (opts.scope && !spec.startsWith(opts.scope)) continue;
         const hit = resolveTarget(spec, names);
         if (!hit || hit.target === pkg.name) continue;
-        lineAt ??= lineIndex(text);
         imports.push({
           package: pkg.name,
           specifier: spec,
           ...hit,
-          names: m[2] === undefined ? [] : namedImports(m[2]),
+          names: occurrence.names,
           production,
           file: rel,
-          line: lineAt(m.index),
-          kind: m[4] ? 'reexport' : m[5] ? 'dynamic' : m[6] ? 'require' : 'static',
+          line: occurrence.line,
+          kind: occurrence.kind,
         });
         const use =
           uses.get(spec) ??
           ({ specifier: spec, ...hit, count: 0, production: 0, names: {}, samples: [] } as SpecifierUse);
         use.count++;
         if (production) use.production++;
-        if (m[2] !== undefined) for (const n of namedImports(m[2])) use.names[n] = (use.names[n] ?? 0) + 1;
+        for (const n of occurrence.names) use.names[n] = (use.names[n] ?? 0) + 1;
         if (use.samples.length < SAMPLE_CAP) {
-          lineAt ??= lineIndex(text);
-          use.samples.push({ file: rel, line: lineAt(m.index ?? 0) });
+          use.samples.push({ file: rel, line: occurrence.line });
         }
         uses.set(spec, use);
         const key = `${hit.target}\0${hit.subpath}`;

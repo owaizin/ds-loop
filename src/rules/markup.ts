@@ -52,6 +52,7 @@ export const rawValueInMarkupRule: Rule = {
 
     return [
       {
+        evidence: offenders,
         ruleId: this.id,
         severity: 'high',
         summary: `${offenders.length} hardcoded value(s) at use sites bypass the token layer (${colors.length} colour, ${dims} length; ${distinct} distinct${covered.length > 0 ? `, ${covered.length} already declared as a token` : ''})`,
@@ -161,6 +162,7 @@ export const stockPaletteUtilityRule: Rule = {
       {
         ruleId: this.id,
         severity: 'medium',
+        evidence: judged,
         summary: `${judged.length} use site(s) name the framework palette instead of a theme token (${distinct.size} distinct across ${files.size} file(s)${themed.length > 0 ? `, ${themed.length} under a dark: variant` : ''})`,
         where: judged
           .slice(0, 8)

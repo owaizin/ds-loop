@@ -13,6 +13,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { audit } from '../src/commands/audit.ts';
+import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
+import { nextAfterAudit } from '../src/core/next.ts';
 import { PLAIN_RULES } from '../src/core/plain.ts';
 
 /**
@@ -347,4 +350,26 @@ test('invalid first-run config reports failure and names a next command', () => 
     assert.match(result.stderr, /ds-loop context/);
     assert.equal(existsSync(join(dir, 'ds-loop-report.html')), false);
   });
+});
+
+// Found by installing the packed tarball into a scratch project and reading the first
+// run as someone who had never used it. The entrance printed the skill's absolute path
+// and told the reader to hand it to their agent — which is the retyping `install` was
+// built to remove — while naming `audit --all` and `report` as the next steps. The one
+// command that closes that gap appeared nowhere in the run where it matters most.
+test('the entrance offers install until the project is wired, then stops', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ds-loop-next-install-'));
+  try {
+    writeFileSync(join(dir, 'tokens.css'), ':root{--color-brand:#3b5bdb}\n.a{color:#3b5bdb}\n');
+    const offered = () =>
+      nextAfterAudit(audit(dir, { silent: true }), { root: dir, path: '.', config: DEFAULT_CONFIG }).map(
+        (a) => a.command,
+      );
+    assert.ok(offered().includes('ds-loop install'), 'an unwired project is never told how to wire itself');
+
+    writeFileSync(join(dir, 'CLAUDE.md'), '# Rules\n<!-- ds-loop:start -->\nblock\n<!-- ds-loop:end -->\n');
+    assert.ok(!offered().includes('ds-loop install'), 'a wired project is offered it again');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
