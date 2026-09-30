@@ -4,7 +4,7 @@ import { dirname, extname, join, relative, resolve } from 'node:path';
 import { findWorkspace, importSpecifiers } from './consumers.ts';
 import { listFiles } from './files.ts';
 
-export const FILE_IMPORTS_VERSION = '1.0.0';
+export const FILE_IMPORTS_VERSION = '1.1.0';
 export type ImportBasis = { file: string; line: number; specifier: string };
 export type FileReach = {
   state: 'reached' | 'no-static-importer' | 'unresolved';
@@ -100,8 +100,8 @@ export function analyseFileImports(target: string, extraFiles: string[] = []): F
     configIssues: [],
     limits: [
       'Static import analysis only, within the scanned tree. An importer is not runtime usage or an entry-point path.',
-      'No static importer found is not a relevance or deletion verdict. Dynamic imports, require calls, route manifests, globs, CSS @import and build-time copies are outside this signal.',
-      'Relative paths, tsconfig/jsconfig paths and baseUrl, and workspace source exports are resolved. Build-tool aliases and package-based config inheritance are not evaluated.',
+      'No static importer found is not a relevance or deletion verdict. Dynamic imports, require calls, route manifests, globs, HTML link tags and build-time copies are outside this signal.',
+      'Relative paths, tsconfig/jsconfig paths and baseUrl, workspace source exports, and relative stylesheet @import, @use and @forward are resolved. Build-tool aliases, package stylesheet imports and package-based config inheritance are not evaluated.',
       'Unresolved static specifiers or incomplete config resolution conservatively make files without a known importer unresolved. Finding groups without complete locations are also unresolved.',
     ],
   };
@@ -301,6 +301,18 @@ export function analyseFileImports(target: string, extraFiles: string[] = []): F
    * on the specifier's own tail keeps each unresolved import clouding the files it
    * might plausibly point at, instead of the whole repository.
    */
+  // Declaration anywhere in the scanned tree establishes external deep-package paths.
+  // Workspace packages are handled first below, even if also declared as dependencies.
+  const declaredPackages = new Set<string>();
+  for (const file of files.filter((f) => f.endsWith('/package.json'))) {
+    try {
+      const meta = json(file);
+      for (const key of ['dependencies', 'devDependencies', 'peerDependencies'] as const)
+        for (const name of Object.keys(meta[key] ?? {})) declaredPackages.add(name);
+    } catch {
+      // Unreadable metadata establishes nothing; keep clouding conservatively.
+    }
+  }
   const clouded = new Set<string>();
   for (const { specifier } of result.unresolved) {
     // A workspace package names a directory, so an import of it this resolver could
@@ -313,6 +325,12 @@ export function analyseFileImports(target: string, extraFiles: string[] = []): F
         if (file === pkg.dir || file.startsWith(`${pkg.dir}/`)) clouded.add(file);
       continue;
     }
+    // A declared package resolves from node_modules, root or deep path. Undeclared
+    // scoped names stay uncertain: `@theme/Layout` and `@site/src` are Docusaurus
+    // build aliases, not packages, and a wrong "no static importer" costs more than
+    // an undetermined one.
+    const packageName = /^(?:@[^/]+\/[^/]+|[^@.~ /][^/]*)(?=\/|$)/.exec(specifier)?.[0];
+    if (packageName && declaredPackages.has(packageName)) continue;
     const tail = specifier
       .replace(/^[~@]?\//, '')
       .split('/')

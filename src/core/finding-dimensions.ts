@@ -71,7 +71,8 @@ export function annotateFindings(
 ): Finding[] {
   const decisions = decisionSelectors(root);
   return findings.map((finding) => {
-    const locations = (finding.evidence ?? []).map((v) => {
+    const evidence = finding.evidence?.length ? finding.evidence : singleLocation(finding, graph);
+    const locations = evidence.map((v) => {
       const records = [
         ...config.ignore.flatMap((entry, i) =>
           applyIgnores(finding.ruleId, [v], [entry]).suppressions.length
@@ -133,6 +134,39 @@ export function annotateFindings(
     };
     return { ...finding, dimensions };
   });
+}
+
+/** Only an exact, graph-backed file:line is provenance; display lists are never parsed. */
+function singleLocation(finding: Finding, graph: FileImports): RawValue[] {
+  const match = /^([^\r\n:;]+):([1-9]\d*)$/.exec(finding.where);
+  if (
+    !match ||
+    match[0] !== finding.where ||
+    !Object.hasOwn(graph.files, match[1]) ||
+    !Number.isSafeInteger(Number(match[2]))
+  )
+    return [];
+  // Synthesised solely for file/rule exception matching. No extracted value, token,
+  // adapter or source revision is known; this stays local, never finding.evidence.
+  return [
+    {
+      raw: '',
+      provenance: {
+        file: match[1],
+        line: Number(match[2]),
+        selector: null,
+        property: '',
+        tokenName: null,
+        surface: null,
+        category: null,
+        classification: 'ambiguous',
+        reason: 'Location synthesised from an exact finding file:line; no value was extracted.',
+        fixtureSha: '',
+        adapterId: '',
+        adapterVersion: '',
+      },
+    },
+  ];
 }
 
 function domainHints(value: RawValue, config: DsOpsConfig): string[] {

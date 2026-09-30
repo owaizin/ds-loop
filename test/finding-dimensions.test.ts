@@ -8,7 +8,7 @@ import { decide } from '../src/commands/decide.ts';
 import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import { importSpecifiers } from '../src/core/consumers.ts';
 import { analyseFileImports } from '../src/core/file-imports.ts';
-import { formatDimensions } from '../src/core/finding-dimensions.ts';
+import { annotateFindings, formatDimensions } from '../src/core/finding-dimensions.ts';
 import { reportData } from '../src/core/report-data.ts';
 
 function project(files: Record<string, string>, run: (root: string) => void) {
@@ -235,6 +235,107 @@ test('a stylesheet reached only by @use or @import is reached', () => {
       const graph = analyseFileImports(root);
       assert.equal(graph.files['css/_variables.scss'].state, 'reached');
       assert.equal(graph.files['css/theme.css'].state, 'reached');
+    },
+  );
+});
+
+test('exact graph-backed file:line synthesises a location and retains recorded intent', () => {
+  project(fixture, (root) => {
+    const graph = analyseFileImports(root);
+    const finding = {
+      ruleId: 'docs/undocumented-shared-component',
+      severity: 'low' as const,
+      summary: 'Missing docs',
+      where: 'Button.tsx:1',
+      fix: 'Document it',
+    };
+    const config = {
+      ...DEFAULT_CONFIG,
+      ignore: [{ rule: finding.ruleId, files: ['Button.tsx'], reason: 'Documented elsewhere' }],
+    };
+    decide(root, {
+      decision: 'External docs',
+      owner: 'Design',
+      alternatives: 'Local docs',
+      evidence: ['Button.tsx:1'],
+      covers: [{ rule: finding.ruleId, files: ['Button.tsx'] }],
+    });
+    const annotated = annotateFindings([finding], graph, config, root)[0];
+    assert.equal(annotated.evidence, undefined);
+    assert.equal(annotated.dimensions?.locations.length, 1);
+    assert.equal(annotated.dimensions?.reached.state, 'reached');
+    assert.equal(annotated.dimensions?.declaredIntentional.state, 'recorded');
+    assert.equal(annotated.dimensions?.declaredIntentional.records.length, 2);
+    assert.equal(annotated.dimensions?.locations[0].line, 1);
+    for (const where of [
+      'Button.tsx:1; Archive.tsx:1',
+      'Button.tsx:1 …',
+      'Missing.tsx:1',
+      'some prose',
+      'Button.tsx:0',
+      'Button.tsx:1\n',
+    ]) {
+      const result = annotateFindings([{ ...finding, where }], graph, config, root)[0];
+      assert.equal(result.dimensions?.locations.length, 0, where);
+      assert.equal(result.dimensions?.reached.state, 'unresolved', where);
+    }
+    assert.equal(
+      annotateFindings([{ ...finding, where: 'Archive.tsx:1', evidence: [] }], graph, config, root)[0]
+        .dimensions?.reached.state,
+      'no-static-importer',
+    );
+  });
+});
+
+test('declared package names do not cloud files; undeclared scoped names and aliases still do', () => {
+  project(
+    {
+      'main.ts':
+        "import '@testing-library/react'; import '@theme/Layout'; import 'lodash/fp'; import '@external/tools/helper'; import '~/theme'; import '@/custom'; import 'lib/local';",
+      'react.ts': '',
+      'Layout.tsx': '',
+      'fp.ts': '',
+      'helper.ts': '',
+      'theme.ts': '',
+      'custom.ts': '',
+      'local.ts': '',
+      'nested/package.json': JSON.stringify({
+        devDependencies: { lodash: '*', '@testing-library/react': '*' },
+        peerDependencies: { '@external/tools': '*' },
+      }),
+    },
+    (root) => {
+      let graph = analyseFileImports(root);
+      for (const file of ['react.ts', 'fp.ts', 'helper.ts'])
+        assert.equal(graph.files[file].state, 'no-static-importer', file);
+      // `@theme/Layout` is a Docusaurus alias, undeclared anywhere: it must still cloud.
+      for (const file of ['Layout.tsx', 'theme.ts', 'custom.ts', 'local.ts'])
+        assert.equal(graph.files[file].state, 'unresolved', file);
+      writeFileSync(join(root, 'nested/package.json'), '{}');
+      graph = analyseFileImports(root);
+      assert.equal(graph.files['react.ts'].state, 'unresolved');
+      assert.equal(graph.files['fp.ts'].state, 'unresolved');
+      assert.equal(graph.files['helper.ts'].state, 'unresolved');
+    },
+  );
+});
+
+test('declared workspace subpaths retain source resolution and uncertainty', () => {
+  project(
+    {
+      'package.json': JSON.stringify({ workspaces: ['packages/*'], dependencies: { '@example/ui': '*' } }),
+      'packages/ui/package.json': JSON.stringify({
+        name: '@example/ui',
+        exports: { './button': './button.ts' },
+      }),
+      'packages/ui/button.ts': '',
+      'packages/ui/other.ts': '',
+      'main.ts': "import '@example/ui/button'; import '@example/ui/missing';",
+    },
+    (root) => {
+      const graph = analyseFileImports(root);
+      assert.equal(graph.files['packages/ui/button.ts'].state, 'reached');
+      assert.equal(graph.files['packages/ui/other.ts'].state, 'unresolved');
     },
   );
 });

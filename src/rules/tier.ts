@@ -1,4 +1,5 @@
 import type { DsOpsConfig } from '../config/schema.ts';
+import type { RawValue } from '../core/provenance.ts';
 import type { Finding, Rule, RuleContext } from './types.ts';
 
 export type Tier = 'upstream' | 'primitive' | 'semantic' | 'component' | 'unknown';
@@ -235,6 +236,7 @@ export const varMissingFallbackRule: Rule = {
   targets: ['tokens', 'color', 'spacing', 'typography', 'elevation', 'motion'],
   run(ctx: RuleContext): Finding[] {
     const hits: { token: string; ref: string; where: string }[] = [];
+    const evidence: RawValue[] = [];
     for (const v of ctx.values) {
       if (v.provenance.classification !== 'reference') continue;
       if (isUpstreamName(v.provenance.tokenName, ctx.config)) continue;
@@ -243,6 +245,8 @@ export const varMissingFallbackRule: Rule = {
         // gave the outer reference a fallback path, don't nag about the leaf.
         const before = v.raw.slice(0, m.index).trimEnd();
         if (before.endsWith(',')) continue;
+        // One entry per counted reference, even when a value contains several.
+        evidence.push(v);
         hits.push({
           token: v.provenance.tokenName ?? '(inline)',
           ref: m[1]!,
@@ -262,6 +266,7 @@ export const varMissingFallbackRule: Rule = {
           .join('; '),
         fix: 'Add a fallback: var(--token, <value>) — the base-theme value, so a missing token degrades to something sane instead of nothing.',
         data: { count: hits.length, hits: hits.slice(0, 40) },
+        evidence,
       },
     ];
   },

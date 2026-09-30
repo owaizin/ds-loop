@@ -7,6 +7,7 @@ import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import type { RawValue } from '../src/core/provenance.ts';
 import { literalDuplicateRule, nearDuplicatePaletteRule, semanticLiteralRule } from '../src/rules/color.ts';
 import { rawDimensionRule } from '../src/rules/dimension.ts';
+import { varMissingFallbackRule } from '../src/rules/tier.ts';
 import type { RuleContext } from '../src/rules/types.ts';
 
 function value(tokenName: string, raw: string): RawValue {
@@ -188,4 +189,40 @@ test('alpha gates a cluster edge without changing the distance it gates', () => 
   ];
   assert.equal(clusterByDeltaE(points, 2.3).length, 1, 'ungated, these merge — that was the defect');
   assert.equal(clusterByDeltaE(points, 2.3, DEFAULT_CONFIG.clustering.alphaTolerance).length, 2);
+});
+
+test('missing fallback evidence counts every reference without changing stable output or sample caps', () => {
+  const values = Array.from({ length: 22 }, (_, i) => ({
+    ...value(`--token-${i}`, 'var(--a) var(--b) var(--c, var(--d))'),
+    provenance: {
+      ...value(`--token-${i}`, '').provenance,
+      classification: 'reference' as const,
+      line: i + 1,
+    },
+  }));
+  const finding = varMissingFallbackRule.run(ctx(values))[0];
+  const hits = values.flatMap((v) =>
+    ['--a', '--b'].map((ref) => ({
+      token: v.provenance.tokenName,
+      ref,
+      where: `t.css:${v.provenance.line}`,
+    })),
+  );
+  assert.equal(finding.evidence?.length, 44);
+  assert.equal(finding.evidence?.length, finding.data?.count);
+  assert.strictEqual(finding.evidence?.[0], values[0]);
+  assert.strictEqual(finding.evidence?.[1], values[0]);
+  assert.equal(finding.summary, '44 var() reference(s) have no fallback value');
+  assert.equal(
+    finding.where,
+    hits
+      .slice(0, 8)
+      .map((h) => `${h.token}: var(${h.ref}) at ${h.where}`)
+      .join('; '),
+  );
+  assert.deepEqual(finding.data, { count: 44, hits: hits.slice(0, 40) });
+  assert.equal(
+    finding.fix,
+    'Add a fallback: var(--token, <value>) — the base-theme value, so a missing token degrades to something sane instead of nothing.',
+  );
 });
