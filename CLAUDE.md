@@ -190,6 +190,11 @@ heuristics.
    audited as source, oklch palettes read as "not a colour", and a tier rule that could not fire on any
    real naming convention while reporting nothing. `npm run smoke` covers distribution, not precision —
    that still needs a real repo and a human reading the hits.
+6. **Run `npm run precision`** (network, ~3 min). It audits Primer, Excalidraw and PostHog at pinned
+   commits and fails on any count that moved since `benchmarks/precision.json`. A move you intended:
+   hand-check a sample of what moved, re-record with `--update`, and say both in the commit. A move you
+   did not intend is the regression unit tests cannot see: the reachability label once fired on zero
+   files, and the benchmark could never compare, both with green tests.
 
 ## Adding an adapter
 

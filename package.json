@@ -22,7 +22,7 @@
     "CHANGELOG.md",
     "LICENSE",
     "docs/guide",
-    "benchmarks"
+    "benchmarks/reference.json"
   ],
   "engines": {
     "node": ">=22.6"
@@ -39,7 +39,8 @@
     "site:check": "node scripts/check-site.mjs && node scripts/site-examples.mjs --check",
     "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
     "type-check": "tsc --noEmit",
-    "benchmark": "node --experimental-strip-types scripts/benchmark.mjs"
+    "benchmark": "node --experimental-strip-types scripts/benchmark.mjs",
+    "precision": "node --experimental-strip-types scripts/precision.mjs"
   },
   "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",

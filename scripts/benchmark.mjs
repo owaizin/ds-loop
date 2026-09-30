@@ -1,7 +1,5 @@
 #!/usr/bin/env -S node --experimental-strip-types
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adaptersFor } from '../src/adapters/registry.ts';
@@ -10,6 +8,7 @@ import { BENCHMARK_POLICY } from '../src/config/benchmark.ts';
 import { DEFAULT_CONFIG } from '../src/config/defaults.ts';
 import { benchmarkMeasurement, isMeasurableReference } from '../src/core/benchmark.ts';
 import { resolveSource } from '../src/core/source.ts';
+import { withCheckout } from './checkout.mjs';
 
 // Dev-only network access. Every Git mutation is confined to a fresh OS temp directory.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -29,25 +28,8 @@ if (cache && rows.length !== 1 && !verify)
   throw new Error('--cache requires --repo when measuring multiple references');
 if (!rows.length) throw new Error('No matching reference');
 for (const row of verify ? rows.slice(0, 1) : rows) {
-  const dir = mkdtempSync(join(tmpdir(), 'ds-loop-benchmark-'));
-  const git = (...args) =>
-    execFileSync('git', ['-C', dir, ...args], {
-      encoding: 'utf8',
-      timeout: 180000,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    }).trim();
-  try {
-    console.error(`Measuring ${row.name}`);
-    git('init', '--quiet');
-    git('remote', 'add', 'origin', row.url);
-    if (pin && !row.sha) row.sha = git('ls-remote', 'origin', 'HEAD').split(/\s/)[0];
-    if (!/^[a-f0-9]{40}$/.test(row.sha)) throw new Error(`Invalid pin: ${row.name}`);
-    git('fetch', '--quiet', '--depth=1', cache ? resolve(cache) : 'origin', row.sha);
-    git('checkout', '--quiet', '--detach', 'FETCH_HEAD');
-    for (const file of [row.scanPath, row.licenseFile]) {
-      if (typeof file !== 'string' || file.startsWith('/') || file.split(/[\\/]/).includes('..'))
-        throw new Error('Reference paths must stay inside the checkout');
-    }
+  console.error(`Measuring ${row.name}`);
+  withCheckout(row, { cache, pin }, (dir) => {
     const licenseText = readFileSync(join(dir, row.licenseFile), 'utf8');
     const markers = {
       MIT: /Permission is hereby granted, free of charge/i,
@@ -114,7 +96,5 @@ for (const row of verify ? rows.slice(0, 1) : rows) {
       data.schemaVersion = 2;
       writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
     }
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 }

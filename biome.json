@@ -1,7 +1,9 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "ignore": ["fixtures/**", ".impeccable/**", "benchmarks/reference.json"] },
+  "files": {
+    "ignore": ["fixtures/**", ".impeccable/**", "benchmarks/reference.json", "benchmarks/precision.json"]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

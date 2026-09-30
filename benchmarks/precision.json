@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "about": "Precision snapshot. Counts from auditing public repositories at pinned commits with DEFAULT_CONFIG. Written only by `npm run precision -- --update`; never edit by hand. Paths and values are deliberately not recorded.",
+  "repos": [
+    {
+      "name": "primer/react",
+      "url": "https://github.com/primer/react.git",
+      "sha": "a89299ae77e8f444599f94d7e9ca368c17be3f9a",
+      "scanPath": ".",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "measured": {
+        "instrument": {
+          "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0",
+          "configHash": "5b0a0820",
+          "fileImports": "1.1.0"
+        },
+        "verdict": "issues",
+        "coverage": {
+          "complete": false,
+          "unreadFormats": {
+            ".html": 1
+          },
+          "couldNotJudge": [
+            "docs/undocumented-shared-component",
+            "token/raw-value-in-style",
+            "token/tier-model-undetectable"
+          ],
+          "unconvertibleColours": 0
+        },
+        "findings": {
+          "high token/raw-dimension-in-semantic": {
+            "cards": 1,
+            "located": 3
+          },
+          "high token/raw-value-in-style": {
+            "cards": 2,
+            "located": 322
+          },
+          "low docs/undocumented-shared-component": {
+            "cards": 40,
+            "located": 40
+          },
+          "low token/raw-value-in-style": {
+            "cards": 7,
+            "located": 98
+          },
+          "low token/tier-model-undetectable": {
+            "cards": 1,
+            "located": 0
+          },
+          "low token/var-missing-fallback": {
+            "cards": 1,
+            "located": 2211
+          },
+          "medium token/raw-value-in-style": {
+            "cards": 3,
+            "located": 96
+          }
+        },
+        "reachability": {
+          "cards": {
+            "mixed": 1,
+            "reached": 52,
+            "unresolved": 2
+          },
+          "locations": {
+            "reached": 2768,
+            "unresolved": 2
+          },
+          "files": {
+            "no-static-importer": 149,
+            "reached": 653,
+            "unresolved": 640
+          },
+          "totals": {
+            "all": 55,
+            "reached": 53,
+            "noStaticImporter": 0,
+            "unresolved": 2
+          }
+        },
+        "ratios": {
+          "style-tokenization-color": 0.977,
+          "style-tokenization-duration": 0.1,
+          "style-tokenization-radius": 0.798,
+          "style-tokenization-shadow": 0.594,
+          "style-tokenization-spacing": 0.695,
+          "style-tokenization-typography": 0.921,
+          "style-tokenization-z-index": 0
+        },
+        "fixEdits": 2
+      },
+      "date": "2026-09-30"
+    },
+    {
+      "name": "excalidraw/excalidraw",
+      "url": "https://github.com/excalidraw/excalidraw.git",
+      "sha": "5a406e51875157bece389b9bc92d41ff241d5f3d",
+      "scanPath": ".",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "measured": {
+        "instrument": {
+          "adapters": "css-rule-bodies@0.3.0 + scss@0.2.0",
+          "configHash": "5b0a0820",
+          "fileImports": "1.1.0"
+        },
+        "verdict": "issues",
+        "coverage": {
+          "complete": false,
+          "unreadFormats": {
+            ".html": 2
+          },
+          "couldNotJudge": [
+            "docs/undocumented-shared-component",
+            "token/raw-value-in-style",
+            "token/tier-model-undetectable"
+          ],
+          "unconvertibleColours": 0
+        },
+        "findings": {
+          "high color/semantic-holds-literal": {
+            "cards": 1,
+            "located": 131
+          },
+          "high token/raw-dimension-in-semantic": {
+            "cards": 1,
+            "located": 16
+          },
+          "high token/raw-value-in-style": {
+            "cards": 2,
+            "located": 596
+          },
+          "low color/near-duplicate-primitives": {
+            "cards": 1,
+            "located": 0
+          },
+          "low token/raw-value-in-style": {
+            "cards": 8,
+            "located": 129
+          },
+          "low token/tier-model-undetectable": {
+            "cards": 1,
+            "located": 0
+          },
+          "low token/var-missing-fallback": {
+            "cards": 1,
+            "located": 642
+          },
+          "medium color/literal-duplicate-tokens": {
+            "cards": 1,
+            "located": 0
+          },
+          "medium color/mixed-storage-forms": {
+            "cards": 1,
+            "located": 0
+          },
+          "medium token/raw-value-in-style": {
+            "cards": 3,
+            "located": 393
+          }
+        },
+        "reachability": {
+          "cards": {
+            "mixed": 4,
+            "reached": 12,
+            "unresolved": 4
+          },
+          "locations": {
+            "reached": 1871,
+            "unresolved": 36
+          },
+          "files": {
+            "no-static-importer": 110,
+            "reached": 595,
+            "unresolved": 171
+          },
+          "totals": {
+            "all": 20,
+            "reached": 16,
+            "noStaticImporter": 0,
+            "unresolved": 4
+          }
+        },
+        "ratios": {
+          "style-tokenization-color": 0.846,
+          "style-tokenization-duration": 0,
+          "style-tokenization-radius": 0.447,
+          "style-tokenization-shadow": 0.291,
+          "style-tokenization-spacing": 0.022,
+          "style-tokenization-typography": 0.042,
+          "style-tokenization-z-index": 0.509
+        },
+        "fixEdits": 0
+      },
+      "date": "2026-09-30"
+    },
+    {
+      "name": "PostHog/posthog",
+      "url": "https://github.com/PostHog/posthog.git",
+      "sha": "d6225edecf52e800edb6ff846bd966ae9ed8f92a",
+      "scanPath": ".",
+      "license": "MIT",
+      "licenseFile": "LICENSE",
+      "measured": {
+        "instrument": {
+          "adapters": "css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0 + token-json@0.2.0 + scss@0.2.0",
+          "configHash": "5b0a0820",
+          "fileImports": "1.1.0"
+        },
+        "verdict": "issues",
+        "coverage": {
+          "complete": false,
+          "unreadFormats": {
+            ".html": 176
+          },
+          "couldNotJudge": [
+            "docs/undocumented-shared-component",
+            "token/raw-value-in-style",
+            "token/tier-model-undetectable"
+          ],
+          "unconvertibleColours": 0
+        },
+        "findings": {
+          "high color/semantic-holds-literal": {
+            "cards": 1,
+            "located": 381
+          },
+          "high token/raw-dimension-in-semantic": {
+            "cards": 1,
+            "located": 41
+          },
+          "high token/raw-value-in-markup": {
+            "cards": 1,
+            "located": 2623
+          },
+          "high token/raw-value-in-style": {
+            "cards": 2,
+            "located": 2446
+          },
+          "high token/tier-leakage": {
+            "cards": 1,
+            "located": 0
+          },
+          "low color/near-duplicate-primitives": {
+            "cards": 1,
+            "located": 0
+          },
+          "low docs/undocumented-shared-component": {
+            "cards": 217,
+            "located": 217
+          },
+          "low token/raw-value-in-style": {
+            "cards": 9,
+            "located": 649
+          },
+          "low token/tier-model-undetectable": {
+            "cards": 1,
+            "located": 0
+          },
+          "low token/var-missing-fallback": {
+            "cards": 1,
+            "located": 3255
+          },
+          "medium color/literal-duplicate-tokens": {
+            "cards": 1,
+            "located": 0
+          },
+          "medium color/mixed-storage-forms": {
+            "cards": 1,
+            "located": 0
+          },
+          "medium token/raw-value-in-style": {
+            "cards": 3,
+            "located": 2030
+          },
+          "medium token/semantic-name-describes-appearance": {
+            "cards": 1,
+            "located": 0
+          },
+          "medium token/stock-palette-utility": {
+            "cards": 1,
+            "located": 2643
+          }
+        },
+        "reachability": {
+          "cards": {
+            "mixed": 11,
+            "reached": 209,
+            "unresolved": 22
+          },
+          "locations": {
+            "no-static-importer": 459,
+            "reached": 11963,
+            "unresolved": 1863
+          },
+          "files": {
+            "no-static-importer": 6579,
+            "reached": 12935,
+            "unresolved": 2769
+          },
+          "totals": {
+            "all": 242,
+            "reached": 220,
+            "noStaticImporter": 0,
+            "unresolved": 22
+          }
+        },
+        "ratios": {
+          "style-tokenization-color": 0.805,
+          "style-tokenization-duration": 0.011,
+          "style-tokenization-radius": 0.462,
+          "style-tokenization-shadow": 0.139,
+          "style-tokenization-spacing": 0.033,
+          "style-tokenization-typography": 0.125,
+          "style-tokenization-z-index": 0.277
+        },
+        "fixEdits": 15
+      },
+      "date": "2026-09-30"
+    }
+  ]
+}

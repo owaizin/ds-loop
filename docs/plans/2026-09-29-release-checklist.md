@@ -21,6 +21,8 @@ not close those gates or establish the half-hour consulting experience.
   Deterministic launcher/hook checks do not verify model behavior or elapsed time.
 - Open the first report in a browser and inspect findings and coverage. Verify
   the not-checked case too. Agent-written recommendations need their own review.
+- `npm run precision` passes, or every moved count is explained in a commit that
+  re-recorded it with `--update`.
 - Use a real private-name deny list (`.private-names` or `DS_LOOP_PRIVATE_NAMES`).
   Do not use the `none` opt-out for this release.
 
