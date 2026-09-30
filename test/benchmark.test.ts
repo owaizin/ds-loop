@@ -10,7 +10,9 @@ import { report } from '../src/commands/report.ts';
 import { BENCHMARK_POLICY } from '../src/config/benchmark.ts';
 import { loadConfig } from '../src/config/load.ts';
 import {
+  BENCHMARK_KEYS,
   type Reference,
+  benchmarkComparability,
   benchmarkHtml,
   benchmarkMeasurement,
   compareReferences,
@@ -21,7 +23,7 @@ import {
 import { teamShape } from '../src/core/team-shape.ts';
 
 const fixture = resolve('fixtures/example-workspace');
-const measured = audit(fixture, { silent: true });
+const measured = audit(resolve('fixtures/radix-colors'), { silent: true });
 const key = 'style-tokenization-color';
 const reference = (value: number): Reference => ({
   name: 'example/public',
@@ -268,6 +270,109 @@ test('the shared report/dashboard table renders sparse contributor counts withou
       assert.match(html, /too few reference repos to state a range/);
       assert.ok(html.includes(`${count} reference repos:`));
       assert.ok(!html.includes('0.4–0.4'));
+    }
+  }
+});
+
+test('different adapter sets compare when shared versions and config match', () => {
+  const adapters = 'css-custom-props@0.6.0 + css-rule-bodies@0.3.0';
+  const references = [
+    { ...reference(0.2), adapters },
+    { ...reference(0.5), adapters: `${adapters} + scss@0.2.0` },
+    { ...reference(0.8), adapters: 'token-json@0.2.0' },
+  ];
+  for (const [team, status] of [
+    [0.1, 'below range'],
+    [0.5, 'in range'],
+    [0.9, 'above range'],
+  ] as const) {
+    const d = compareReferences(
+      {
+        ...measured,
+        manifest: { ...measured.manifest, adapter: `${adapters} + tailwind-jsx@0.5.0` },
+        ratios: { [key]: team },
+      },
+      references,
+      'products',
+    )[0];
+    assert.equal(d.status, status);
+    assert.deepEqual([d.min, d.median, d.max], [0.2, 0.5, 0.8]);
+    assert.equal(d.references.length, 3);
+  }
+});
+
+test('shared version and config mismatches name both instruments and suppress all numbers', () => {
+  for (const changed of [
+    { adapters: 'css-custom-props@9.0.0', reason: /css-custom-props.*0\.6\.0.*9\.0\.0/ },
+    {
+      configHash: 'different-config',
+      reason: new RegExp(`${measured.manifest.configHash}.*different-config`),
+    },
+  ]) {
+    const references = [reference(0.2), reference(0.5), { ...reference(0.8), ...changed }];
+    const run = { ...measured, ratios: { [key]: 0.5 } };
+    const d = compareReferences(run, references, 'products')[0];
+    assert.equal(d.status, 'not comparable — instrument differs');
+    assert.match(d.reason!, changed.reason);
+    assert.deepEqual([d.min, d.median, d.max], [undefined, undefined, undefined]);
+    assert.equal(d.references.length, 3);
+    assert.match(benchmarkHtml(run, teamShape(fixture), 'products', references), changed.reason);
+  }
+});
+
+test('unparseable strings on either side never match, including identical malformed strings', () => {
+  const valid = { adapters: 'css-custom-props@0.6.0', configHash: 'same' };
+  for (const adapters of [
+    '',
+    'none',
+    'other',
+    'css@',
+    'css@oops',
+    'css@1.0.0 + ',
+    'css@1.0.0 + css@2.0.0',
+    'css@1.0.0 + css@1.0.0',
+  ]) {
+    const invalid = { ...valid, adapters };
+    for (const [run, reference] of [
+      [valid, invalid],
+      [invalid, valid],
+      [invalid, invalid],
+    ]) {
+      const result = benchmarkComparability(run, reference);
+      assert.equal(result.clean, false);
+      if (!result.clean) assert.match(result.reason, /Unparseable/);
+    }
+    const run = {
+      ...measured,
+      manifest: { ...measured.manifest, adapter: adapters },
+      ratios: { [key]: 0.5 },
+    };
+    assert.equal(
+      compareReferences(run, [reference(0.2), reference(0.5), reference(0.8)], 'products')[0].status,
+      'not comparable — instrument differs',
+    );
+  }
+});
+
+test('the real mixed-format corpus produces numeric ranges in both reference sets', () => {
+  const run = {
+    ...measured,
+    manifest: {
+      ...measured.manifest,
+      configHash: '5b0a0820',
+      adapter: 'css-custom-props@0.6.0 + tailwind-jsx@0.5.0 + css-rule-bodies@0.3.0',
+    },
+    ratios: Object.fromEntries(BENCHMARK_KEYS.map((key) => [key, 0.5])),
+  };
+  for (const set of ['systems', 'products'] as const) {
+    const dimensions = compareReferences(run, readReferences(), set);
+    assert.deepEqual(
+      dimensions.filter((d) => d.min !== undefined).map((d) => d.key),
+      ['style-tokenization-color', 'style-tokenization-spacing', 'style-tokenization-typography'],
+    );
+    for (const d of dimensions.filter((d) => d.min !== undefined)) {
+      assert.ok(['in range', 'below range', 'above range'].includes(d.status));
+      assert.ok(Number.isFinite(d.min) && Number.isFinite(d.median) && Number.isFinite(d.max));
     }
   }
 });

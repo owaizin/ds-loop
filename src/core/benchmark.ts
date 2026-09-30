@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import type { AuditReport } from '../commands/audit.ts';
-import { comparability } from '../commands/scorecard.ts';
 import { BENCHMARK_POLICY } from '../config/benchmark.ts';
 import { VALUE_CATEGORIES } from './provenance.ts';
 import type { TeamShape } from './team-shape.ts';
@@ -112,10 +111,51 @@ export function benchmarkMeasurement(run: Pick<AuditReport, 'ratios' | 'styleInv
   return { ratios, occurrences };
 }
 
+type BenchmarkInstrument = Pick<Reference, 'adapters' | 'configHash'>;
+
+function adapterVersions(adapters: string): Map<string, string> | undefined {
+  const versions = new Map<string, string>();
+  for (const entry of adapters.split(' + ')) {
+    const pair = /^([a-z][a-z0-9-]*)@(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)$/.exec(entry);
+    if (!pair || versions.has(pair[1])) return undefined;
+    versions.set(pair[1], pair[2]);
+  }
+  return versions;
+}
+
+/** Different sources may use different formats; only shared adapter versions must agree. */
+export function benchmarkComparability(
+  run: BenchmarkInstrument,
+  reference: BenchmarkInstrument,
+): { clean: true } | { clean: false; reason: string } {
+  if (run.configHash !== reference.configHash)
+    return {
+      clean: false,
+      reason: `Configuration hashes differ: run ${run.configHash}, reference ${reference.configHash}.`,
+    };
+  const runVersions = adapterVersions(run.adapters);
+  const referenceVersions = adapterVersions(reference.adapters);
+  if (!runVersions || !referenceVersions)
+    return {
+      clean: false,
+      reason: `Unparseable adapter string (${!runVersions ? 'run' : 'reference'}).`,
+    };
+  for (const [id, version] of runVersions) {
+    const referenceVersion = referenceVersions.get(id);
+    if (referenceVersion !== undefined && version !== referenceVersion)
+      return {
+        clean: false,
+        reason: `Adapter ${id} versions differ: run ${version}, reference ${referenceVersion}.`,
+      };
+  }
+  return { clean: true };
+}
+
 export type Dimension = {
   key: string;
   team?: number;
   status: string;
+  reason?: string;
   min?: number;
   max?: number;
   median?: number;
@@ -135,13 +175,18 @@ export function compareReferences(
     if (team === undefined) return { ...base, status: 'not checked' };
     if (available.length < BENCHMARK_POLICY.minContributors)
       return { ...base, status: 'too few reference repos to state a range' };
-    if (
-      available.some(
-        (r) =>
-          !comparability(r, { adapters: run.manifest.adapter, configHash: run.manifest.configHash }).clean,
-      )
-    )
-      return { ...base, status: 'not comparable — instrument differs' };
+    for (const reference of available) {
+      const comparison = benchmarkComparability(
+        { adapters: run.manifest.adapter, configHash: run.manifest.configHash },
+        reference,
+      );
+      if (!comparison.clean)
+        return {
+          ...base,
+          status: 'not comparable — instrument differs',
+          reason: `${reference.name}: ${comparison.reason}`,
+        };
+    }
     const values = available.map((r) => r.ratios[key]!).sort((a, b) => a - b);
     const min = values[0];
     const max = values[values.length - 1];
@@ -165,7 +210,7 @@ export function benchmarkHtml(
 ): string {
   const selected = referenceSet(shape, against);
   const rows = references.filter((r) => r.set === selected.set);
-  const number = (n: number | undefined) => (n === undefined ? '—' : String(n));
+  const number = (n: number | undefined) => (n === undefined ? '—' : String(Number(n.toFixed(4))));
   return `<section aria-label="Public reference benchmark"><h2>Compared with public ${selected.set}</h2><p>${esc(selected.reason)} Override with <code>--against products|systems</code>.</p><p>Ratios are reference-only values / (literal + reference + mixed values), from 0 to 1. Ranges are observations, not targets or grades. ${rows.length} measured reference repositories. ${BENCHMARK_POLICY.minOccurrences} classified occurrences per dimension and ${BENCHMARK_POLICY.minContributors} contributing repos are required. Partial adapter coverage limits every comparison. If any contributing reference uses a different instrument, the dimension has no numeric comparison.</p><div class="table-wrap"><table><thead><tr><th>Dimension</th><th>Your ratio</th><th>Reference range</th><th>Median</th><th>Comparison</th><th>Contributing sources</th></tr></thead><tbody>${compareReferences(
     run,
     references,
@@ -173,7 +218,7 @@ export function benchmarkHtml(
   )
     .map(
       (d) =>
-        `<tr><th>${esc(d.key.replace('style-tokenization-', '').replace('color', 'Colour'))} tokenization</th><td>${d.team === undefined ? 'not checked' : d.status.startsWith('not comparable') ? '—' : number(d.team)}</td><td>${d.min === undefined ? '—' : `${number(d.min)}–${number(d.max)}`}</td><td>${number(d.median)}</td><td>${esc(d.status)}</td><td>${d.references.length} reference repos: ${esc(d.references.join(', ') || 'none')}</td></tr>`,
+        `<tr><th>${esc(d.key.replace('style-tokenization-', '').replace('color', 'Colour'))} tokenization</th><td>${d.team === undefined ? 'not checked' : d.status.startsWith('not comparable') ? '—' : number(d.team)}</td><td>${d.min === undefined ? '—' : `${number(d.min)}–${number(d.max)}`}</td><td>${number(d.median)}</td><td>${esc(d.status)}${d.reason ? `<br>${esc(d.reason)}` : ''}</td><td>${d.references.length} reference repos: ${esc(d.references.join(', ') || 'none')}</td></tr>`,
     )
     .join(
       '',

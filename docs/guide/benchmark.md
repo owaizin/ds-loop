@@ -34,9 +34,13 @@ A genuine zero with sufficient occurrences remains a measurement.
 A range requires **three contributing repositories**. With fewer, both report and dashboard
 say `too few reference repos to state a range`, show the contributor count, and omit the
 range and median. A missing team measurement still says `not checked`. Once there are enough
-contributors, any adapter or configuration mismatch says
-`not comparable — instrument differs` and suppresses the comparison numbers. Mismatched
-rows are never silently removed to manufacture a comparable range.
+contributors, the configuration hashes must match, and any adapter used by both sources must
+have the same version. An adapter used by only one source means that source has a different
+format; it does not prevent comparison. A different shared adapter version, a different
+configuration hash or an unparseable adapter string says `not comparable — instrument differs`
+and suppresses the comparison numbers. Mismatched rows are never silently removed to
+manufacture a comparable range. Scorecard comparisons of the same source still require the
+entire adapter set to match.
 
 Both floors live in `src/config/benchmark.ts` and are **UNCALIBRATED**. The occurrence floor
 screens out small incidental stylesheets; at 100 occurrences one observation moves a ratio
@@ -65,6 +69,9 @@ Contributing repositories per dimension (a range needs three):
 | shadow | 1 | 0 |
 | z-index | 1 | 1 |
 | duration | 0 | 1 |
+
+With a matching configuration and shared adapter versions, color, spacing and typography
+produce ranges in both sets when the team dimension is measured.
 
 Four pinned repositories stay in `unmeasurable`, each with the reason the script recorded:
 
