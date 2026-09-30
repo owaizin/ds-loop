@@ -48,6 +48,7 @@ test('10,001 findings browse lazily, paginate, search the final hit and preserve
   }));
   data.textContent = JSON.stringify({
     report: { findings },
+    findingReach: findings.map(() => 'No static importer found · 1 located occurrences all / reached 0'),
     groups: [{ indices: findings.map((_, i) => i) }],
     swatches: {},
     suggestions: {},
@@ -68,10 +69,14 @@ test('10,001 findings browse lazily, paginate, search the final hit and preserve
   group.listeners.toggle();
   const [search, status, list, controls] = host.children;
   assert.equal(list.children.length, 30);
-  assert.equal(status.textContent, '1–30 of 10001 findings');
+  assert.match(
+    list.children[0].children[0].children[0].textContent,
+    /No static importer found · 1 located occurrences all \/ reached 0/,
+  );
+  assert.equal(status.textContent, '1–30 of 10001 findings · reached not measured');
   assert.equal(list.children[0].children[1].textContent, findings[0].summary);
   controls.children[1].onclick!();
-  assert.equal(status.textContent, '31–60 of 10001 findings');
+  assert.equal(status.textContent, '31–60 of 10001 findings · reached not measured');
   search.value = 'a.css:10001';
   search.oninput!();
   assert.equal(list.children.length, 1);
@@ -79,7 +84,7 @@ test('10,001 findings browse lazily, paginate, search the final hit and preserve
   details.open = true;
   details.listeners.toggle();
   assert.ok(details.children.some((n) => n.textContent === 'where: a.css:10001'));
-  assert.equal(status.textContent, '1–1 of 1 findings');
+  assert.equal(status.textContent, '1–1 of 1 findings · reached not measured');
   search.value = 'no matching source';
   search.oninput!();
   assert.equal(list.children.length, 0);

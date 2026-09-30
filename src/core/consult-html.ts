@@ -12,6 +12,7 @@ import { halftoneComet, meshPanel } from './graphics.ts';
 import { ICON_SPRITE, icon } from './icons.ts';
 import { PLAIN_RULES, PLAIN_VERDICTS, plainCoverage } from './plain.ts';
 import { type Evidence, renderProposal } from './proposal.ts';
+import { findingReach, reachLimits, reached, reachedGroups } from './reach-html.ts';
 import { renderAuditHtml } from './report-html.ts';
 import { formatTeamShape, teamShape } from './team-shape.ts';
 
@@ -60,7 +61,8 @@ a,code{overflow-wrap:anywhere}
 .rail .icon{width:16px;height:16px;stroke-width:1.5}
 .rail-group{display:flex;flex-direction:column;gap:2px}
 .rail-group a:not(:first-child){padding-left:37px;font-size:12.5px}
-.rail-count{margin-left:auto;font:600 12.5px/1 system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:4px 7px;border-radius:999px;background:rgb(255 255 255/.12);color:var(--rail-ink)}
+.rail a>span{white-space:nowrap}
+.rail-count{flex-shrink:0;margin-left:auto;font:600 12.5px/1 system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:4px 7px;border-radius:999px;background:rgb(255 255 255/.12);color:var(--rail-ink)}
 .rail-foot{margin-top:0;padding:16px 10px 0;border-top:1px solid var(--rail-line);font:500 12.5px/1.5 system-ui,sans-serif;color:var(--rail-muted);word-break:break-word}
 
 .toolbar{position:fixed;top:0;right:0;left:auto;width:auto;padding:12px 22px;font-size:11px;opacity:.5;z-index:20;background:transparent;border:none;transition:opacity .15s}
@@ -95,6 +97,7 @@ a,code{overflow-wrap:anywhere}
 .hm-item strong{order:1;display:block;font:700 clamp(30px,3.4vw,50px)/1 Manrope,system-ui,sans-serif;letter-spacing:-.045em;font-variant-numeric:tabular-nums;margin-bottom:9px}
 .hm-item.lead strong{font-size:clamp(30px,3.4vw,50px)}
 .hm-item>span:first-child{order:2;font-size:13px;color:var(--muted);text-transform:capitalize}
+.hm-item>small{order:2}
 .hm-item .metric-bar{order:3;display:block;height:3px;border-radius:2px;background:var(--line);margin-top:14px;overflow:hidden}
 .hm-item .metric-bar i{display:block;height:100%;background:var(--gradient)}
 .metric-bar.unchecked{background-image:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 7px);background-color:transparent}
@@ -337,7 +340,7 @@ export function renderConsultHtml(
     const words = PLAIN_RULES[f.ruleId];
     const locations = findingLocations(f);
     const count = typeof f.data?.count === 'number' ? f.data.count : 1;
-    return `<article class="problem-card s-${esc(f.severity)}"><div class="pc-id"><span class="badge ${esc(f.severity)}">${esc(f.severity)}</span><code>${esc(f.ruleId)}</code></div><div class="pc-body"><h3><a href="#${esc(findingGroupId(f.severity, f.ruleId))}">${esc(words.title)}</a></h3><p>${esc(words.description)}</p></div><div class="pc-ev"><span class="num">${count} recorded ${count === 1 ? 'occurrence' : 'occurrences'}</span><p>${locations.length ? locations.map(ref).join(' · ') : 'No file:line recorded; see detailed engine evidence.'}</p></div></article>`;
+    return `<article class="problem-card s-${esc(f.severity)}"><div class="pc-id"><span class="badge ${esc(f.severity)}">${esc(f.severity)}</span><code>${esc(f.ruleId)}</code></div><div class="pc-body"><h3><a href="#${esc(findingGroupId(f.severity, f.ruleId))}">${esc(words.title)}</a></h3><p>${esc(words.description)}</p></div><div class="pc-ev"><span class="num">${count} recorded ${count === 1 ? 'occurrence' : 'occurrences'}</span><p class="basis">Rule-reported count; ${esc(findingReach(f))}</p><p>${locations.length ? locations.map(ref).join(' · ') : 'No file:line recorded; see detailed engine evidence.'}</p></div></article>`;
   };
   const coverage = plainCoverage(r.coverage)
     .map((s) => `<li>${esc(s)}</li>`)
@@ -377,17 +380,21 @@ export function renderConsultHtml(
     const ratio = hmRatios[i];
     const lead = i === hmWorst ? ' lead' : '';
     if (ratio === undefined)
-      return `<div class="hm-item${lead}"><span>${category} tokenization</span><strong>not checked</strong><span class="metric-bar unchecked" aria-hidden="true"></span></div>`;
-    return `<div class="hm-item${lead}"><span>${category} tokenization</span><strong class="grad-text">${(ratio * 100).toFixed(1)}%</strong><span class="metric-bar"><i style="width:${ratio * 100}%"></i></span></div>`;
+      return `<div class="hm-item${lead}"><span>${category} tokenization</span><strong>not checked</strong><small>${reached(r.reachedRatios?.[`style-tokenization-${category}`], true)}</small><span class="metric-bar unchecked" aria-hidden="true"></span></div>`;
+    return `<div class="hm-item${lead}"><span>${category} tokenization</span><strong class="grad-text">${(ratio * 100).toFixed(1)}%</strong><small>${reached(r.reachedRatios?.[`style-tokenization-${category}`], true)}</small><span class="metric-bar"><i style="width:${ratio * 100}%"></i></span></div>`;
   }).join('');
   const severitySplit =
-    SEVERITIES.flatMap((s, i) => (sevCounts[i] ? [`<span><b>${sevCounts[i]}</b> ${s}</span>`] : [])).join(
-      '',
-    ) || '<span>none reported</span>';
-  const metrics = `${headlines}<div class="hm-item"><span>finding groups</span><strong>${r.findings.length}</strong><span class="hm-sev">${severitySplit}</span></div>`;
+    SEVERITIES.flatMap((s, i) =>
+      sevCounts[i]
+        ? [
+            `<span><b>${sevCounts[i]}</b> ${s} · ${reached(reachedGroups(r.findings.filter((f) => f.severity === s)))}</span>`,
+          ]
+        : [],
+    ).join('') || '<span>none reported</span>';
+  const metrics = `${headlines}<div class="hm-item"><span>finding groups</span><strong>${r.findings.length}</strong><small>${reached(r.findingTotals?.reached)}</small><span class="hm-sev">${severitySplit}</span></div>`;
   const railLink = (id: string, title: string) =>
     `<a href="#${id}">${icon(SECTION_ICON[id])}<span>${title}</span></a>`;
-  const rail = `<nav class="rail" aria-label="Consulting report sections"><div class="rail-brand"><b>Design System Loop</b><span>System review</span></div>${railLink('summary', 'Summary')}${railLink('problem', 'The problem')}<div class="rail-group">${railLink('current', 'Where you are now')}<a href="#coverage"><span>Coverage</span></a><a href="#findings"><span>Findings</span>${r.findings.length ? `<span class="rail-count">${r.findings.length}</span>` : ''}</a><a href="#inventory"><span>CSS inventory</span></a><a href="#tokens"><span>Token architecture</span></a></div>${railLink('ideal', 'What good looks like')}${railLink('after', 'Where this takes you')}${railLink('plan', 'The plan')}${railLink('limits', "What we couldn't check")}<div class="rail-art" aria-hidden="true">${halftoneComet('rl', 280, 200, 7.5, 3.4)}</div><div class="rail-foot">${esc(r.manifest.fixtureLabel)}<br>${esc(r.manifest.ranAt.slice(0, 10))}</div></nav>`;
+  const rail = `<nav class="rail" aria-label="Consulting report sections"><div class="rail-brand"><b>Design System Loop</b><span>System review</span></div>${railLink('summary', 'Summary')}${railLink('problem', 'The problem')}<div class="rail-group">${railLink('current', 'Where you are now')}<a href="#coverage"><span>Coverage</span></a><a href="#findings"><span>Findings</span>${r.findings.length ? `<span class="rail-count">${r.findings.length} · ${reached(r.findingTotals?.reached)}</span>` : ''}</a><a href="#inventory"><span>CSS inventory</span></a><a href="#tokens"><span>Token architecture</span></a></div>${railLink('ideal', 'What good looks like')}${railLink('after', 'Where this takes you')}${railLink('plan', 'The plan')}${railLink('limits', "What we couldn't check")}<div class="rail-art" aria-hidden="true">${halftoneComet('rl', 280, 200, 7.5, 3.4)}</div><div class="rail-foot">${esc(r.manifest.fixtureLabel)}<br>${esc(r.manifest.ranAt.slice(0, 10))}</div></nav>`;
   const RIBBON_ORDER = ['summary', 'problem', 'current', 'ideal', 'after', 'plan', 'limits'];
   const ribbon = `<div class="ribbon" aria-hidden="true">${RIBBON_ORDER.map(
     (id, i) =>
@@ -400,7 +407,7 @@ export function renderConsultHtml(
   };
   const vc = VERDICT_CHIP[r.verdict] ?? VERDICT_CHIP['not-checked'];
   const severityBar = sevTotal
-    ? `<div class="bar" aria-hidden="true">${SEVERITIES.map((s, i) => `<span class="${s}" style="width:${(sevCounts[i] / sevTotal) * 100}%"></span>`).join('')}</div><div class="legend">${SEVERITIES.map((s, i) => `<span>${s} ${sevCounts[i]}</span>`).join('')}</div>`
+    ? `<div class="bar" aria-hidden="true">${SEVERITIES.map((s, i) => `<span class="${s}" style="width:${(sevCounts[i] / sevTotal) * 100}%"></span>`).join('')}</div><div class="legend">${SEVERITIES.map((s, i) => `<span>${s} ${sevCounts[i]} · ${reached(reachedGroups(r.findings.filter((f) => f.severity === s)))}</span>`).join('')}</div>`
     : '';
   const intro = `${ICON_SPRITE}<section class="cover"><div class="cover-art" aria-hidden="true">${meshPanel('cv')}</div><div class="cover-text"><p class="cover-eyebrow">${icon(vc.icon)}${esc(r.manifest.fixtureLabel)} / System review · ${esc(r.manifest.ranAt.slice(0, 10))}</p><h1>${esc(consult?.title ?? 'Your design system, in view')}</h1><p class="cover-sub">${esc(PLAIN_VERDICTS[r.verdict].title)}</p></div><div class="cover-band"><p class="lead">${esc(PLAIN_VERDICTS[r.verdict].description)}</p>${consult ? '<a class="cta" href="#plan">Review the plan <span aria-hidden="true">&rarr;</span></a>' : ''}</div><div class="headline-metrics">${metrics}</div><p class="basis">Reference-only values / (literal + reference + mixed values). Not reference resolution. <a href="#limits">Read the coverage limits.</a></p>${ribbon}</section><div class="deck-layout">${rail}<div class="deck-flow">${section(
     'summary',
@@ -413,7 +420,7 @@ export function renderConsultHtml(
             .map(([theme, rows]) => {
               const worst = worstOf(rows);
               const top = rows.find((f) => f.severity === worst) ?? rows[0];
-              return `<tr><td>${esc(theme)}</td><td><span class="sev"><span class="dot ${esc(worst ?? '')}"></span>${esc(worst ?? 'none')}</span></td><td class="num">${rows.length}</td><td><a href="#${esc(findingGroupId(top.severity, top.ruleId))}">${esc(PLAIN_RULES[top.ruleId].title)}</a></td></tr>`;
+              return `<tr><td>${esc(theme)}</td><td><span class="sev"><span class="dot ${esc(worst ?? '')}"></span>${esc(worst ?? 'none')}</span></td><td class="num">${rows.length} · ${reached(reachedGroups(rows))}</td><td><a href="#${esc(findingGroupId(top.severity, top.ruleId))}">${esc(PLAIN_RULES[top.ruleId].title)}</a></td></tr>`;
             })
             .join(
               '',
@@ -468,7 +475,11 @@ export function renderConsultHtml(
   )}${section(
     'limits',
     "What we couldn't check",
-    `<ul>${coverage}${consumers.limits.map((l) => `<li>${esc(l)}</li>`).join('')}</ul><p>Static code checks do not establish rendered behaviour, accessibility, business impact or whether a cited claim is true. File links point to this machine’s source paths; recipients need the same checkout.</p>`,
+    `<ul>${reachLimits(r)
+      .map((l) => `<li>${esc(l)}</li>`)
+      .join(
+        '',
+      )}${coverage}${consumers.limits.map((l) => `<li>${esc(l)}</li>`).join('')}</ul><p>Static code checks do not establish rendered behaviour, accessibility, business impact or whether a cited claim is true. File links point to this machine’s source paths; recipients need the same checkout.</p>`,
   )}</div></div>`;
   return renderAuditHtml(r, {
     consulting: {

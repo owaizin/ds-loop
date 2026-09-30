@@ -7,6 +7,7 @@ import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
 import { findingGroupId } from './audit-summary.ts';
 import { CONSUMERS_VERSION } from './consumers.ts';
+import { findingReach, reachLimits, reached, reachedGroups } from './reach-html.ts';
 import { reportData } from './report-data.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
 import { TOKEN_CSS, TOKEN_SCRIPT, architectureHtml } from './token-architecture-html.ts';
@@ -151,7 +152,7 @@ function suggestionTable(values: TokenSuggestion[]): string {
 function finding(f: Finding, index: number): string {
   const locations = examples(f);
   const count = typeof f.data?.count === 'number' ? `${f.data.count} reported occurrences` : '1 finding';
-  return `<article class="finding"><div class="finding-meta"><span class="badge ${f.severity}">${f.severity}</span><code>${htmlEscape(f.ruleId)}</code><span>${count}</span></div><h4 class="one-line" title="${htmlEscape(f.summary)}">${htmlEscape(f.summary)}</h4><p class="locations">${locations.map(htmlEscape).join(' · ') || 'See recorded location in Details'}</p><details><summary>Details</summary><p>${htmlEscape(f.summary)}</p><p><strong>where:</strong> ${htmlEscape(f.where)}</p>${f.impact ? `<p><strong>risk:</strong> ${htmlEscape(f.impact)}</p>` : ''}<p><strong>fix:</strong> ${htmlEscape(f.fix)}</p>${f.suggestion ? `${suggestionTable(f.suggestion.values)}<p>${htmlEscape(f.suggestion.basis)}</p><details><summary>All ${f.suggestion.values.length} suggestion rows</summary><div data-suggestions="${index}"></div></details><details><summary>Verbatim suggestion text</summary><pre>suggest: ${htmlEscape(formatSuggestion(f.suggestion))}</pre></details>` : ''}${inspect(['report', 'findings', index], 'All recorded evidence')}</details></article>`;
+  return `<article class="finding"><div class="finding-meta"><span class="badge ${f.severity}">${f.severity}</span><code>${htmlEscape(f.ruleId)}</code><span>${count} (rule-reported count)</span><span>${htmlEscape(findingReach(f))}</span></div><h4 class="one-line" title="${htmlEscape(f.summary)}">${htmlEscape(f.summary)}</h4><p class="locations">${locations.map(htmlEscape).join(' · ') || 'See recorded location in Details'}</p><details><summary>Details</summary><p>${htmlEscape(f.summary)}</p><p><strong>where:</strong> ${htmlEscape(f.where)}</p>${f.impact ? `<p><strong>risk:</strong> ${htmlEscape(f.impact)}</p>` : ''}<p><strong>fix:</strong> ${htmlEscape(f.fix)}</p>${f.suggestion ? `${suggestionTable(f.suggestion.values)}<p>${htmlEscape(f.suggestion.basis)}</p><details><summary>All ${f.suggestion.values.length} suggestion rows · reached not measured</summary><div data-suggestions="${index}"></div></details><details><summary>Verbatim suggestion text</summary><pre>suggest: ${htmlEscape(formatSuggestion(f.suggestion))}</pre></details>` : ''}${inspect(['report', 'findings', index], 'All recorded evidence')}</details></article>`;
 }
 
 function overview(r: AuditReport): string {
@@ -171,17 +172,28 @@ function overview(r: AuditReport): string {
       files.set(file.file, record);
     }
   const top = [...files].sort((a, b) => b[1].total - a[1].total || a[0].localeCompare(b[0])).slice(0, 5);
-  return `<div class="summary-strip"><div><span class="kicker">Verdict</span><strong>${htmlEscape(r.verdict)}</strong></div><div><span class="kicker">Coverage</span><strong>${r.coverage.complete ? 'Complete within adapter scope' : 'Incomplete'}</strong></div><div class="severity-chart"><span class="kicker">${r.findings.length} findings · ${r.rulesRun.length} rules</span><div class="bar" aria-hidden="true">${counts.map((x) => `<span class="${x.severity}" style="width:${r.findings.length ? (x.count / r.findings.length) * 100 : 0}%"></span>`).join('')}</div><div class="legend">${counts.map((x) => `<span>${x.severity} ${x.count}</span>`).join('')}</div></div><p class="scope-note">${r.verdict === 'not-checked' ? 'Nothing was judged. This is not a clean result.' : 'A clean audit only describes the checks and scope it covered.'}</p></div>
-  <div class="overview-grid"><article class="card"><h2>CSS categories</h2><div class="category-chart"><div class="chart-label"><span>Category</span><span>Tokenization</span><span>Literals</span></div>${categories.map(([category, row]) => `<a class="chart-row" href="#category-${category}"><strong>${htmlEscape(category)}</strong><span class="mini-track"><i class="reference" style="width:${(row.tokenizationRatio ?? 0) * 100}%"></i><b>${row.tokenizationRatio === null ? 'n/a' : `${(row.tokenizationRatio * 100).toFixed(1)}%`}</b></span><span class="mini-track"><i class="literal" style="width:${(row.literals / largest) * 100}%"></i><b>${row.literals}</b></span></a>`).join('') || '<p>No ordinary CSS inventory recorded. Check coverage for supported files and properties.</p>'}</div><small>Reference share and literal occurrences; different units. Expand inventory for locations.</small></article><article class="card"><h2>Top 5 files</h2><small>Extracted CSS occurrences across categories</small><ol class="top-files">${
+  return `<div class="summary-strip"><div><span class="kicker">Verdict</span><strong>${htmlEscape(r.verdict)}</strong></div><div><span class="kicker">Coverage</span><strong>${r.coverage.complete ? 'Complete within adapter scope' : 'Incomplete'}</strong></div><div class="severity-chart"><span class="kicker">${r.findings.length} findings · ${reached(r.findingTotals?.reached)} · ${r.rulesRun.length} rules</span><div class="bar" aria-hidden="true">${counts.map((x) => `<span class="${x.severity}" style="width:${r.findings.length ? (x.count / r.findings.length) * 100 : 0}%"></span>`).join('')}</div><div class="legend">${counts.map((x) => `<span>${x.severity} ${x.count} · ${reached(reachedGroups(r.findings.filter((f) => f.severity === x.severity)))}</span>`).join('')}</div></div><p class="scope-note">${r.verdict === 'not-checked' ? 'Nothing was judged. This is not a clean result.' : 'A clean audit only describes the checks and scope it covered.'}</p></div>
+  <div class="overview-grid"><article class="card"><h2>CSS categories</h2><div class="category-chart"><div class="chart-label"><span>Category</span><span>Tokenization</span><span>Literals</span></div>${categories.map(([category, row]) => `<a class="chart-row" href="#category-${category}"><strong>${htmlEscape(category)}</strong><span class="mini-track"><i class="reference" style="width:${(row.tokenizationRatio ?? 0) * 100}%"></i><b>${row.tokenizationRatio === null ? 'n/a' : `${(row.tokenizationRatio * 100).toFixed(1)}%`} · ${reached(r.reachedStyleInventory?.[category as keyof typeof r.styleInventory]?.tokenizationRatio, true)}</b></span><span class="mini-track"><i class="literal" style="width:${(row.literals / largest) * 100}%"></i><b>${row.literals} · ${reached(r.reachedStyleInventory?.[category as keyof typeof r.styleInventory]?.literals)}</b></span></a>`).join('') || '<p>No ordinary CSS inventory recorded. Check coverage for supported files and properties.</p>'}</div><small>Reference share and literal occurrences; different units. Expand inventory for locations.</small></article><article class="card"><h2>Top 5 files</h2><small>Extracted CSS occurrences across categories</small><ol class="top-files">${
     top
-      .map(
-        ([file, row]) =>
-          `<li><code>${htmlEscape(file)}</code><strong>${row.total}</strong><small>${Object.entries(
-            row.categories,
+      .map(([file, row]) => {
+        const counts = Object.keys(row.categories).map(
+          (k) =>
+            r.reachedStyleInventory?.[k as keyof typeof r.styleInventory]?.topFiles.find(
+              (v) => v.file === file,
+            )?.occurrences,
+        );
+        const total = counts.every((n) => n !== undefined)
+          ? counts.reduce<number>((sum, n) => sum + n!, 0)
+          : undefined;
+        return `<li><code>${htmlEscape(file)}</code><strong>${row.total} · ${reached(total)}</strong><small>${Object.entries(
+          row.categories,
+        )
+          .map(
+            ([k, n]) =>
+              `${htmlEscape(k)} ${n} · ${reached(r.reachedStyleInventory?.[k as keyof typeof r.styleInventory]?.topFiles.find((v) => v.file === file)?.occurrences)}`,
           )
-            .map(([k, n]) => `${htmlEscape(k)} ${n}`)
-            .join(' · ')}</small></li>`,
-      )
+          .join(' · ')}</small></li>`;
+      })
       .join('') || '<li>No ordinary CSS use sites recorded.</li>'
   }</ol></article></div>`;
 }
@@ -247,6 +259,7 @@ export function renderAuditHtml(
   const c = r.coverage;
   const inventory = Object.entries(r.styleInventory)
     .map(([category, row]) => {
+      const reachRow = r.reachedStyleInventory?.[category as keyof typeof r.styleInventory];
       const parts = [
         ['literal', row.literals],
         ['reference', row.references],
@@ -254,20 +267,25 @@ export function renderAuditHtml(
         ['ambiguous', row.unclassified],
         ['excluded', row.excluded],
       ] as const;
-      return `<article class="card" id="category-${category}"><h3>${htmlEscape(category)}</h3><span class="metric">${row.occurrences}</span> occurrences · ${row.distinctValues} distinct values
+      return `<article class="card" id="category-${category}"><h3>${htmlEscape(category)}</h3><span class="metric">${row.occurrences}</span> occurrences · ${reached(reachRow?.occurrences)} · ${row.distinctValues} distinct values · ${reached(reachRow?.distinctValues)}
     <div class="bar" aria-hidden="true">${parts.map(([name, n]) => `<span class="${name}" style="width:${row.occurrences ? (n / row.occurrences) * 100 : 0}%"></span>`).join('')}</div>
-    <div class="legend">${parts.map(([name, n]) => `<span><i class="${name}"></i>${name} ${n}</span>`).join('')}</div>
-    <p>Tokenization: <strong>${row.tokenizationRatio === null ? 'not measured' : `${(row.tokenizationRatio * 100).toFixed(1)}%`}</strong></p>
+    <div class="legend">${parts.map(([name, n]) => `<span><i class="${name}"></i>${name} ${n} · ${reached(reachRow?.[({ literal: 'literals', reference: 'references', mixed: 'mixed', ambiguous: 'unclassified', excluded: 'excluded' } as const)[name]])}</span>`).join('')}</div>
+    <p>Tokenization: <strong>${row.tokenizationRatio === null ? 'not measured' : `${(row.tokenizationRatio * 100).toFixed(1)}%`}</strong> · ${reached(reachRow?.tokenizationRatio, true)}</p>
     <p class="muted">References ÷ (literals + references + mixed). Ambiguous and excluded values are outside this ratio.</p>
     <h4>Top files</h4>${list(
-      row.topFiles.slice(0, 3).map((f) => `${f.file} · ${f.occurrences}`),
+      row.topFiles
+        .slice(0, 3)
+        .map(
+          (f) =>
+            `${f.file} · ${f.occurrences} · ${reached(reachRow?.topFiles.find((v) => v.file === f.file)?.occurrences)}`,
+        ),
       'No files recorded.',
     )}
     <ul class="values">${row.values
       .slice(0, 3)
       .map(
         (v) =>
-          `<li>${category === 'color' ? swatch(v.value) : ''}<code>${htmlEscape(v.value)}</code> · ${v.occurrences}<br><small>${htmlEscape(v.property)} · ${htmlEscape(v.classification)}</small></li>`,
+          `<li>${category === 'color' ? swatch(v.value) : ''}<code>${htmlEscape(v.value)}</code> · ${v.occurrences} · ${reached(reachRow?.values.find((x) => x.value === v.value && x.property === v.property && x.classification === v.classification)?.occurrences)}<br><small>${htmlEscape(v.property)} · ${htmlEscape(v.classification)}</small></li>`,
       )
       .join('')}</ul>
     ${inspect(['report', 'styleInventory', category], 'All values, counts and source locations')}</article>`;
@@ -303,21 +321,21 @@ export function renderAuditHtml(
   )}</article><article class="card"><h3>Not read</h3>${list(
     Object.entries(c.unreadFormats).map(([ext, n]) => `${ext}: ${n} files`),
     'No unread formats reported.',
-  )}${list(c.unreadTokenFiles, 'No unread token files reported.')}</article><article class="card"><h3>Could not judge</h3>${list(c.couldNotJudge, 'No rule judgment limits reported.')}<p>Unconvertible colours: ${c.unconvertible.count}</p><p>Unclassified style values: ${c.unclassifiedStyles?.count ?? 0}</p><p>Unclassified token values: ${c.unclassifiedDeclarations?.count ?? 0}</p><p>Undecided colour roles: ${c.undecided.count}</p><p>CSS keyword/generic font components recognised and excluded: ${c.excludedKeywords?.count ?? 0}</p></article></div>${inspect(['report', 'coverage'], 'Coverage evidence and samples')}<p class="muted">Coverage retains samples, not every unread location. Counts without locations cannot be traced further in this report.</p></section>
+  )}${list(c.unreadTokenFiles, 'No unread token files reported.')}</article><article class="card"><h3>Could not judge</h3>${list(c.couldNotJudge, 'No rule judgment limits reported.')}<p>Unconvertible colours: ${c.unconvertible.count}</p><p>Unclassified style values: ${c.unclassifiedStyles?.count ?? 0}</p><p>Unclassified token values: ${c.unclassifiedDeclarations?.count ?? 0}</p><p>Undecided colour roles: ${c.undecided.count}</p><p>CSS keyword/generic font components recognised and excluded: ${c.excludedKeywords?.count ?? 0}</p></article></div>${options.consulting ? '' : list(reachLimits(r), '')}${inspect(['report', 'coverage'], 'Coverage evidence and samples')}<p class="muted">Coverage retains samples, not every unread location. Counts without locations cannot be traced further in this report.</p></section>
   ${options.consulting ? `${options.consulting.findings}<details><summary>Detailed engine findings and evidence</summary>` : ''}
-  <section id="findings"><h2>Findings</h2><p>${r.findings.length} findings. A finding may group many use sites; finding counts are not occurrence counts.</p>${
+  <section id="findings"><h2>Findings</h2><p>${r.findings.length} findings · ${reached(r.findingTotals?.reached)}. A finding may group many use sites; finding counts are not occurrence counts.</p>${
     groups
       .map(
         (g, i) =>
-          `<section class="group" id="${htmlEscape(findingGroupId(g.severity, g.rule))}"><div class="kicker">${g.severity} · ${g.indices.length} findings</div><h3>${htmlEscape(g.rule)}</h3>${g.indices
+          `<section class="group" id="${htmlEscape(findingGroupId(g.severity, g.rule))}"><div class="kicker">${g.severity} · ${g.indices.length} findings · ${reached(reachedGroups(g.indices.map((i) => r.findings[i])))}</div><h3>${htmlEscape(g.rule)}</h3>${g.indices
             .slice(0, 3)
             .map((index) => finding(r.findings[index], index))
             .join(
               '',
-            )}<details><summary>All ${g.indices.length} findings and recorded evidence</summary><div data-group="${i}"></div></details></section>`,
+            )}<details><summary>All ${g.indices.length} findings · ${reached(reachedGroups(g.indices.map((i) => r.findings[i])))} and recorded evidence</summary><div data-group="${i}"></div></details></section>`,
       )
       .join('') || '<p>No findings in this report. Check the verdict, filters and coverage above.</p>'
-  }${inspect(['report', 'suppressions'], `Recorded exceptions · ${r.suppressions.length}`)}<p class="muted">Summaries, risks, fixes and suggestions are engine output. Candidates are not replacements. Some rules retain only example locations; expanding shows all evidence the rule recorded.</p></section>
+  }${inspect(['report', 'suppressions'], `Recorded exceptions · ${r.suppressions.length} · reached not measured`)}<p class="muted">Summaries, risks, fixes and suggestions are engine output. Candidates are not replacements. Some rules retain only example locations; expanding shows all evidence the rule recorded.</p></section>
   ${options.consulting ? '</details>' : ''}
   <section id="inventory"><h2>CSS property inventory</h2><p>Extracted use sites before exceptions or severity filtering. Token declarations and markup are outside this inventory.</p><div class="grid">${inventory || '<p>No ordinary CSS property values were recorded. This is not a count of all styling in the source.</p>'}</div></section>
   ${architectureHtml(r.tokenArchitecture)}
@@ -329,7 +347,7 @@ export function renderAuditHtml(
 `
   }
   <p class="print-note">Printed summary: only expanded evidence is included. Open the HTML file for the full recorded lists.</p><noscript>JavaScript is disabled. The summary and three examples per group remain readable. Enable JavaScript to browse all recorded evidence.</noscript>
-  </main><script id="audit-data" type="application/json">${json({ report: reportData(r), groups, trend, swatches, suggestions, locations, sourceBase: options.consulting?.sourceBase })}</script><script>(async () => {
+  </main><script id="audit-data" type="application/json">${json({ report: reportData(r), groups, trend, swatches, suggestions, locations, sourceBase: options.consulting?.sourceBase, findingReach: r.findings.map(findingReach) })}</script><script>(async () => {
 try {
 const packed = JSON.parse(document.getElementById('audit-data').textContent);
 const bytes = Uint8Array.from(atob(packed.data), c => c.charCodeAt(0));

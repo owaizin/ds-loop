@@ -16,7 +16,10 @@ test('HTML is deterministic, contains all verdicts and escapes hostile source te
     assert.ok(html.includes(verdict));
     assert.ok(html.includes('&lt;/script&gt;'));
     assert.ok(!html.includes('<img src=x'));
-    assert.doesNotMatch(html, /(?:src|href)=["']https?:|@import|fetch\(|XMLHttpRequest/);
+    assert.doesNotMatch(html, /(?:src|href)=["']https?:/);
+    // Import syntax in coverage prose is evidence, not an external resource load.
+    for (const block of html.matchAll(/<(style|script)\b[^>]*>([\s\S]*?)<\/\1>/g))
+      assert.doesNotMatch(block[2], /@import|fetch\(|XMLHttpRequest/);
     assert.equal(htmlPayload(html).report.findings[0].summary, r.findings[0].summary);
   }
 });
