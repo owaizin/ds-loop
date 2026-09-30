@@ -20,7 +20,11 @@ npx ds-loop install --agent codex
 
 Choose `claude`, `cursor`, `codex` or `all`. Without `--agent`, the installer detects
 `.claude/`, `.cursor/`, and either `AGENTS.md` or `.codex/`. If it finds none, it
-writes nothing and asks you to select one.
+writes nothing and prints three runnable choices with their destination files:
+`ds-loop install --agent claude` writes `CLAUDE.md`,
+`ds-loop install --agent cursor` writes `.cursor/rules/ds-loop.mdc`, and
+`ds-loop install --agent codex` writes `AGENTS.md`. Run the command for your agent;
+use `npx ds-loop` in place of `ds-loop` for a local npm installation.
 
 | Agent | Project file |
 | --- | --- |

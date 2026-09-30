@@ -126,6 +126,9 @@
 <span class="loop-owner owner-engine">Engine</span>
 <strong>Gather measurements</strong>
 <p>Run <code>context .</code> and an unfiltered <code>audit . --json</code>. Keep the report’s coverage with its findings.</p>
+<p>Use reachability to help separate code your product ships from tests, stories, examples and orphans in the scanned tree. The terminal, JSON and HTML reports pair all-source measurements with reached measurements. Locations say “reached”, “No static importer found” or “importer not determined”; groups can be mixed. Read the <a href="reference.html#reachability">importer states and limits</a>.</p>
+<p>A static importer does not prove runtime use or justify deletion. Dynamic imports, route manifests, globs, build-time copies and consumers outside the tree can be missed; tests and stories can also import a file.</p>
+<p>For context, run <code>ds-loop report . --against products</code> or <code>--against systems</code>. The pinned sets support colour, spacing and typography ranges when your measurements and instrument are comparable. These are observations, not grades. See the <a href="https://github.com/owaizin/ds-loop/blob/main/docs/guide/benchmark.md">benchmark guide</a>.</p>
 </li>
 <li class="loop-step">
 <span class="loop-owner owner-team">Agent + team</span>
@@ -326,6 +329,7 @@ Record         Link to the team’s existing decision</code></pre></details>
 <section class="doc-section" id="install" aria-labelledby="install-title">
 <h2 id="install-title">Get started</h2>
 <p>Install the published npm package, inspect your project, and load the companion skill in your agent. The setup guide includes the commands and a first prompt to adapt to your product.</p>
+<p>If <code>ds-loop install</code> detects no agent, it writes nothing and prints three choices: <code>ds-loop install --agent claude</code> for <code>CLAUDE.md</code>, <code>ds-loop install --agent cursor</code> for <code>.cursor/rules/ds-loop.mdc</code>, or <code>ds-loop install --agent codex</code> for <code>AGENTS.md</code>. Run the one for your agent; use <code>npx ds-loop</code> for a local npm installation.</p>
 <a class="button" href="setup.html">Get started</a>
 </section>
 <section class="doc-section" id="skill" aria-labelledby="skill-title">

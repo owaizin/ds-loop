@@ -36,6 +36,14 @@ These 15 commands come from [the CLI entry point](../../src/cli.ts).
 
 `fix` is not an automatic token migration. `scorecard` does not gate CI. `guard` cannot prevent an edit.
 
+### Install when no agent is detected
+
+Without `--agent`, `ds-loop install` looks for `.claude/`, `.cursor/`, `AGENTS.md`
+or `.codex/`. If none is present, it writes nothing and prints three commands:
+`ds-loop install --agent claude` for `CLAUDE.md`, `ds-loop install --agent cursor`
+for `.cursor/rules/ds-loop.mdc`, and `ds-loop install --agent codex` for `AGENTS.md`.
+Choose the one you use. See the [installation guide](install.md#add-instructions-for-your-agent).
+
 ### Preview a mechanical fix
 
 ```sh
@@ -109,6 +117,11 @@ remain ambiguous. Suggestions are candidates for review, never replacements.
 
 | Field | Contents |
 | --- | --- |
+| `fileImports` | Import graph version, per-file `state`, `basis` and `importers` (file, line, specifier), plus `configIssues`, unresolved specifiers with reasons, and `limits` |
+| `findingEvidence` | Findings before recorded exceptions and severity filtering, annotated with `dimensions`: per-location importer evidence, declared-intent records, configured domain hints and occurrence totals. Token suggestions are omitted. |
+| `findingTotals` | Counts of evidence finding groups: `all`, `reached`, `noStaticImporter`, `unresolved`, and a `basis`. A group with any reached location counts once in `reached`; these are not occurrence totals or a partition of occurrences. |
+| `reachedStyleInventory` | The same category inventory as `styleInventory`, computed only from extracted values whose files have a static importer |
+| `reachedRatios` | Base ratio keys mapped to measurements from reached values; `null` when no reached measurement exists or the ratio is not file-based, including documentation ratios |
 | `styleInventory.<category>` | `occurrences`, `distinctValues`, `literals`, `references`, `mixed`, `unclassified`, `excluded`, `tokenizationRatio` |
 | `styleInventory.<category>.values[]` | `value`, `property`, `classification`, `occurrences`; full extracted distribution |
 | `styleInventory.<category>.topFiles[]` | `file`, `occurrences`; full ranking, while the human report shows the first five |
@@ -120,6 +133,53 @@ remain ambiguous. Suggestions are candidates for review, never replacements.
 CSS rule findings retain every hit in JSON; human locations are grouped and
 abbreviated. Suggestions retain candidates and resolution limits rather than
 selecting a replacement. See [real output examples](output.md#ordinary-css-inventory).
+
+## Reachability
+
+Use importer evidence to help separate code your product ships from tests, stories,
+examples and orphans within the scanned tree. The terminal's detailed audit,
+`--json`, consulting report, audit HTML and dashboard retain the findings and show
+reached measurements alongside all-source measurements. Missing measurements stay
+unknown, not zero. A finding group can contain several occurrences.
+
+| Display state | JSON state | Meaning |
+| --- | --- | --- |
+| reached | `reached` | Another file in the scanned tree has a resolved static import or re-export of this file |
+| No static importer found | `no-static-importer` | No importer was found, and no known resolution gap prevents that claim for this file |
+| importer not determined | `unresolved` | Import resolution is incomplete for this file, or the finding lacks complete source locations; detailed terminal output uses `unresolved` |
+| mixed | `mixed` | A finding groups locations with different states; each location keeps its own evidence |
+
+An importer is an incoming reference from another file, not a path from an application
+entry point. Imports from tests or stories count too. The resolver follows relative
+paths, `tsconfig`/`jsconfig` `paths` and `baseUrl`, and workspace source exports.
+It also recognizes bounded relative stylesheet `@import`, `@use` and `@forward`
+references, including Sass partial names.
+
+Limits: this is not runtime usage, product relevance or a deletion verdict. Dynamic
+imports, `require` calls, route manifests, globs, build-time copies and consumers
+outside the scanned tree are not checked. Build-tool aliases and package-based
+configuration inheritance are not evaluated. The report's `fileImports.limits`
+still lists CSS `@import` as outside the signal; the bounded stylesheet handling
+above does not establish full CSS import resolution. Unresolved specifiers or
+incomplete configuration can leave affected files without a known importer
+`unresolved`. A single-file import scan cannot establish the importer tree, and
+finding groups without complete locations remain unresolved.
+
+`findingEvidence` preserves findings before exceptions and severity filtering,
+including configured domain-hint evidence. Its intent records come from matching
+`config.ignore` entries or accepted decisions with explicit `Covers` selectors.
+A domain hint records configured context; it does not infer product intent.
+`findingTotals` summarizes that evidence, so it can differ from the filtered
+`findings` list. Reached inventories and ratios use extracted values, not the
+number of findings left after filtering.
+
+### Compare tokenization with public references
+
+Use `ds-loop report . --against products` or `--against systems` to select the
+reference set. The pinned corpus supports colour, spacing and typography ranges
+in both sets when your dimension is measured and the configuration and shared
+adapter versions match. Ranges and medians describe observed code, not grades or
+targets. See the [benchmark guide](benchmark.md) for eligibility and comparison limits.
 
 ## Scoped checks and token context
 

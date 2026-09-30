@@ -58,6 +58,10 @@ From the [Example DS workspace fixture](https://github.com/owaizin/ds-loop/tree/
 
 Shared-component share is shared / (shared + local) production JSX elements. External and unresolved elements stay outside that ratio; stories and tests are counted separately. This is a synthetic example, not an adoption benchmark.
 
+## Check which files have importers
+
+Reachability helps you separate code your product ships from tests, stories, examples and orphans by showing which finding locations have a static importer in the scanned tree. It does not prove runtime use or justify deletion: dynamic imports, route manifests, globs, build-time copies and consumers outside the tree can be missed. Read the [states and limits](docs/guide/reference.md#reachability) before using it to prioritize work.
+
 ## Open a visual report
 
 Save reports you can open locally or share with your team:

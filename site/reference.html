@@ -214,6 +214,8 @@
 
 <p>
 <code>scorecard</code> appends to <code>.ds-scorecard/history.jsonl</code> in cwd. It reports a delta only when adapter versions and configuration match. <code>fix</code> is not an automatic token migration.</p>
+<h3>Install when no agent is detected</h3>
+<p>Without <code>--agent</code>, <code>ds-loop install</code> looks for <code>.claude/</code>, <code>.cursor/</code>, <code>AGENTS.md</code> or <code>.codex/</code>. If none is present, it writes nothing and lists three runnable choices: <code>ds-loop install --agent claude</code> writes <code>CLAUDE.md</code>, <code>ds-loop install --agent cursor</code> writes <code>.cursor/rules/ds-loop.mdc</code>, and <code>ds-loop install --agent codex</code> writes <code>AGENTS.md</code>. Choose your agent; use <code>npx ds-loop</code> for a local npm installation.</p>
 <h3>Preview a mechanical fix</h3>
 <pre><code>ds-loop fix . --help
 ds-loop fix .
@@ -223,6 +225,37 @@ ds-loop audit .</code></pre>
 <h3 id="contract">Draft a contract</h3>
 <pre><code>ds-loop context . --write-contract</code></pre>
 <p>This creates <code>DESIGN-SYSTEM.md</code> with measured declarations, extraction limits, recorded exceptions, and questions the team still needs to answer. It never overwrites an existing file. Keep your existing decision home when it already works. The draft does not establish policy; an agent must read and apply your decisions. Editing it does not configure or suppress rules.</p>
+<h3 id="reachability">Reachability: which files have importers?</h3>
+<p>Use importer evidence to help separate code your product ships from tests, stories, examples and orphans within the scanned tree. The detailed terminal audit, JSON, consulting report, audit HTML and dashboard show reached measurements alongside all-source measurements. Findings remain visible; missing measurements stay unknown.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>State</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>reached</td><td>Another file in this tree has a resolved static import or re-export of the file.</td></tr>
+<tr><td>No static importer found</td><td>No importer was found, with no known resolution gap preventing that claim. JSON uses <code>no-static-importer</code>.</td></tr>
+<tr><td>importer not determined</td><td>Resolution is incomplete for the file, or a finding lacks complete locations. JSON and detailed terminal output use <code>unresolved</code>.</td></tr>
+<tr><td>mixed</td><td>A finding groups locations with different states and retains each location's evidence.</td></tr>
+</tbody>
+</table>
+</div>
+<p>An importer is an incoming reference, including from a test or story; it does not prove a path from a product entry point. The resolver follows relative paths, <code>tsconfig</code>/<code>jsconfig</code> paths and baseUrl, and workspace source exports. It also handles bounded relative stylesheet <code>@import</code>, <code>@use</code> and <code>@forward</code> references, including Sass partial names.</p>
+<p>Limits: this is not runtime usage or a deletion verdict. Dynamic imports, <code>require</code>, route manifests, globs, build-time copies and consumers outside the tree are not checked. Build-tool aliases and package-based config inheritance are not evaluated. The report still lists CSS <code>@import</code> as outside its signal; bounded stylesheet handling does not establish full CSS import resolution. Resolution gaps can leave affected files without a known importer unresolved, as can a single-file import scan or a finding without complete locations.</p>
+<h3>Importer evidence in <code>audit --json</code></h3>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Field</th><th>Contents</th></tr></thead>
+<tbody>
+<tr><td><code>fileImports</code></td><td>Graph version, per-file states, reasons and importers with file, line and specifier; config issues, unresolved specifiers and limits.</td></tr>
+<tr><td><code>findingEvidence</code></td><td>Findings before exceptions and severity filtering, with per-location importer evidence, declared-intent records, configured domain hints and occurrence totals. Suggestions are omitted.</td></tr>
+<tr><td><code>findingTotals</code></td><td>Evidence finding-group counts: all, reached, noStaticImporter and unresolved, plus their basis. Any reached location makes its group count once as reached; these are not occurrence totals.</td></tr>
+<tr><td><code>reachedStyleInventory</code></td><td>The category inventory computed only from extracted values in files with a static importer.</td></tr>
+<tr><td><code>reachedRatios</code></td><td>Base ratio keys measured from reached values; null for absent reached measurements and non-file-based ratios, including documentation.</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>findingTotals</code> can differ from the filtered findings list. Reached inventories and ratios use extracted values, not surviving findings. See the <a href="https://github.com/owaizin/ds-loop/blob/main/docs/guide/reference.md#reachability">guide's full evidence definitions</a>.</p>
+<h3>Compare tokenization with public references</h3>
+<p>Run <code>ds-loop report . --against products</code> or <code>--against systems</code>. Both pinned sets support colour, spacing and typography ranges when your dimension is measured and the configuration and shared adapter versions match. Ranges and medians describe observed code, not grades or targets. Read the <a href="https://github.com/owaizin/ds-loop/blob/main/docs/guide/benchmark.md">benchmark eligibility and limits</a>.</p>
 <h3>Audit options</h3>
 <pre>
 <code>ds-loop audit . --json
