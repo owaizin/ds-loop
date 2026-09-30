@@ -46,25 +46,36 @@ These eligibility settings do not change the audit instrument or its configurati
 
 ## Current reference coverage
 
-The Phase 3b implementation has recomputed **Radix Themes (MIT)** at its existing pin from
-a cached checkout. Colour, spacing, typography and shadow each have one eligible system
-contributor; radius, z-index and duration have none. Every product dimension has zero
-validated contributors. No dimension currently has enough validated contributors for a range.
+Every pinned row was re-measured on 2026-09-30 with `scripts/benchmark.mjs`, configuration
+hash `5b0a0820`. Nine repositories are eligible references:
 
-The `unmeasurable` list records these exclusions identified in the Phase 3b brief:
+| Set | Repository |
+|---|---|
+| systems | Radix Themes, Radix Primitives, Mantine, Primer React |
+| products | Supabase, Appsmith, Refine, Excalidraw, PostHog |
+
+Contributing repositories per dimension (a range needs three):
+
+| Dimension | systems | products |
+|---|---|---|
+| color | 4 | 4 |
+| spacing | 4 | 5 |
+| typography | 3 | 3 |
+| radius | 2 | 2 |
+| shadow | 1 | 0 |
+| z-index | 1 | 1 |
+| duration | 0 | 1 |
+
+Four pinned repositories stay in `unmeasurable`, each with the reason the script recorded:
 
 | Repository | Reason |
 |---|---|
 | `chakra-ui/chakra-ui` | CSS-in-JS, which no adapter reads |
-| `excalidraw/excalidraw` | SCSS, which no adapter reads |
 | `FlowiseAI/Flowise` | MUI CSS-in-JS, which no adapter reads |
+| `langflow-ai/langflow` | CSS-in-JS dependencies; no dimension reaches 100 classified occurrences |
+| `shadcn-ui/ui` | Styles in `.html` and `.astro`, which no adapter reads; no dimension reaches 100 classified occurrences |
 
-Their previous coverage is retained, but their occurrence recomputation remains pending:
-Git and curl could not resolve `github.com` in the implementation session. Counts were not
-invented. Seven other pinned snapshots are isolated in `pendingMeasurements` until their
-counts can be recomputed: Radix Primitives, shadcn/ui, Mantine, Primer React, Supabase,
-Langflow and Appsmith. Their previous measurements are explicitly historical and never enter
-ranges. See [the Phase 3b report](../plans/2026-09-29-phase-3b-report.md) for pins and status.
+`pendingMeasurements` is empty.
 
 `benchmarks/reference.json` schema 2 separates eligible `references`, `unmeasurable` sources,
 `pendingMeasurements` and unpinned `candidates`. Newly measured rows store all seven
