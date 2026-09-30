@@ -8,6 +8,7 @@ import type { Claim, Consult } from './consult.ts';
 import { renderConsumersHtml } from './consumers-html.ts';
 import type { ConsumersReport } from './consumers.ts';
 import { embedReport } from './embedded-report.ts';
+import { halftoneComet, meshPanel } from './graphics.ts';
 import { ICON_SPRITE, icon } from './icons.ts';
 import { PLAIN_RULES, PLAIN_VERDICTS, plainCoverage } from './plain.ts';
 import { type Evidence, renderProposal } from './proposal.ts';
@@ -60,21 +61,27 @@ a,code{overflow-wrap:anywhere}
 .rail-group{display:flex;flex-direction:column;gap:2px}
 .rail-group a:not(:first-child){padding-left:37px;font-size:12.5px}
 .rail-count{margin-left:auto;font:600 12.5px/1 system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:4px 7px;border-radius:999px;background:rgb(255 255 255/.12);color:var(--rail-ink)}
-.rail-foot{margin-top:auto;padding:16px 10px 0;border-top:1px solid var(--rail-line);font:500 12.5px/1.5 system-ui,sans-serif;color:var(--rail-muted);word-break:break-word}
+.rail-foot{margin-top:0;padding:16px 10px 0;border-top:1px solid var(--rail-line);font:500 12.5px/1.5 system-ui,sans-serif;color:var(--rail-muted);word-break:break-word}
 
 .toolbar{position:fixed;top:0;right:0;left:auto;width:auto;padding:12px 22px;font-size:11px;opacity:.5;z-index:20;background:transparent;border:none;transition:opacity .15s}
 .toolbar:hover,.toolbar:focus-within{opacity:1}.toolbar .kicker{display:none}
 
 /* ── Cover ── */
-.cover{position:relative;overflow:hidden;min-height:auto;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:clamp(56px,7vw,96px) 0 clamp(40px,5vw,64px);margin:0}
+.cover{position:relative;min-height:auto;display:grid;grid-template-columns:minmax(0,1fr) clamp(200px,23vw,340px);column-gap:clamp(28px,4vw,64px);align-items:start;padding:clamp(48px,6vw,84px) 0 clamp(40px,5vw,64px);margin:0}
+.cover-text{grid-column:1;grid-row:1;min-width:0}
+.cover>.headline-metrics,.cover>.basis,.cover>.ribbon,.cover-band{grid-column:1/-1}
+.cover-band{display:flex;align-items:center;justify-content:space-between;gap:clamp(24px,4vw,56px);flex-wrap:wrap;margin-top:clamp(32px,4vw,48px)}
+.cover-band .lead{margin:0}
+.cover-band .cta{margin-top:0;flex-shrink:0}
+.rail-art{display:block;position:relative;margin:auto -14px 0;height:180px;overflow:hidden;flex-shrink:0}
+.rail-art .art{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cover-art{grid-column:2;grid-row:1;position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--accent) 5%,var(--card))}
+.cover-art .art{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cover-eyebrow{display:flex;align-items:center;gap:9px;font:500 14px/1.4 system-ui,sans-serif;color:var(--muted);margin:0 0 22px}
-.cover h1{font-size:clamp(42px,5.6vw,80px);max-width:17ch;margin:0}
+.cover h1{font-size:clamp(40px,4.9vw,72px);max-width:15ch;margin:0}
 .cover-eyebrow .icon{width:15px;height:15px;color:var(--accent-2)}
 .cover-sub{font:800 clamp(30px,4.1vw,56px)/1.06 Manrope,system-ui,sans-serif;letter-spacing:-.042em;margin:6px 0 26px;max-width:20ch;color:var(--accent)}
-.cover .lead{font-size:20px;max-width:60ch;color:var(--muted);margin:0}
-.cover .halftone{inset:auto auto auto auto;top:-20px;right:-3%;width:min(42vw,480px);height:min(42vw,480px);transform:rotate(-16deg);opacity:.8;background-image:repeating-radial-gradient(circle at 1px 1px,var(--accent-2) 0 1.7px,transparent 1.7px 11px);mask-image:radial-gradient(closest-side at 64% 36%,#000 0 26%,rgb(0 0 0/.55) 52%,transparent 76%);z-index:0}
-.cover-orb{position:absolute;top:-130px;right:-90px;width:440px;height:440px;border-radius:50%;background:var(--gradient);opacity:.14;filter:blur(70px);pointer-events:none;z-index:0}
-.cover>*:not(.halftone):not(.cover-orb){position:relative;z-index:1}
+.cover .lead{font-size:19px;max-width:52ch;color:var(--muted);margin:0}
 .cta{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;margin-top:32px;padding:15px 26px;border-radius:8px;background:var(--accent);color:var(--bg);font-weight:700;font-size:15px;text-decoration:none}
 .cta:hover{filter:brightness(1.1)}
 .basis{color:var(--muted);font-size:14px;max-width:66ch}
@@ -84,6 +91,7 @@ a,code{overflow-wrap:anywhere}
 .hm-item{display:flex;flex-direction:column;padding:0 30px;border-left:1px solid var(--line)}
 .hm-item:first-child{border-left:none;padding-left:0}
 .hm-item.lead{grid-column:span 1}
+.hm-item strong.grad-text{background-image:linear-gradient(105deg,var(--accent) 12%,var(--accent-2) 88%)}
 .hm-item strong{order:1;display:block;font:700 clamp(30px,3.4vw,50px)/1 Manrope,system-ui,sans-serif;letter-spacing:-.045em;font-variant-numeric:tabular-nums;margin-bottom:9px}
 .hm-item.lead strong{font-size:clamp(30px,3.4vw,50px)}
 .hm-item>span:first-child{order:2;font-size:13px;color:var(--muted);text-transform:capitalize}
@@ -197,6 +205,14 @@ a,code{overflow-wrap:anywhere}
   .problem-card{grid-template-columns:150px minmax(0,1fr)}
   .pc-ev{grid-column:2}
 }
+@media(max-width:1000px){
+  .cover{grid-template-columns:minmax(0,1fr) clamp(170px,26vw,240px);column-gap:32px}
+}
+@media(max-width:760px){
+  .cover{grid-template-columns:1fr;row-gap:28px}
+  .cover-art{grid-column:1;grid-row:1;aspect-ratio:16/7}
+  .cover-text{grid-column:1;grid-row:2}
+}
 @media(max-width:820px){
   .headline-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 0}
   .hm-item:nth-child(odd){border-left:none;padding-left:0}
@@ -211,8 +227,7 @@ a,code{overflow-wrap:anywhere}
   .problem-card{display:block}
   .pc-id{flex-direction:row;align-items:center;gap:12px;margin-bottom:8px}
   .pc-ev{margin-top:10px}
-  .cover{min-height:auto;padding:32px 0 40px}
-  .cover .halftone,.cover-orb{display:none}
+  .cover{padding:32px 0 40px}
   [data-kind=judgement]{padding:32px 20px;border-radius:14px}
   .deck-section{padding:36px 0}
 }
@@ -227,7 +242,7 @@ a,code{overflow-wrap:anywhere}
   .deck-layout,.deck-flow{display:block;max-width:none}
   .cover{min-height:230mm;break-after:page;padding:0}
   .cover h1{font-size:42px}.cover-sub{font-size:30px}
-  .cover .halftone,.cover-orb,.ribbon,.cta{display:none}
+  .cover-art,.ribbon,.cta{display:none}
   .deck-section{break-before:page;padding:16px 0}
   .deck-section:first-of-type{break-before:auto}
   .section-heading{break-inside:avoid;break-after:avoid}
@@ -241,6 +256,30 @@ a,code{overflow-wrap:anywhere}
   [data-kind=judgement]{box-shadow:none;border-radius:0;border:none}
   [data-kind=judgement]::before{display:none}
 }
+
+
+/* ── The canonical palette ──────────────────────────────────────
+   Dark is primary; light is the warm editorial page. Both are set on <body>
+   so they inherit past the shared theme vars without a specificity fight.
+   The rail is dark in both, so its own tokens do not vary. */
+body{--bg:#0c0618;--card:#181031;--ink:#f4f0ff;--muted:#a99fc2;--line:#2b2146;--accent:#c4b0ff;--accent-2:#f5a06e;--warn:var(--accent);--edge:var(--accent);--shadow-1:none;--art-warm:#f4642a;--art-mid:#c05bd6;--art-cool:#8b6df0;--sev-blocking:#ff6f88;--sev-high:#ff9f63;--sev-medium:#efc563;--sev-low:#84b9e8}
+:root[data-theme=light] body{--bg:#faf6f2;--card:#fff;--ink:#231533;--muted:#6b6076;--line:#e9e1db;--accent:#6323b9;--accent-2:#ff5a1f;--art-warm:#ef6a38;--art-mid:#b95ad2;--art-cool:#6d31d0;--sev-blocking:#b3243f;--sev-high:#e05a22;--sev-medium:#a8780f;--sev-low:#3f77a6}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]) body{--bg:#faf6f2;--card:#fff;--ink:#231533;--muted:#6b6076;--line:#e9e1db;--accent:#6323b9;--accent-2:#ff5a1f;--art-warm:#ef6a38;--art-mid:#b95ad2;--art-cool:#6d31d0;--sev-blocking:#b3243f;--sev-high:#e05a22;--sev-medium:#a8780f;--sev-low:#3f77a6}}
+:root[data-theme=light],:root[data-theme=light] body{color-scheme:light}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]),:root:not([data-theme=dark]) body{color-scheme:light}}
+body,:root[data-theme=dark],:root[data-theme=dark] body{color-scheme:dark}
+
+/* gradient-filled numerals wash out on the light page without a darker warm stop */
+:root[data-theme=light] .grad-text{background-image:linear-gradient(105deg,var(--accent) 10%,#c9430f 92%)}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]) .grad-text{background-image:linear-gradient(105deg,var(--accent) 10%,#c9430f 92%)}}
+
+/* the verdict band: a plane change on light, a surface on dark */
+.cover-band{padding:24px 28px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+:root[data-theme=light] .cover-band{margin-left:calc(clamp(24px,4vw,72px)*-1);padding:30px clamp(24px,4vw,72px);border:none;border-radius:0;background:var(--rail-bg);color:var(--rail-ink)}
+:root[data-theme=light] .cover-band .lead{color:var(--rail-ink)}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]) .cover-band{margin-left:calc(clamp(24px,4vw,72px)*-1);padding:30px clamp(24px,4vw,72px);border:none;border-radius:0;background:var(--rail-bg);color:var(--rail-ink)}:root:not([data-theme=dark]) .cover-band .lead{color:var(--rail-ink)}}
+:root[data-theme=light] .cover-art{border-radius:0}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]) .cover-art{border-radius:0}}
 `;
 
 /** Highlights the current section in the sticky nav. Purely additive: plain links work with no JS. */
@@ -348,7 +387,7 @@ export function renderConsultHtml(
   const metrics = `${headlines}<div class="hm-item"><span>finding groups</span><strong>${r.findings.length}</strong><span class="hm-sev">${severitySplit}</span></div>`;
   const railLink = (id: string, title: string) =>
     `<a href="#${id}">${icon(SECTION_ICON[id])}<span>${title}</span></a>`;
-  const rail = `<nav class="rail" aria-label="Consulting report sections"><div class="rail-brand"><b>Design System Loop</b><span>System review</span></div>${railLink('summary', 'Summary')}${railLink('problem', 'The problem')}<div class="rail-group">${railLink('current', 'Where you are now')}<a href="#coverage"><span>Coverage</span></a><a href="#findings"><span>Findings</span>${r.findings.length ? `<span class="rail-count">${r.findings.length}</span>` : ''}</a><a href="#inventory"><span>CSS inventory</span></a><a href="#tokens"><span>Token architecture</span></a></div>${railLink('ideal', 'What good looks like')}${railLink('after', 'Where this takes you')}${railLink('plan', 'The plan')}${railLink('limits', "What we couldn't check")}<div class="rail-foot">${esc(r.manifest.fixtureLabel)}<br>${esc(r.manifest.ranAt.slice(0, 10))}</div></nav>`;
+  const rail = `<nav class="rail" aria-label="Consulting report sections"><div class="rail-brand"><b>Design System Loop</b><span>System review</span></div>${railLink('summary', 'Summary')}${railLink('problem', 'The problem')}<div class="rail-group">${railLink('current', 'Where you are now')}<a href="#coverage"><span>Coverage</span></a><a href="#findings"><span>Findings</span>${r.findings.length ? `<span class="rail-count">${r.findings.length}</span>` : ''}</a><a href="#inventory"><span>CSS inventory</span></a><a href="#tokens"><span>Token architecture</span></a></div>${railLink('ideal', 'What good looks like')}${railLink('after', 'Where this takes you')}${railLink('plan', 'The plan')}${railLink('limits', "What we couldn't check")}<div class="rail-art" aria-hidden="true">${halftoneComet('rl', 280, 200, 7.5, 3.4)}</div><div class="rail-foot">${esc(r.manifest.fixtureLabel)}<br>${esc(r.manifest.ranAt.slice(0, 10))}</div></nav>`;
   const RIBBON_ORDER = ['summary', 'problem', 'current', 'ideal', 'after', 'plan', 'limits'];
   const ribbon = `<div class="ribbon" aria-hidden="true">${RIBBON_ORDER.map(
     (id, i) =>
@@ -363,7 +402,7 @@ export function renderConsultHtml(
   const severityBar = sevTotal
     ? `<div class="bar" aria-hidden="true">${SEVERITIES.map((s, i) => `<span class="${s}" style="width:${(sevCounts[i] / sevTotal) * 100}%"></span>`).join('')}</div><div class="legend">${SEVERITIES.map((s, i) => `<span>${s} ${sevCounts[i]}</span>`).join('')}</div>`
     : '';
-  const intro = `${ICON_SPRITE}<section class="cover"><div class="halftone" aria-hidden="true"></div><div class="cover-orb" aria-hidden="true"></div><p class="cover-eyebrow">${icon(vc.icon)}${esc(r.manifest.fixtureLabel)} / System review · ${esc(r.manifest.ranAt.slice(0, 10))}</p><h1>${esc(consult?.title ?? 'Your design system, in view')}</h1><p class="cover-sub">${esc(PLAIN_VERDICTS[r.verdict].title)}</p><p class="lead">${esc(PLAIN_VERDICTS[r.verdict].description)}</p>${consult ? '<a class="cta" href="#plan">Review the plan <span aria-hidden="true">&rarr;</span></a>' : ''}<div class="headline-metrics">${metrics}</div><p class="basis">Reference-only values / (literal + reference + mixed values). Not reference resolution. <a href="#limits">Read the coverage limits.</a></p>${ribbon}</section><div class="deck-layout">${rail}<div class="deck-flow">${section(
+  const intro = `${ICON_SPRITE}<section class="cover"><div class="cover-art" aria-hidden="true">${meshPanel('cv')}</div><div class="cover-text"><p class="cover-eyebrow">${icon(vc.icon)}${esc(r.manifest.fixtureLabel)} / System review · ${esc(r.manifest.ranAt.slice(0, 10))}</p><h1>${esc(consult?.title ?? 'Your design system, in view')}</h1><p class="cover-sub">${esc(PLAIN_VERDICTS[r.verdict].title)}</p></div><div class="cover-band"><p class="lead">${esc(PLAIN_VERDICTS[r.verdict].description)}</p>${consult ? '<a class="cta" href="#plan">Review the plan <span aria-hidden="true">&rarr;</span></a>' : ''}</div><div class="headline-metrics">${metrics}</div><p class="basis">Reference-only values / (literal + reference + mixed values). Not reference resolution. <a href="#limits">Read the coverage limits.</a></p>${ribbon}</section><div class="deck-layout">${rail}<div class="deck-flow">${section(
     'summary',
     'Summary',
     `<p class="lead">${esc(PLAIN_VERDICTS[r.verdict].title)}</p><p>${esc(PLAIN_VERDICTS[r.verdict].description)}</p><p><b>What we checked:</b> ${r.coverage.partialReads.length ? `${esc([...new Set(r.coverage.partialReads.flatMap((p) => p.extensions))].join(', '))} files with ${r.rulesRun.length} checks.` : 'No supported files were checked.'} ${r.coverage.complete ? 'No additional coverage gaps reported within that scope.' : 'Coverage is incomplete; see the limits below.'} <a href="#limits">What we couldn’t check</a></p>${severityBar}${

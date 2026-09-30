@@ -54,8 +54,10 @@ test('10,001 findings browse lazily, paginate, search the final hit and preserve
   });
   host.dataset.group = '0';
   group.append(host);
+  const body = new Element();
   const document = {
     documentElement: root,
+    body,
     getElementById: (id: string) => (id === 'audit-data' ? data : theme),
     createElement: () => new Element(),
     querySelectorAll: (selector: string) => (selector === '[data-group]' ? [host] : []),
@@ -126,8 +128,10 @@ test('suggestion table mounts three candidates and expands the remainder on dema
     },
     swatches: {},
   });
+  const body = new Element();
   const document = {
     documentElement: root,
+    body,
     getElementById: (id: string) => (id === 'audit-data' ? data : theme),
     createElement: () => new Element(),
     querySelectorAll: (selector: string) => (selector === '[data-suggestions]' ? [host] : []),
@@ -162,8 +166,10 @@ test('generated inline loader decompresses and hydrates indexed suggestions befo
   host.dataset.suggestions = String(report.findings.findIndex((f) => f.suggestion));
   const disclosure = new Element();
   disclosure.append(host);
+  const body = new Element();
   const document = {
     documentElement: root,
+    body,
     getElementById: (id: string) => (id === 'audit-data' ? data : theme),
     createElement: () => new Element(),
     querySelectorAll: (selector: string) => (selector === '[data-suggestions]' ? [host] : []),
