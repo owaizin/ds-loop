@@ -39,6 +39,7 @@ whose answers could change the next action:
 | Desired outcome | What should become possible or easier after this work? | Acceptance independent of tools installed or finding counts. |
 | Existing solution | What should developers use today, and what prevents that? | Missing capability versus adoption, compatibility, or discovery. |
 | Theming areas | Which areas share the app theme, and which are customer-branded/white-label or documents/print? Which tokens may each override, and where are those overrides scoped? | Establish override boundaries early so app changes do not erase customer branding or document behavior. |
+| Design workflow | Is there a design library the team uses, and which decisions does it own? Can we inspect it or work from an export? | Separate design and code evidence; identify design work without requiring a design tool. |
 | Constraints | What must stay compatible, and who owns shared decisions? | Scope, rollout, and material decisions needing an owner. |
 | First demonstration | Which flow would be useful to prove this in? | Pilot consumer, states, and access needed for verification. |
 

@@ -143,6 +143,10 @@ context to other rules.
 
 ## Deliver and close
 
+Use [delivery-contract](reference/delivery-contract.md) to name the expected artifact,
+verification and returning-use path for the selected route. Keep it in the existing
+task record; a small edit does not need a new document.
+
 State the permitted scope and behavior to preserve. Use existing stories/tests
 before creating a harness. For visible or interactive changes, capture a rendered
 baseline and check affected behavior after the change. Separate existing defects

@@ -54,7 +54,8 @@ investigation and execution; the team or its delegated owner decides shared poli
    existing components, ordered by observed consumer reach. Link stories where they
    exist. Output: source-backed contracts discoverable from the normal entry point.
    Agent drafts and checks; the existing maintainer owns the adopted contract.
-7. **Bounded migration.** Input: a decided mapping and named consumer slice. Capture
+7. **Bounded migration.** For multiple replacements or an estimate, first use
+   [adoption-plan](adoption-plan.md) to resolve mappings, dependencies and effort. Input: a decided mapping and named consumer slice. Capture
    rendered behavior first; apply the [preview rendering-parity check](review.md#verify-preview-rendering-parity)
    before using preview evidence. Inspect audit token suggestions; choose replacements by
    role, mode and compatibility, keeping ambiguity visible. Preview `fix <path>` for

@@ -16,6 +16,8 @@ invent a plan.
    [practice guides](../roles/consultant.md#what-good-looks-like). Carry the specific
    published source URL into every supported recommendation. Where no public source
    states it, write **our own opinion**; never attribute our recipe to another system.
+   Use [system-review](system-review.md) for a broad assessment and
+   [adoption-plan](adoption-plan.md) for replacement planning and estimates.
    Write `consult.json` using the schema in
    [the command reference](../../docs/guide/reference.md#consultjson-schema).
    Describe the problem, cite practices and name the systems they come from,

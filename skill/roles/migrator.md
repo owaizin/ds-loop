@@ -28,6 +28,9 @@ verified behavior, failures and limits on claiming completion.
 
 ## Playbooks and commands
 
+For a requested adoption plan or estimate, use [adoption-plan](../reference/adoption-plan.md)
+before implementation.
+
 Use [transform](../reference/transform.md), [extract](../reference/extract.md),
 [scope](../reference/scope.md) and [review](../reference/review.md).
 Read [migrating](../practices/migrating.md) and
