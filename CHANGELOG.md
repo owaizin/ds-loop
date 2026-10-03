@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Guided delivery: evidence-scoped system reviews, adoption mappings with separate
+  design/code estimates, and explicit route completion criteria.
+- Consulting report: a big-picture view connects the diagnosis, proposed outcome,
+  first delivery and planned verification without treating a plan as completed work.
+
 ## 0.4.0 — 2026-09-29
 
 - First run: bare `ds-loop` and `start` save `ds-loop-report.html` when no report

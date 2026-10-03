@@ -4,6 +4,7 @@ import type { AuditReport } from '../commands/audit.ts';
 import { adoptionHtml, type adoptionReport } from './adoption.ts';
 import { findingGroupId, findingLocations } from './audit-summary.ts';
 import { type ReferenceSet, benchmarkHtml } from './benchmark.ts';
+import { CONSULT_OVERVIEW_CSS, renderConsultOverview } from './consult-overview.ts';
 import type { Claim, Consult } from './consult.ts';
 import { renderConsumersHtml } from './consumers-html.ts';
 import type { ConsumersReport } from './consumers.ts';
@@ -197,13 +198,13 @@ a,code{overflow-wrap:anywhere}
 /* ── Responsive ── */
 @media(max-width:1100px){
   main{margin-left:0;padding-inline:clamp(20px,5vw,40px)}
-  .rail{position:sticky;top:0;left:auto;bottom:auto;width:auto;height:auto;flex-direction:row;align-items:center;overflow-x:auto;overflow-y:visible;padding:10px 12px;border-right:none;border-bottom:1px solid var(--rail-line)}
+  .rail{position:relative;flex-wrap:nowrap;top:0;left:auto;bottom:auto;width:auto;height:auto;flex-direction:row;align-items:center;overflow-x:auto;overflow-y:visible;padding:10px 12px;border-right:none;border-bottom:1px solid var(--rail-line)}
   .rail-brand{padding:0 16px 0 6px;margin:0 8px 0 0;border-bottom:none;border-right:1px solid var(--rail-line);flex-shrink:0}
   .rail-brand span{display:none}
   .rail-group{display:contents}
   .rail-group a:not(:first-child){display:none}
   .rail a{white-space:nowrap;flex-shrink:0}
-  .rail-foot{display:none}
+  .rail-foot,.rail-art{display:none}
   .toolbar{position:static;opacity:1;padding:14px 0;text-align:right}
   .problem-card{grid-template-columns:150px minmax(0,1fr)}
   .pc-ev{grid-column:2}
@@ -412,7 +413,7 @@ export function renderConsultHtml(
   const intro = `${ICON_SPRITE}<section class="cover"><div class="cover-art" aria-hidden="true">${meshPanel('cv')}</div><div class="cover-text"><p class="cover-eyebrow">${icon(vc.icon)}${esc(r.manifest.fixtureLabel)} / System review · ${esc(r.manifest.ranAt.slice(0, 10))}</p><h1>${esc(consult?.title ?? 'Your design system, in view')}</h1><p class="cover-sub">${esc(PLAIN_VERDICTS[r.verdict].title)}</p></div><div class="cover-band"><p class="lead">${esc(PLAIN_VERDICTS[r.verdict].description)}</p>${consult ? '<a class="cta" href="#plan">Review the plan <span aria-hidden="true">&rarr;</span></a>' : ''}</div><div class="headline-metrics">${metrics}</div><p class="basis">Reference-only values / (literal + reference + mixed values). Not reference resolution. <a href="#limits">Read the coverage limits.</a></p>${ribbon}</section><div class="deck-layout">${rail}<div class="deck-flow">${section(
     'summary',
     'Summary',
-    `<p class="lead">${esc(PLAIN_VERDICTS[r.verdict].title)}</p><p>${esc(PLAIN_VERDICTS[r.verdict].description)}</p><p><b>What we checked:</b> ${r.coverage.partialReads.length ? `${esc([...new Set(r.coverage.partialReads.flatMap((p) => p.extensions))].join(', '))} files with ${r.rulesRun.length} checks.` : 'No supported files were checked.'} ${r.coverage.complete ? 'No additional coverage gaps reported within that scope.' : 'Coverage is incomplete; see the limits below.'} <a href="#limits">What we couldn’t check</a></p>${severityBar}${
+    `${renderConsultOverview(consult)}<p class="lead">${esc(PLAIN_VERDICTS[r.verdict].title)}</p><p>${esc(PLAIN_VERDICTS[r.verdict].description)}</p><p><b>What we checked:</b> ${r.coverage.partialReads.length ? `${esc([...new Set(r.coverage.partialReads.flatMap((p) => p.extensions))].join(', '))} files with ${r.rulesRun.length} checks.` : 'No supported files were checked.'} ${r.coverage.complete ? 'No additional coverage gaps reported within that scope.' : 'Coverage is incomplete; see the limits below.'} <a href="#limits">What we couldn’t check</a></p>${severityBar}${
       themes.size
         ? `<h3>Findings by area</h3><table class="assess"><thead><tr><th scope="col">Area</th><th scope="col">Highest severity</th><th scope="col">Groups</th><th scope="col">Most severe finding</th></tr></thead><tbody>${[
             ...themes,
@@ -485,7 +486,7 @@ export function renderConsultHtml(
     consulting: {
       intro,
       outro,
-      css: CSS,
+      css: CSS + CONSULT_OVERVIEW_CSS,
       sourceBase: pathToFileURL(`${resolve(root)}/`).href,
       findings: `<div class="theme-findings">${[...themes].map(([theme, rows]) => `<h3>${esc(theme)}</h3>${rows.map(finding).join('')}`).join('')}</div>`,
       script: DECK_NAV_SCRIPT,
