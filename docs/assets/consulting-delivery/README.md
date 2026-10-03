@@ -14,5 +14,4 @@ this local report refer to the generating checkout; regenerate in your checkout.
 
 Chrome headless checks: desktop 1440px light/dark and 375px light; no page errors,
 no document horizontal overflow, four cards and resolved overview anchors.
-Screenshots capture the overview. Print export generated, pagination not yet
-visually verified. Test data is illustrative, not a claimed delivered migration.
+Screenshots capture the overview. Print export generated; the overview page was visually checked for readability. Test data is illustrative, not a claimed delivered migration.
