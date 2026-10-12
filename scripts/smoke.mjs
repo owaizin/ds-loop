@@ -74,12 +74,14 @@ try {
     assert(!existsSync(join(dir, 'node_modules', 'ds-loop', 'src')), 'src/ should not be published');
   });
 
-  check('the package, skill and CLI identify the same release', () => {
+  check('the package, plugin, skill and CLI identify the same release', () => {
     const installed = join(dir, 'node_modules', 'ds-loop');
     const version = JSON.parse(readFileSync(join(installed, 'package.json'), 'utf8')).version;
     const sourceVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
     const skill = readFileSync(join(installed, 'skill', 'SKILL.md'), 'utf8');
     assert(version === sourceVersion, 'installed package version differs from source');
+    const plugin = JSON.parse(readFileSync(join(installed, '.claude-plugin/plugin.json'), 'utf8'));
+    assert(plugin.version === version, 'plugin version differs from package');
     assert(skill.match(/^\s+version:\s*(\S+)/m)?.[1] === version, 'skill version differs from package');
     const help = run(['--help']);
     assert(help.status === 0 && help.stdout.includes(`ds-loop ${version}`), 'CLI release differs');
@@ -320,7 +322,7 @@ try {
   check('packed plugin hook executes using its declared plugin-root command', () => {
     const installed = join(dir, 'node_modules', 'ds-loop');
     const manifest = JSON.parse(readFileSync(join(installed, '.claude-plugin/plugin.json'), 'utf8'));
-    assert(manifest.version === '0.4.0' && manifest.skills === './skill', 'plugin entry mismatch');
+    assert(manifest.skills === './skill', 'plugin entry mismatch');
     const hooks = JSON.parse(readFileSync(join(installed, 'hooks/hooks.json'), 'utf8'));
     const command = hooks.hooks.PostToolUse[0].hooks[0].command;
     const probe = join(dir, 'plugin-hook');

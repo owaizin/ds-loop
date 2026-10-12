@@ -358,3 +358,12 @@ internal notes.
   It is not part of the engine. Its review history lives in
   `docs/FEEDBACK-TRIAGE-2026-09-16.md` (untracked), which records every accept/reject
   decision and the lines worth preserving if a skill there is ever cut.
+
+## Release versions
+
+On every release, keep `package.json`, `package-lock.json`,
+`.claude-plugin/plugin.json` and the version in `skill/SKILL.md` aligned.
+This includes skill-only releases: marketplace users need a new plugin version
+to receive changed instructions. Run `npm run smoke`; it checks the installed
+package, plugin, skill and CLI versions agree. Keep the marketplace entry's
+version omitted so `plugin.json` remains authoritative.

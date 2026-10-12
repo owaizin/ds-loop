@@ -38,3 +38,11 @@ docs/PILOT-BRIEF-*.md
 # cache, rebuilt on demand. biome reads this file, so listing it here also keeps
 # the generated JSON out of `npm run check`.
 graphify-out/
+
+# Local report planning/prototypes; preserve locally, not in the public package.
+/docs/plans/2026-10-01-report-direction.md
+/docs/plans/2026-10-02-assessment-contract.md
+/docs/prototypes/
+
+# Website moved to the separate ds-loop-site repository.
+/site/

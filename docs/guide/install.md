@@ -161,12 +161,22 @@ To install it without npm, add this repository as a plugin marketplace:
 /plugin install ds-loop@ds-loop
 ```
 
-Run `/plugin marketplace update ds-loop` to pick up a new release. A marketplace install
-runs from the repository source, so it needs Node 22.6 or later.
+To update the installed plugin, run this in your terminal:
+
+```sh
+claude plugin marketplace update ds-loop
+claude plugin update ds-loop@ds-loop
+```
+
+Start a new Claude Code session to load the update. The marketplace command
+refreshes the listing; the plugin command updates the installed copy. You can
+also enable auto-update for this marketplace in Claude Code's `/plugin` panel.
+A marketplace install runs from the repository source and needs Node 22.6 or later.
 
 The package follows Claude Code's [plugin manifest format](https://code.claude.com/docs/en/plugins-reference)
 and [local loading workflow](https://code.claude.com/docs/en/plugins).
-Keep the entire npm package together; a source checkout must be built first.
+Keep the entire package or repository together. The npm package runs compiled
+JavaScript; the repository launcher can run source directly on Node 22.6 or later.
 
 ## Codex skill
 
