@@ -50,7 +50,7 @@ specific requests to the first role and subsequent hand-offs.
 | Design token layers, naming or before/after architecture | [architect](roles/architect.md) |
 | Choose color, type, spacing, radius, elevation or motion | [foundations](roles/foundations.md) |
 | Build/review a component or decide shared versus local | [components](roles/components.md) |
-| Document the system, examples or Storybook | [docs](roles/docs.md) |
+| Document the system, examples, Storybook or an AI-readable registry | [docs](roles/docs.md) |
 | Adopt a system, run a codemod or retire an old API | [migrator](roles/migrator.md) |
 | Resolve ownership, review policy, exceptions or drift prevention | [governor](roles/governor.md) |
 
@@ -221,6 +221,7 @@ Do not run `ds-loop review` or `ds-loop drift`.
 | `transform` | Agent procedure | Build | Guide an authorized baseline → decisions → tokens/specs → adoption → completion journey | [reference/transform.md](reference/transform.md) |
 | `foundations` | Agent procedure | Build | Compare and adapt foundation options, record the decision; works with or without a kit | [reference/foundations.md](reference/foundations.md) |
 | `tokenize [target]` | Agent procedure | Build | Implement an agreed token source and any required consumer formats/checkers | [reference/tokenize.md](reference/tokenize.md) |
+| `registry [target]` | Agent procedure | Build | Generate an AI-readable component catalog; create and verify a project-local refresh pipeline when automatic updates are requested | [reference/registry.md](reference/registry.md) |
 | `scaffold [target]` | Agent procedure | Build | Set up minimal component documentation or Storybook when useful; preserve the project's structure; optional specialist for deeper management | [reference/scaffold.md](reference/scaffold.md) |
 | `extract [target]` | Agent procedure | Build | Move a pattern consumer code re-implemented into the system, matching the project's own component contract, then migrate the call sites | [reference/extract.md](reference/extract.md) |
 | `shape <component>` | Agent procedure | Review | Resolve need, contract, consumers and accessibility for a new or substantially changed component | [reference/shape.md](reference/shape.md) |
@@ -239,7 +240,7 @@ A component name or category is a scope for an agent playbook, not a CLI target.
 
 `audit` runs the registered token/color rules over supported extracted values;
 `sweep` measures the configured color-clustering curve. `drift`, `census`,
-`shape`, `review`, `discover`, `establish`, `transform`, `foundations`, `tokenize`, `scaffold`, `extract`, and `doctor`
+`shape`, `review`, `discover`, `establish`, `transform`, `foundations`, `tokenize`, `scaffold`, `registry`, `extract`, and `doctor`
 are agent procedures, not executable CLI commands.
 
 `guard` runs a file-scoped audit after supported Claude Code edits. It reports

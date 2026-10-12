@@ -1,9 +1,11 @@
 import { RULES } from '../rules/registry.ts';
+import { type Assessment, checkAssessment } from './assessment.ts';
 import { type Evidence, type Proposal, checkProposal } from './proposal.ts';
 
 export type Claim = { text: string; evidence: Evidence[] };
 export type Consult = {
   title: string;
+  assessment?: Assessment;
   problem: Claim[];
   practices: (Claim & { system: string })[];
   after: Claim & { architecture: Proposal };
@@ -96,6 +98,11 @@ export function checkConsult(input: unknown): { errors: string[]; warnings: stri
           });
       }
     }
+  }
+  if (input.assessment !== undefined) {
+    const checked = checkAssessment(input.assessment);
+    errors.push(...checked.errors);
+    warnings.push(...checked.warnings);
   }
   return { errors, warnings };
 }

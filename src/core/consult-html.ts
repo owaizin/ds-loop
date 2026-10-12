@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { AuditReport } from '../commands/audit.ts';
 import { adoptionHtml, type adoptionReport } from './adoption.ts';
+import { renderAssessmentHtml } from './assessment-html.ts';
 import { findingGroupId, findingLocations } from './audit-summary.ts';
 import { type ReferenceSet, benchmarkHtml } from './benchmark.ts';
 import { CONSULT_OVERVIEW_CSS, renderConsultOverview } from './consult-overview.ts';
@@ -322,6 +323,8 @@ export function renderConsultHtml(
   adoption?: ReturnType<typeof adoptionReport>,
   historyError?: string,
 ): string {
+  if (consult?.assessment)
+    return renderAssessmentHtml(r, consumers, { ...consult, assessment: consult.assessment });
   const ref = (value: string): string => {
     let href: string | undefined;
     if (/^https?:\/\//i.test(value)) href = value;

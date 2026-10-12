@@ -15,6 +15,8 @@ Run `ds-loop consumers . --json` to connect examples to actual consumers.
 
 Follow [scaffold](../reference/scaffold.md), [documenting](../practices/documenting.md),
 [storybook](../practices/storybook.md), and the [docs](../roles/docs.md) role.
+For a component registry or automatic metadata generation, follow
+[registry](../reference/registry.md), including its schema and refresh verification.
 
 ## Finish line
 

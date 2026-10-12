@@ -2,7 +2,9 @@
 
 Agent procedure. Use to present a diagnosis and plan, guide adoption, coordinate specialist
 handoffs, and explain the result. Adapt these fields to the team's existing conversation,
-issue or document format. Do not create a new registry or require fixed headings.
+issue or document format. Do not create a new engagement-tracking registry or
+require fixed headings. This does not restrict a requested component catalog;
+use [registry](registry.md) for that delivery.
 
 ## Keep the user oriented
 

@@ -45,6 +45,10 @@ changing it. Generate token documentation from the canonical source where practi
 rather than introducing a second hand-maintained table. Documentation visibility,
 release status and test selection are separate decisions.
 
+For an AI-readable component catalog or automatic metadata refresh, follow
+[registry](registry.md). It covers snapshots and project-local generators; neither
+is supplied by the CLI. Reuse the same sources as the human-facing docs.
+
 ## Specs and discovery
 
 Preserve a useful existing documentation home. If there is none, use this layout

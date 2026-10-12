@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Design System Loop component registry",
+  "description": "Optional starting contract for an agent-created catalog. Structural validity does not prove accuracy or freshness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generation", "coverage", "components"],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "sourceFingerprint", "refreshInstructions", "generator"],
+      "properties": {
+        "mode": {
+          "enum": ["snapshot", "generated"]
+        },
+        "sourceFingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "refreshInstructions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generator": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packages", "entryPoints", "excluded", "limitations"],
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "entryPoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/component"
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "prop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "required", "defaultExpression", "description", "sources"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": ["string", "null"]
+        },
+        "required": {
+          "type": ["boolean", "null"]
+        },
+        "defaultExpression": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "import",
+        "description",
+        "sources",
+        "props",
+        "variants",
+        "parts",
+        "tokens",
+        "examples",
+        "references",
+        "limitations"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "import": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["specifier", "export"],
+          "properties": {
+            "specifier": {
+              "type": "string",
+              "minLength": 1
+            },
+            "export": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 1
+        },
+        "props": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/prop"
+          }
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "values", "sources"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/source"
+                }
+              }
+            }
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "access", "componentId"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "access": {
+                "type": "string",
+                "minLength": 1
+              },
+              "componentId": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "sources"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/source"
+                }
+              }
+            }
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "sources", "check", "checkCommand"],
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/source"
+                }
+              },
+              "check": {
+                "enum": ["passed", "failed", "not-checked"]
+              },
+              "checkCommand": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "target"],
+            "properties": {
+              "kind": {
+                "enum": ["docs", "story", "guidance"]
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

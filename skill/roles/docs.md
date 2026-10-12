@@ -28,7 +28,8 @@ participant and result; a same-session reread is not that trial.
 
 ## Playbooks and commands
 
-Use [scaffold](../reference/scaffold.md), [shape](../reference/shape.md),
+Use [registry](../reference/registry.md) for AI-readable catalogs and verified
+project-local generation. Use [scaffold](../reference/scaffold.md), [shape](../reference/shape.md),
 [review](../reference/review.md) and [engagement](../reference/engagement.md).
 Read [documenting](../practices/documenting.md),
 [storybook](../practices/storybook.md) and [governing](../practices/governing.md).

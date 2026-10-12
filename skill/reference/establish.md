@@ -117,6 +117,8 @@ before presenting the setup as ready; compilation and an audit cannot judge craf
 
 Use the team's existing documentation environment or a suitable reference site;
 [scaffold](scaffold.md) covers basic setup and the optional Storybook specialist.
+For a requested AI-readable catalog or automatic component documentation, use
+[registry](registry.md) to deliver metadata and its refresh path.
 Import real components and shared styles into live examples. Keep examples close
 enough to their source that they can be checked when APIs change.
 
