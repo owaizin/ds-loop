@@ -174,10 +174,10 @@ specialist for a concrete capability gap, not as a way to drop the task.
 4. Integrate the returned changes, evidence and limits into the original plan and
    completion receipt. Do not claim a delegated task succeeded before inspecting it.
 
-For deeper Storybook structure, documentation maintenance, lifecycle or agent
-retrieval, use optional `storybook-architect` if available. Basic setup remains in
-[scaffold](scaffold.md). Installing either skill does not configure the product or
-create ongoing monitoring.
+For Storybook work, follow [scaffold's specialist guidance](scaffold.md#optional-storybook-specialist)
+for when to load `storybook-architect`, its source and installation fallback.
+Basic setup remains in [scaffold](scaffold.md#minimal-storybook-setup). Installing
+either skill does not configure the product or create ongoing monitoring.
 
 ## Explain the result
 

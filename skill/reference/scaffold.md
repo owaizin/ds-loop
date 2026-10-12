@@ -27,10 +27,28 @@ environment. If Storybook is appropriate and setup is authorized:
 5. Link the entry point from the existing contributor documentation. Name what is
    ready to use, what was checked, and who maintains the reference.
 
-For deeper organization, lifecycle conventions, documentation maintenance or agent
-retrieval, follow the optional `storybook-architect` handoff in
-[engagement](engagement.md). Check availability; no automatic installation or repeated
-intake. DS Loop remains responsible for integrating the result.
+## Optional Storybook specialist
+
+For Storybook organization, meaningful component or product-context stories,
+documentation maintenance, lifecycle conventions or component discovery, use
+[storybook-architect](https://github.com/owaizin/skills/blob/main/storybook-architect/SKILL.md)
+when the task needs that specialist. Load the installed skill and only the references
+relevant to the work. Basic setup can continue through the steps above without it.
+
+If unavailable, offer installation from [its source repository](https://github.com/owaizin/skills)
+using the host's supported installation path. Keep the complete `storybook-architect/`
+folder, including its references and scripts; record the chosen revision. Do not
+silently install it. A source link alone does not install or activate the skill.
+
+Carry forward the goal, relevant component and configuration paths, existing
+decisions, authorized scope, deferred work and expected result with its checks.
+Continue the current task without repeating onboarding. Follow the
+[handoff procedure](engagement.md#optional-specialist-handoff); loading a specialist
+does not require a separate agent or chat.
+
+DS Loop retains responsibility for the overall outcome. Inspect the specialist's
+changes and verification evidence against the agreed result, include remaining
+limits in the completion record, and continue any remaining authorized work.
 
 ## Component setup
 
