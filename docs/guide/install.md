@@ -154,6 +154,16 @@ Do not also install the project guard: if you previously ran `guard on`, run
 Leaving the plugin out of the next session removes its hook from that session.
 The hook reports after edits; it cannot block them or replace an unfiltered audit.
 
+To install it without npm, add this repository as a plugin marketplace:
+
+```text
+/plugin marketplace add owaizin/ds-loop
+/plugin install ds-loop@ds-loop
+```
+
+Run `/plugin marketplace update ds-loop` to pick up a new release. A marketplace install
+runs from the repository source, so it needs Node 22.6 or later.
+
 The package follows Claude Code's [plugin manifest format](https://code.claude.com/docs/en/plugins-reference)
 and [local loading workflow](https://code.claude.com/docs/en/plugins).
 Keep the entire npm package together; a source checkout must be built first.

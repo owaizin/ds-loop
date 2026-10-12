@@ -1,0 +1,16 @@
+{
+  "name": "ds-loop",
+  "owner": {
+    "name": "owaizin"
+  },
+  "metadata": {
+    "description": "Design System Loop: deterministic design-system audits and the companion agent skill."
+  },
+  "plugins": [
+    {
+      "name": "ds-loop",
+      "source": "./",
+      "description": "Design-system evidence, consulting playbooks and post-edit feedback."
+    }
+  ]
+}
