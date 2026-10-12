@@ -76,7 +76,7 @@ function extractVerified(text: string): Map<string, string> {
 
 function verifiedBlocks(): Map<string, string> {
   return extractVerified(
-    ['README.md', 'docs/guide/output.md', 'docs/site/landing-copy.md', 'site/reference.html']
+    ['README.md', 'docs/guide/output.md', 'docs/site/landing-copy.md']
       .map((file) => readFileSync(join(ROOT, file), 'utf8'))
       .join('\n'),
   );
@@ -229,22 +229,6 @@ for (const [command, output, ids] of [
   });
 }
 
-// The page has four synthetic audit cases, not the nine described in the brief.
-// Reproduce the inputs supplied beside the page, never use saved output as truth.
-const siteCases = JSON.parse(readFileSync(join(ROOT, 'site/examples.json'), 'utf8')) as {
-  id: string;
-  files: Record<string, string>;
-}[];
-
-for (const { id, files } of siteCases) {
-  test(`site: ${id} audit specimen is real output`, () => {
-    const block = verifiedBlocks().get(`site-${id}`);
-    assert.ok(block, `missing verified site sample: site-${id}`);
-    const actual = inTemp(files, (dir) => run(['audit', '.', '--all'], dir));
-    assertBlockIsReal(`site-${id}`, block, actual);
-  });
-}
-
 test('every verified documentation block is registered in this file', () => {
   // an unregistered `verified:` block is an unchecked claim wearing a badge
   const registered = new Set([
@@ -262,13 +246,6 @@ test('every verified documentation block is registered in this file', () => {
     'audit-css-inventory',
     'audit-css-suggestion',
   ]);
-  const siteIds = ['finding', 'judgment', 'unread', 'palette'];
-  assert.deepEqual(
-    siteCases.map(({ id }) => id).sort(),
-    [...siteIds].sort(),
-    'register every site input case',
-  );
-  for (const name of siteIds) registered.add(`site-${name}`);
   for (const id of verifiedBlocks().keys()) {
     assert.ok(registered.has(id), `README block "${id}" is marked verified but nothing checks it`);
   }

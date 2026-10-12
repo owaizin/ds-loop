@@ -34,13 +34,11 @@
     "ds-loop": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli.ts",
     "prepack": "npm run build",
     "smoke": "node scripts/smoke.mjs",
-    "site:serve": "node scripts/serve-site.mjs",
-    "site:examples": "node scripts/site-examples.mjs",
-    "site:check": "node scripts/check-site.mjs && node scripts/site-examples.mjs --check",
     "test": "node --experimental-strip-types --test 'test/**/*.test.ts'",
     "type-check": "tsc --noEmit",
     "benchmark": "node --experimental-strip-types scripts/benchmark.mjs",
-    "precision": "node --experimental-strip-types scripts/precision.mjs"
+    "precision": "node --experimental-strip-types scripts/precision.mjs",
+    "docs:check": "node scripts/check-docs.mjs"
   },
   "keywords": ["design-system", "design-tokens", "storybook", "audit", "governance", "ciede2000"],
   "license": "MIT",

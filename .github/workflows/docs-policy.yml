@@ -1,0 +1,26 @@
+name: Documentation impact
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+permissions:
+  contents: read
+jobs:
+  docs-impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require a documentation decision with public behavior changes
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          EXEMPT: ${{ contains(github.event.pull_request.labels.*.name, 'docs-not-required') }}
+        run: |
+          changes=$(git diff --name-only "$BASE" "$HEAD")
+          if printf '%s\n' "$changes" | grep -Eq '^(src/|bin/|skill/|hooks/)'; then
+            if ! printf '%s\n' "$changes" | grep -Eq '^docs/guide/' && [ "$EXEMPT" != true ]; then
+              echo '::error::Update docs/guide with the behavior change, or have a maintainer apply docs-not-required for internal-only changes.'
+              exit 1
+            fi
+          fi

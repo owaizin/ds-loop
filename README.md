@@ -182,3 +182,7 @@ Captured with `npm run ds-loop -- dashboard fixtures/css-audit-example --out scr
   ds-loop dashboard — ds-loop
   wrote scratch/phase-2/dashboard-empty.html
 ```
+
+## Website and documentation updates
+
+The website is maintained in [ds-loop-site](https://github.com/owaizin/ds-loop-site). Update `docs/guide/` here alongside behavior changes; those files ship in the npm package. After publication, the website checks for the release hourly, verifies examples against the package, and opens a documentation update PR. Merging that PR deploys the website. See [the release handoff](docs/WEBSITE-SYNC.md).

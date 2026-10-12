@@ -270,9 +270,9 @@ agent who reads only the branding half.
 
 ### Ownership while the rename lands
 
-The website task owns `site/` and its assets. The original Codex task owns `README.md` and the core
-documentation under `docs/guide/`. Neither boundary is a suggestion: editing another task's surface
-during a naming pass is how a coordinated rename becomes a merge conflict with opinions in it.
+The website and assets now live in the separate `owaizin/ds-loop-site` repository.
+This repository owns `README.md`, `docs/guide/`, and package behavior. Update the guide in the same
+change as behavior; the website imports it from published npm releases. See `docs/WEBSITE-SYNC.md`.
 
 ## Every exit names the next command
 

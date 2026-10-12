@@ -27,7 +27,7 @@ The package and skill are MIT licensed. Agent usage costs, tool access and provi
 
 ## Delivery and release state
 
-The site is portable static HTML/CSS/JavaScript under site/, with a local preview and reproducible output checks. Preserve the selected visual contract in DESIGN.md. Product System is outside this project.
+The website lives in https://github.com/owaizin/ds-loop-site, with its own preview, checks, and deployment. Technical documentation stays in docs/guide here and is imported from published npm releases. Product System is outside this project.
 
 As checked on 21 September 2026, npm serves 0.2.0 and source is 0.2.1. The expanded establishment procedure is in source; public pages must state that boundary until the registry artifact is verified. The website is outside the npm package file list. A commit does not constitute a website deployment or npm publication.
 
