@@ -7,6 +7,7 @@ import type { ScorecardRow } from '../commands/scorecard.ts';
 import { type Finding, SEVERITY_ORDER } from '../rules/types.ts';
 import { findingGroupId } from './audit-summary.ts';
 import { CONSUMERS_VERSION } from './consumers.ts';
+import { EMBER_REPORT_CSS } from './ember-theme.ts';
 import { findingReach, reachLimits, reached, reachedGroups } from './reach-html.ts';
 import { reportData } from './report-data.ts';
 import { REPORT_CSS, REPORT_SCRIPT } from './report-html-assets.ts';
@@ -304,7 +305,7 @@ export function renderAuditHtml(
         .join(
           '',
         )}</tbody></table></div><p>${htmlEscape(trendRows[0].ranAt)} → ${htmlEscape(trendRows.at(-1)!.ranAt)}</p>${trendRows.some((row) => !row.coverageComplete) ? '<p>Some history rows report incomplete coverage. Those rows do not record detailed coverage limits.</p>' : ''}${inspect(['trend', 'rows'], 'All comparable rows and source revisions')}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src data:; base-uri 'none'; form-action 'none'">${options.consulting ? `<title>Design System Loop — System report — ${htmlEscape(r.manifest.fixtureLabel)}</title>` : `<title>ds-loop audit — ${htmlEscape(r.manifest.fixtureLabel)}</title>`}<style>${REPORT_CSS}${TOKEN_CSS}${options.consulting?.css ?? ''}</style></head><body><main>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src data:; base-uri 'none'; form-action 'none'">${options.consulting ? `<title>Design System Loop — System report — ${htmlEscape(r.manifest.fixtureLabel)}</title>` : `<title>ds-loop audit — ${htmlEscape(r.manifest.fixtureLabel)}</title>`}<style>${REPORT_CSS}${TOKEN_CSS}${options.consulting?.css ?? ''}${EMBER_REPORT_CSS}</style></head><body><main>
   <div class="toolbar"><span class="kicker">${options.consulting ? `DESIGN SYSTEM LOOP / SYSTEM REPORT · ${htmlEscape(r.manifest.fixtureLabel)} · ${htmlEscape(r.manifest.ranAt.slice(0, 10))}` : 'ds-loop / audit report'}</span><label>Appearance <select id="theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div>
   ${
     options.consulting

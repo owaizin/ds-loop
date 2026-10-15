@@ -4,6 +4,7 @@ import type { Assessment } from './assessment.ts';
 import { CONSULT_OVERVIEW_CSS, renderAssessmentOverview } from './consult-overview.ts';
 import type { Consult } from './consult.ts';
 import type { ConsumersReport } from './consumers.ts';
+import { EMBER_REPORT_CSS } from './ember-theme.ts';
 import { plainCoverage } from './plain.ts';
 import { reportData } from './report-data.ts';
 
@@ -154,7 +155,7 @@ const save=(text,name,type)=>{const url=URL.createObjectURL(new Blob([text],{typ
 document.getElementById('download-brief').addEventListener('click',()=>{save(${json(brief)},'implementation-brief.md','text/markdown');document.getElementById('download-status').textContent='Implementation brief downloaded.'});
 document.getElementById('download-evidence').addEventListener('click',()=>save(document.getElementById('assessment-data').textContent,'assessment-evidence.json','application/json'));
 })();`;
-  return `<!doctype html><html lang="en" data-theme="light" data-style="split"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'"><title>${esc(a.client)} · Design System Loop</title><style>${ASSESSMENT_CSS}${EXTRA_CSS}${CONSULT_OVERVIEW_CSS}</style></head><body>${ASSESSMENT_ICONS}<a class="skip" href="#main">Skip to report</a><div class="variant-toolbar"><div class="variant-label">Design System Loop <span>/</span> <small>System review</small></div><div class="theme-switch" role="group" aria-label="Report visual variant">${[
+  return `<!doctype html><html lang="en" data-theme="light" data-style="split"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'"><title>${esc(a.client)} · Design System Loop</title><style>${ASSESSMENT_CSS}${EXTRA_CSS}${CONSULT_OVERVIEW_CSS}${EMBER_REPORT_CSS}</style></head><body>${ASSESSMENT_ICONS}<a class="skip" href="#main">Skip to report</a><div class="variant-toolbar"><div class="variant-label">Design System Loop <span>/</span> <small>System review</small></div><div class="theme-switch" role="group" aria-label="Report visual variant">${[
     ['dark', 'Aubergine'],
     ['light', 'Light field'],
     ['split', 'Split overview'],
