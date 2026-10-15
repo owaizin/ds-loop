@@ -82,6 +82,9 @@ try {
     assert(version === sourceVersion, 'installed package version differs from source');
     const plugin = JSON.parse(readFileSync(join(installed, '.claude-plugin/plugin.json'), 'utf8'));
     assert(plugin.version === version, 'plugin version differs from package');
+    for (const font of ['inter', 'manrope']) {
+      assert(existsSync(join(installed, 'licenses', `${font}-OFL.txt`)), `${font} license missing`);
+    }
     assert(skill.match(/^\s+version:\s*(\S+)/m)?.[1] === version, 'skill version differs from package');
     const help = run(['--help']);
     assert(help.status === 0 && help.stdout.includes(`ds-loop ${version}`), 'CLI release differs');

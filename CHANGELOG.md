@@ -1,13 +1,25 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-15
 
 - Guided delivery: evidence-scoped system reviews, adoption mappings with separate
   design/code estimates, and explicit route completion criteria.
 - Consulting report: a big-picture view connects the diagnosis, proposed outcome,
   first delivery and planned verification without treating a plan as completed work.
 
-## 0.4.0 — 2026-09-29
+- Assessment delivery: validated evidence, proposed work packages and an integrated
+  delivery overview; component-registry guidance and an optional Storybook Architect handoff.
+- Distribution: Claude Code marketplace installation and update instructions;
+  package, plugin, skill and CLI release versions are checked together.
+- Reports: embedded Inter and Manrope fonts now carry OFL notices in the package
+  and exported HTML. Unverified decorative images are replaced with CSS gradients.
+- Public precision snapshots and static-import reachability retain source scope
+  and limitations. Website maintenance now lives in the separate website repository.
+
+This is the first npm release since 0.2.1. The 0.3.0 section below records an
+intermediate development milestone, not a previously published npm release.
+
+### Engine, reports and agent workflow
 
 - First run: bare `ds-loop` and `start` save `ds-loop-report.html` when no report
   or `.ds-scorecard/` exists. The compact reading points to findings, coverage and

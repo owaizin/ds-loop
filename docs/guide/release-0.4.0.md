@@ -8,7 +8,7 @@ npx ds-loop install --agent codex
 npx ds-loop audit .
 ```
 
-## What changed since 0.2.0
+## What changed since 0.2.1
 
 - Read ordinary CSS properties, token JSON and bounded SCSS/Sass alongside CSS
   custom properties and Tailwind strings. Reports keep unsupported expressions
@@ -36,6 +36,12 @@ npx ds-loop audit .
 These capabilities are defined by the [CLI](../../src/cli.ts),
 [adapter registry](../../src/adapters/registry.ts) and
 [configuration defaults](../../src/config/defaults.ts).
+
+The release also includes evidence-backed assessment plans, a shared delivery
+overview, component-registry guidance, and an optional Storybook Architect handoff.
+Claude Code users can install through the repository marketplace; see
+[installation](install.md#claude-code-plugin). Reports include font license notices
+and CSS-only decorative artwork.
 
 ## Upgrade and verify
 

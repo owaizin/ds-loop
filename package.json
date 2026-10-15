@@ -22,7 +22,8 @@
     "CHANGELOG.md",
     "LICENSE",
     "docs/guide",
-    "benchmarks/reference.json"
+    "benchmarks/reference.json",
+    "licenses"
   ],
   "engines": {
     "node": ">=22.6"

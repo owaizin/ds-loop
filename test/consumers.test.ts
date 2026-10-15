@@ -108,7 +108,9 @@ test('html: generated from the map, escaped, deterministic, story-only flagged',
   assert.ok(!a.includes('<b>demo</b>'), 'label escaped');
   assert.match(a, /stories\/tests only — not production adoption/);
   assert.match(a, /@acme\/ui\/exam/);
-  assert.ok(!/https?:\/\//.test(a), 'no external URLs');
+  // License comments contain attribution URLs, not network requests.
+  const activeHtml = a.replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.ok(!/https?:\/\//.test(activeHtml), 'no external URLs outside license comments');
   const empty = renderConsumersHtml(analyseConsumers(tree({ 'package.json': pkg('solo') })), opts);
   assert.match(empty, /Not checked\./);
 });

@@ -124,7 +124,11 @@ test('10k token chain is iterative and the HTML initially renders only aggregate
   report.tokenArchitecture = a;
   const html = renderAuditHtml(report, { timestamp: '2000-01-01T00:00:00.000Z' });
   assert.equal(html, renderAuditHtml(report, { timestamp: '2000-01-01T00:00:00.000Z' }));
-  assert.ok(html.split('<script id="audit-data"')[0].length < 60000);
+  // Bound initial markup independently of the licensed font's binary size.
+  const initial = html
+    .split('<script id="audit-data"')[0]
+    .replace(/data:font\/woff2;base64,[A-Za-z0-9+/=]+/g, '');
+  assert.ok(initial.length < 60000);
   assert.match(html, /Token architecture/);
   assert.match(html, /rows.slice\(offset, offset\+30\)/);
 });
