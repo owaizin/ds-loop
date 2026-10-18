@@ -1,246 +1,39 @@
-# The methodology ds-loop automates
+# How Design System Loop approaches the work
 
-> **Historical design rationale.** For current agent behavior, use the
-> [skill entry](../skill/SKILL.md) and its linked procedures. The consulting
-> workflow now starts from the user's problem and the project's commitments;
-> the fixed component layout, thresholds and universal ordering below are not
-> operational requirements. They must not override the current skill or a
-> project's adopted contract.
+Start with the team's problem. Use source evidence to understand it, agree on a useful change, then verify the result in the product.
 
-> **This is a proposal, not a description of the shipped tool.** It records the
-> engagement methodology `ds-loop` is aimed at, distilled from one code-first
-> design system for a dense multi-product SaaS and cross-checked against Polaris,
-> Primer, Spectrum, Carbon and ADS.
->
-> Most of the mechanisms named below are **not implemented**. The commands that
-> exist are `start` (also what bare `ds-loop` runs), `context`, `audit`, `scan`,
-> `sweep`, `guard`, `fix` and `scorecard`; see
-> [the CLI reference](guide/reference.md) for what each one actually does. Everything here described as a clusterer, a generator or a watch
-> mode is a plan. Read this for the reasoning, and the reference for the tool.
+The engine provides repeatable measurements. The companion skill guides a coding agent through investigation and delivery. Neither an audit count nor a default token model decides what a team should build.
 
-The one-sentence thesis:
+## 1. Understand the task
 
-> A design system is not a component library. It is a decision framework that
-> happens to ship components. Tokens before components. Primitives before
-> patterns. Systems before screens. Every design choice, every PR, and every
-> AI-generated output passes through the same gates.
+Read the project's instructions, existing decisions and relevant code. Ask about consequential unknowns: the user problem, constraints, theme boundaries and behavior that must stay intact. Reuse context the team has already supplied.
 
-## Relationship to `design-system-ops` (Murphy Trueman)
+## 2. Establish evidence
 
-[`design-system-ops`](https://github.com/murphytrueman/design-system-ops) is a
-mature Claude Code skill pack covering the practitioner side of running a system —
-40 LLM-driven skills for auditing, governance, documentation, and stakeholder
-communication, plus 12 knowledge notes. This document does **not** re-derive that.
-For contribution workflows, deprecation process, decision records, adoption
-reporting, onboarding, and the maturity model, use that pack.
+Run an unfiltered audit and retain its coverage. Inspect components and consumers where the task needs them. Separate measured source facts from interpretations and proposed changes. Unsupported formats and unresolved relationships remain explicit.
 
-`ds-loop` contributes a deterministic layer: CIEDE2000 sweeps, tier-reference
-checks, provenance records, a calibration corpus. The two are complementary in
-practice; this is a description of what this tool does, not an audit of what any
-other tool lacks.
-The token model, severity vocabulary, and `.ds-loop-config.yml` format here are
-kept compatible with that pack on purpose.
+The engine uses bounded extraction rather than a full compiler or browser. Static references do not establish effective CSS values or runtime use. See [coverage](guide/reference.md#coverage).
 
----
+## 3. Choose an intervention
 
-## The engagement, and which engine owns each phase
+Preserve useful conventions. Establish missing foundations, improve an existing capability, clarify guidance or record a valid exception. Work from the team's intended model; configure the engine to match applicable conventions.
 
-Engine column marked **shipped** or **planned**; nothing here is a capability
-claim on its own.
+The [skill](../skill/SKILL.md) routes the task. Its [delivery contract](../skill/reference/delivery-contract.md) defines an inspectable result and relevant checks. A small repair does not need a large document set.
 
-| Phase | Human work | ds-loop engine / mode |
-| --- | --- | --- |
-| 1. Discovery | interview + repo scan → `DS-CONTEXT` (YAML frontmatter every downstream skill branches on, prose underneath) | **shipped:** `context`, `scan` |
-| 2. Token audit | every hardcoded color/space/type/shadow → proposed primitive+semantic scale + drift report | **shipped:** `audit`, `sweep`, `scan` |
-| 3. Component inventory | census, cluster duplicates, rank by usage × blast radius | *planned* — no clusterer exists |
-| 4. Scaffold | Storybook + sidebar spine + foundations pages + 5-file contract + validators | *planned* — no generator exists |
-| 5. Pilot | migrate one surface end-to-end, before/after scorecard | human, with `audit` and `scorecard` for before/after |
-| 6. Guardrails | token-parity (block), structure validator (block), reuse (comment), slop (comment) | **shipped:** `guard` (edit-time, reports only) + `audit` in CI; no watch mode |
-| 7. Exit | engineer takes ownership: green CI, populated Storybook, skills installed in their repo, scorecard baseline committed | generator |
-| ongoing | `new-component` (Phase 0 interrogation), `component-review`, `token-review`, `slop-check` | agent playbooks, not engine commands |
+## 4. Deliver and verify
 
----
+Implement the authorized scope. Use real component APIs and existing test or story infrastructure. For visible changes, inspect the affected product behavior. Check that preview CSS matches the application before relying on a preview.
 
-## 1. Token architecture — four layers, in dependency order
+The engine's fixer performs only mechanically provable fallback edits. Token suggestions remain candidates for agent or human judgment. A clean audit is not visual or accessibility verification.
 
-```
-Palette   →   Semantic   →   Component   →   State
-(raw)         (role)         (part)          (interaction)
-```
+## 5. Retain decisions and continue
 
-Each layer references only the layer above it via `var()`, **strictly downward**:
-component → semantic → primitive. A semantic token holding a raw hex is a bug
-(`color/semantic-holds-literal`). A component token referencing a primitive
-directly — skipping the semantic tier — is **tier leakage** (`token/tier-leakage`):
-the value is right but theme propagation and rebrand are broken. A semantic token
-named for its appearance (`color.action.blue`) is "a primitive with extra steps"
-(`token/semantic-name-describes-appearance`) — the exception is category /
-chart-series tokens, where the colour name is the identity.
+Record what changed, what was verified and what remains unknown. Keep decisions in the team's existing home and make them discoverable to the next contributor. Test a fresh-session continuation when claiming that an adoption setup can be used without re-explanation.
 
-**Primitive** naming says *what it is* (`color.blue.500`); **semantic** says
-*what it is for* (`color.action.primary`); **component** scopes intent to a widget
-(`button.background.default`). Reserved from semantic names: colour names, size
-words (`small`/`large`), generic qualifiers (`main`/`base`).
+Use saved measurements only when the source and measurement settings are comparable. Adapter or configuration changes can move the instrument. Fewer findings alone do not establish improvement.
 
-**One source of truth, two files, kept in lockstep.** Tokens live in a `.css`
-(the runtime) and a **DTCG 2025.10** `.json` (`$value`, `$type` from the 13 formal
-types, `$extensions.css` — what every other tool reads: Figma sync, Style
-Dictionary, doc generators; composite tokens need sub-value compliance, a resolver
-mode missing a value is a coverage gap). A CI check diffs the two per namespace on
-every PR. They change together or neither changes.
+## Sources and compatibility
 
-**Naming grammar.** Colors: `--{ns}-color-{relationship}-{role}-{state}` where
-relationship ∈ `bg · text · border · icon`. Typography:
-`--{ns}-type-{role}-{size}-{property}`, roles ∈
-`display · heading · body · label · overline · metric · code`, `display` is
-single-purpose. Frozen scales (spacing 1–11, a fixed elevation ladder) need
-sign-off, not a PR comment.
+Practice guides under [skill/practices](../skill/practices/) cite the public sources behind their recommendations and distinguish project evidence from judgment. Third-party fixture and font licenses remain with their files.
 
-**The token-review gate** (before any token PR): scope compliance (no component
-files touched), no dangling references, CSS/JSON parity, no raw values in
-semantic/composite tokens, primitives never renamed without a paired migration.
-Duplicate semantic roles are *flagged for design review, not auto-rejected* — two
-roles resolving identically can be a documented compromise, but the doc must say so.
-
----
-
-## 2. The component contract — one component, five files, always
-
-1. `lib/<name>.tsx` — the component
-2. `lib/index.ts` — public surface: component + props type + every public union type
-3. `stories/<Name>.stories.tsx` — `Default`, `Playground`, `UsageMap`
-4. `stories/<Name>.features.stories.tsx` — exhaustive matrices, `tags: ['!autodocs']`
-5. `stories/components/<category>/<Name>-guidelines.mdx` — the docs page
-
-A validator fails the build if any of the five is missing. No component ships
-half-documented, because "document it later" never happens.
-
-**Library isolation is absolute.** The lib is headless and standalone — zero
-imports from the app. Enforced by grep. If a new component needs something only in
-the app, move that thing into the lib; never add an adapter that reaches back.
-
-**Token-only styling.** No raw hex / px / rem / ms / cubic-bezier in a component
-file — grep-enforced. Everything is a token.
-
----
-
-## 3. The restraint doctrine
-
-> Less, but better. Default review stance: skeptical of additions. Configurability
-> is a liability — every prop has a documentation, test, and misuse cost.
-
-API-surface caps, calibrated against one library's own worst offenders once it had
-~50 components, per component's *added* public API. **Reference numbers from a
-single system — not thresholds for yours:**
-
-| Dimension | Soft cap (justify in writing) | Hard cap (fails review) |
-| --- | --- | --- |
-| Props | > 12 | > 18 |
-| `variant` | > 4 | > 6 |
-| `size` | > 4 | > 5 |
-| `tone` / `color` | > 6 | > 8 |
-| Boolean flags | > 5 | > 8 |
-
-Heuristics: many booleans = a missing variant. A "just in case" prop with no usage
-site → delete it. `<X primary />` sugar for `variant="primary"` → delete it. An
-optional prop passed in 100% of call sites → make it required. If the author
-cannot name one thing they cut during design, the design isn't finished — run the
-caps strictly.
-
----
-
-## 4. Accessibility baseline — non-negotiable, from the first commit
-
-"We'll add a11y later" is a stop-the-line. The eight checks: focus ring token on
-every interactive element; keyboard contract (Enter/Space, Escape); non-color
-state signal; ARIA completeness; form-control association (`htmlFor`+`id`,
-`aria-describedby`, `aria-invalid`, `aria-required`); contrast (4.5 / 3:1) —
-a failing token *pair* is a token bug, not a usage bug; 44×44 touch target;
-motion respects `prefers-reduced-motion` via the motion tokens themselves.
-
----
-
-## 5. Storybook organization
-
-Sidebar spine, pinned explicitly in `storySort`: Overview → Foundations →
-Content Guidelines → Primitives → Components (by category) → Patterns → Pages.
-
-**Migration lanes, not big-bang.** Run the canonical lane, a `Preview` migration
-lane (amber banner), and a legacy lane (red banner) simultaneously via a global
-decorator. Move screens across one at a time.
-
-**Story types**: `Default` + `Playground` always; `VariantMatrix` showing *every*
-permutation (group only if > 24, with a commented rationale); `States`
-(default/hover/focus/disabled + loading/error); `Interaction` with `play()` for
-any keyboard contract; `UsageMap` for compound components.
-
-- The MDX guidelines file *is* the docs page — never `tags: ['autodocs']` beside it.
-- Storybook is product QA, not demo art. Real copy, realistic widths. An "awkward"
-  story is a real signal — wrong contract or wrong layout mode; fix at source.
-
-**MDX v3 is a minefield** — ~10 patterns fail silently ("Unable to index"): bare
-`*` in `<code>`, backticks in headings, HTML `<table>` in JSX, `<Meta title>` vs
-`<Meta of>`, bare `<`/`>` in prose, wrong import-path depth. Codify them in an
-`AGENTS.md` next to the files *and* a regex validator.
-
----
-
-## 6. Governance & scope — from a real incident
-
-> A design-system-scoped branch accumulated 26 production file changes because an
-> agent read a legitimate accessibility audit, saw "P0", and implemented the
-> recommendations across production without recognising the branch's scope.
-
-**The fix**: directory-scoped, branch-aware `AGENTS.md` / `CLAUDE.md`. If the
-branch is `story/*` or `ds/*`, only `stories/**`, `docs/**`, `<lib>/**`,
-`.storybook/**` are writable. Audit recommendations **do not override scope** —
-document the finding, stop, propose a separate branch. Document the intentional
-exceptions explicitly.
-
-**Reuse enforcement**: a build-failing check greps for raw `<input type="checkbox">`
-etc. where a system component exists. **Deterministic checks block; judgment checks
-comment** — a reuse false-positive that blocks a merge gets the whole check
-disabled.
-
----
-
-## 7. Skills — executable playbooks
-
-Three skills sharing one rulebook: `new-component` (Phase 0 interrogation →
-scaffold), `component-review` (severity-ranked audit, scopes: quick / pr / full),
-`token-review`. "This one creates, that one audits" — same thresholds, same check
-IDs.
-
-**Phase 0 interrogation** (before any file): need & gap, usage context (name 2–3
-real screens), API (what did you *cut*?), composition, edge cases, accessibility,
-governance. Weak answers are a signal to challenge, not to accept and build.
-
----
-
-## 8. The measurement spine
-
-The analyzer in watch mode emits a number per run — but always a **ratio**:
-raw-values / total-declared-style-values, drift / component-count, orphan-stories
-/ total-stories. Written to a **committed file in the client repo**
-(`.ds-scorecard/history.jsonl`), emitted from CI on `main` (sparse and gameable
-otherwise). The renewal conversation is `git log` on that file.
-
----
-
-## Appendix — build order from zero
-
-1. Repo shape: monorepo, headless `lib/` isolated by its own tsconfig, one
-   formatter, CI running lint + type-check.
-2. Primitive tokens (channels, `:root` only).
-3. Semantic layer (every entry references a primitive).
-4. The JSON mirror + the parity check — *before* the token count explodes.
-5. Utility layer generated from the tokens (not a hand-kept parallel scale).
-6. Storybook: spine pinned, theme toggle, Foundations pages generated from tokens.
-7. Layout primitives first (Box, Stack, Inline, Grid, Icon, VisuallyHidden).
-8. The 5-file contract + its validator — before component #2.
-9. The MDX guidelines template + the MDX validator.
-10. The three skills.
-11. First 5–10 components via the scaffold — each hardens the skill.
-12. Governance files, the reuse check, the lane banners.
-13. The registry + dependency graph.
-14. The content system (North Star, Canonical Vocabulary, Formatting Standards).
+The `.ds-ops-config.yml` reader supports configuration interoperability with [design-system-ops](https://github.com/murphytrueman/design-system-ops). This compatibility does not install that tool or imply affiliation. Current commands and behavior are documented in the [reference](guide/reference.md).

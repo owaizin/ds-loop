@@ -185,7 +185,7 @@ Use thin boundaries and tonal separation for ordinary frames. The comparison and
 
 The current homepage uses compact 4–12px corners for controls, specimens and frames. Main actions are 8px; the header action is 7px and secondary text actions are 6px. Older supporting-page pill navigation and controls remain an inherited implementation detail, not the default for new homepage work.
 
-The loop uses concentric SVG geometry and five generated transparent PNG assets: a ribbon-loop brand mark and four process sculptures. The stage controls are unboxed. Small interface arrows, checks and row symbols use authored SVG. Text initials and numeric record identifiers remain data. Raster provenance is recorded in `.impeccable/review/workbench/artwork.md`.
+The loop uses concentric SVG geometry and five generated transparent PNG assets: a ribbon-loop brand mark and four process sculptures. The stage controls are unboxed. Small interface arrows, checks and row symbols use authored SVG. Text initials and numeric record identifiers remain data. Website artwork and its provenance are maintained in the separate `ds-loop-site` repository.
 
 ## Components
 

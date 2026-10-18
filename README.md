@@ -1,114 +1,59 @@
 # Design System Loop
 
-Your tokens and components are only useful when product code uses them. Design System Loop finds hardcoded styles and measures shared-component usage from your code.
+**Your design-system team, working with your coding agent.**
 
-**Works with:** CSS custom properties, ordinary CSS rules, Tailwind classes in JavaScript/TypeScript, DTCG/Style Dictionary token JSON, and bounded SCSS/Sass extraction. **Not yet:** Vue/Svelte or CSS-in-JS. Sass evaluation and composite JSON values remain coverage limits.
+Your product is growing. Buttons get rebuilt, tokens get bypassed, and the reasons behind design decisions disappear in chat. Design System Loop helps you understand what you have, improve what needs work and leave a system the next developer can use.
 
 ```sh
 npx ds-loop@0.4.0
 ```
 
-Run it from your project directory with Node 22.6 or later. Your first run saves `ds-loop-report.html` and prints findings, what was checked, and the next command. Open the report for findings and coverage; ask your agent to add the assessment and plan. Existing reports are preserved. Read `verdict` and `coverage` together.
+Run from your project directory with **Node 22.6+**. This checks supported source and saves a local report. For guided implementation, [connect your coding agent](#work-with-your-coding-agent).
 
-The engine checks code locally, without a model, API key or runtime dependencies. The companion skill guides your coding agent to plan and build. Your team decides what should change.
+[Website](https://design-system-loop.vercel.app) · [Getting started](docs/guide/install.md) · [Workflows](docs/guide/workflow.md) · [npm](https://www.npmjs.com/package/ds-loop)
 
-## Read your first results
+![Design System Loop audit showing findings beside coverage, with color and spacing evidence from the public Example DS fixture](https://raw.githubusercontent.com/owaizin/ds-loop/main/docs/assets/audit-report.png)
 
-This is real output from the [Example DS CSS fixture](https://github.com/owaizin/ds-loop/tree/main/fixtures/css-audit-example), an independently written test case. From a source checkout, reproduce it with `npm run ds-loop -- start fixtures/css-audit-example`:
+*Real output from an invented, public test project. [Reproduce this report](docs/assets/README.md).*
 
-<!-- verified: start-css-showcase -->
-```text
-  findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
-  [HIGH] Hard-coded styles · token/raw-value-in-style · 1 hits · styles.css:7
-  [HIGH] Hard-coded styles · token/raw-value-in-style · 1 hits · styles.css:9
-  [LOW] Missing backup values · token/var-missing-fallback · 2 hits · styles.css:8, styles.css:10
-```
+## Start where your team is
 
-The color and spacing findings point straight to `styles.css:7` and `styles.css:9`. Run `npx ds-loop audit . --all` for risks, fix guidance and candidate tokens.
+You don't need to replace a working system or have one already.
 
-Save the findings, architecture and coverage as one consulting report:
+| Your starting point | What the skill helps your agent deliver |
+|---|---|
+| **“We don't have a system.”** | Agree on foundations, build reusable components in a real product flow, and leave usage and contribution guidance. |
+| **“We have one, but people work around it.”** | Find whether the problem is a missing capability, unclear guidance or drift. Improve an agreed area and check the result. |
+| **“Our AI keeps reinventing our components.”** | Make existing components, APIs and decisions discoverable. Test whether a fresh agent can find and use them correctly. |
+| **“We need to keep it working.”** | Inspect known consumers, review changes, retain exceptions and compare supported measurements over time. |
 
-```sh
-npx ds-loop report .
-```
+The **engine** supplies repeatable source checks and evidence. The **skill** guides your agent through diagnosis, delivery and verification. Your team keeps control of priorities and shared decisions.
 
-With an agent-written assessment, add `--consult consult.json`. Without it, the
-problem, recommended practices, proposed state and plan are clearly marked as not
-written yet. From the source checkout, run
-`npm run ds-loop -- report fixtures/css-audit-example --out scratch/phase-1/css-report.html`:
+## Work with your coding agent
 
-<!-- verified: report-css-example -->
-```text
-  ds-loop report — ds-loop
-  wrote scratch/phase-1/css-report.html
-```
-
-In a workspace, see which apps render shared components:
-
-```sh
-npx ds-loop consumers . --scope @your-org/ui
-```
-
-From the [Example DS workspace fixture](https://github.com/owaizin/ds-loop/tree/main/fixtures/example-workspace):
-
-<!-- verified: consumers-example -->
-```text
-  @example/dashboard: shared-component share 75.0% · shared 3 · local 1 · external 0 · unresolved 0 · stories/tests 1 JSX elements
-```
-
-Shared-component share is shared / (shared + local) production JSX elements. External and unresolved elements stay outside that ratio; stories and tests are counted separately. This is a synthetic example, not an adoption benchmark.
-
-## Check which files have importers
-
-Reachability helps you separate code your product ships from tests, stories, examples and orphans by showing which finding locations have a static importer in the scanned tree. It does not prove runtime use or justify deletion: dynamic imports, route manifests, globs, build-time copies and consumers outside the tree can be missed. Read the [states and limits](docs/guide/reference.md#reachability) before using it to prioritize work.
-
-## Open a visual report
-
-Save reports you can open locally or share with your team:
-
-```sh
-npx ds-loop report . --consult consult.json --out consulting-report.html
-npx ds-loop audit . --html audit-report.html
-npx ds-loop consumers . --html consumers-report.html
-```
-
-**Audit and token architecture.** Start with findings and coverage, then inspect token layers, references and source locations.
-
-![Audit report for the Example DS CSS fixture, showing coverage, color and spacing findings, and source locations](https://raw.githubusercontent.com/owaizin/ds-loop/main/docs/assets/audit-report.png)
-
-**UI architecture and component usage.** See the workspace import graph and each app's shared-component share.
-
-![Example DS workspace diagram showing dashboard and portal imports, shared-component share bars, and stories counted separately](https://raw.githubusercontent.com/owaizin/ds-loop/main/docs/assets/consumers-report.png)
-
-Both screenshots come from the public fixtures above. [Reproduce the reports](https://github.com/owaizin/ds-loop/blob/main/docs/assets/README.md).
-
-## Ask your agent to help
-
-Install the engine and companion skill in your project:
+Install the package and connect it to your project:
 
 ```sh
 npm install --save-dev ds-loop@0.4.0
 npx ds-loop install --agent codex
 ```
 
-Use `--agent claude`, `cursor` or `all` for another host. The installer preserves
-your text and updates only its marked block. Add `--guard` to opt into Claude Code
-post-edit feedback. [Installer details](docs/guide/install.md#add-instructions-for-your-agent).
+Use `--agent claude`, `cursor` or `all` for your host. The installer preserves your instructions and updates only its own marked block. [Claude Code plugin and other setup options](docs/guide/install.md).
 
-For automatic discovery, use the [Claude Code plugin or Codex skill setup](docs/guide/install.md#claude-code-plugin). Both use the same bundled skill.
+Then describe the problem in your own words:
 
-Then give your coding agent a problem:
+> Use Design System Loop to understand our existing system. Find why we're rebuilding components, recommend a first improvement and explain how you'll verify it. Start read-only.
 
-> Read node_modules/ds-loop/skill/SKILL.md. Find why we're rebuilding components instead of using our system. Recommend a first improvement and how we'll verify it. Start read-only.
+The agent investigates your repository, asks about decisions it can't infer and proposes a useful next step. Once authorized, it carries out the work and records what was delivered, verified and left unchecked.
 
-For a new system, ask it to set up editable foundations, reusable components in real workflows, a reference guide, and contribution instructions. For an existing system, name the feature or inconsistency you want to tackle. The agent inspects the repository, asks about decisions it can't infer, and carries out the scope you authorize.
+For a new system, ask for editable foundations, components used in real workflows and guidance for extending them. For an established system, keep what works. A component catalog or better instructions may be more useful than another redesign.
 
-It can compare foundation options from the MIT [ds-kit](https://github.com/owaizin/ds-kit), reuse your existing library, and produce a visual proposal with the bundled `skill/tools/proposal.mjs`. The handoff records what was delivered, verified and left unchecked. [Choose a workflow](docs/guide/workflow.md).
+**Installation doesn't start an agent.** Load the skill in your host or point it to `node_modules/ds-loop/skill/SKILL.md`. No separate agent framework is required.
 
-With the companion skill loaded, ask your agent for one of these commands. Each
-starts by reading your code and running `ds-loop context` and an unfiltered
-`ds-loop audit`. The CLI commands below supply evidence and write the requested
-artifacts; the agent follows the bundled playbooks.
+<details>
+<summary>Browse the Claude Code plugin commands</summary>
+
+These shortcuts are provided by the Claude Code plugin. In other hosts, describe the same task in your prompt.
 
 | Agent command | What you get | Backing CLI commands |
 |---|---|---|
@@ -125,64 +70,84 @@ artifacts; the agent follows the bundled playbooks.
 | `/ds-loop:drift` | Feedback after edits | `audit`, `guard` |
 | `/ds-loop:prove` | What changed and what wasn't checked | `audit`, `scorecard`, `report` |
 
-## Choose your next command
+</details>
 
-| You want to… | Run |
-|---|---|
-| Get a first reading | `npx ds-loop` or `npx ds-loop start .` |
-| Check installation, contract drift and guard state | `npx ds-loop doctor .` |
-| See configuration and convention files | `npx ds-loop context .` |
-| Inspect every finding or export data | `npx ds-loop audit . --all` or `--json` |
-| Save a consulting report | `npx ds-loop report . --consult consult.json` |
-| Map shared imports and component usage | `npx ds-loop consumers .` |
-| Open today’s measurements and saved trends | `npx ds-loop dashboard .` |
-| Find direct consumers of an export | `npx ds-loop impact '@example/ui#Button' .` |
-| Record a decision with its owner and evidence | `npx ds-loop decide --help` |
-| Compare measurements over time | `npx ds-loop scorecard .` |
-| Inspect the palette or its clustering threshold | `npx ds-loop scan .` or `npx ds-loop sweep .` |
-| Preview mechanical fallback fixes | `npx ds-loop fix .` |
-| Get feedback after Claude Code edits | `npx ds-loop guard on` |
+## Try the source checks on their own
 
-[Installation](docs/guide/install.md) · [Command reference](docs/guide/reference.md) · [More verified output](docs/guide/output.md)
+You can use the CLI without an AI account. It runs locally, with no model calls, API key or runtime dependencies.
 
-## Limits
+```sh
+npx ds-loop audit .
+```
 
-- The adapters read selected CSS properties and Tailwind utilities. They do not resolve the cascade, evaluate every styling expression or check inline styles. A clean result covers only the stated checks and scope; exit 0 alone can also mean nothing was checked. [Coverage details](docs/guide/reference.md#coverage).
-- Token names and clustering thresholds are configurable. Match them to your conventions. Suggested tokens are candidates: equal values do not prove the same role in every theme. `fix` only adds mechanically resolvable `var()` fallbacks; it previews until you pass `--write`.
-- Component share counts static JSX, not runtime renders or adoption quality. Unresolved imports can skew the known-origin ratio. Import diagrams do not prove runtime relationships.
-- Layout, behavior, accessibility and design decisions need agent or human review of the rendered product. **Supervised alpha:** review changes in an isolated checkout. The skill does not bundle a universal component library or a Storybook specialist.
-- Installing the package does not activate your agent or arrange background maintenance. The optional guard reports after edits; it cannot block them. CI gating is a separate team choice.
-- The engine runs locally. Your agent's usage costs and data handling depend on its provider and host settings.
+The summary names the finding, its source locations and what the engine could read. Here is a real excerpt from the [Example DS fixture](https://github.com/owaizin/ds-loop/tree/main/fixtures/css-audit-example):
+
+<!-- verified: start-css-showcase -->
+```text
+  findings — one row per finding group; up to 3 recorded locations (not ranked by frequency)
+  [HIGH] Hard-coded styles · token/raw-value-in-style · 1 hits · styles.css:7
+  [HIGH] Hard-coded styles · token/raw-value-in-style · 1 hits · styles.css:9
+  [LOW] Missing backup values · token/var-missing-fallback · 2 hits · styles.css:8, styles.css:10
+```
+
+The first two rows point to color and spacing literals. They establish what is in the code; the agent or team decides whether those values should change.
+
+```sh
+npx ds-loop audit . --all                 # Full findings and token suggestions
+npx ds-loop audit . --html audit.html     # Shareable audit and token architecture
+npx ds-loop consumers . --html usage.html # Workspace imports and component usage
+```
+
+Token suggestions are candidates, not automatic replacements. [See more verified output](docs/guide/output.md).
+
+## See the system behind the screens
+
+Reports are self-contained HTML files. Open them locally or share them with your team.
+
+- **Audit:** findings, coverage, styling inventory and token references, with source locations.
+- **Consulting report:** the measured state alongside an agent-written assessment, proposed changes and a plan. Run `npx ds-loop report . --consult consult.json` after the agent prepares the assessment.
+- **Component usage:** workspace imports and static shared-component usage, with stories and tests counted separately.
+- **Dashboard:** today's measurements and comparable saved trends. Run `npx ds-loop scorecard .` to save a row, then `npx ds-loop dashboard .` to view it. A single run does not invent a trend.
+
+<details>
+<summary>View the component-usage report</summary>
+
+![Example DS workspace report showing dashboard and portal imports, shared-component share and separate story/test usage](https://raw.githubusercontent.com/owaizin/ds-loop/main/docs/assets/consumers-report.png)
+
+This is a synthetic workspace, not a customer benchmark. Shared-component share counts static production JSX, not runtime renders or adoption quality.
+
+</details>
+
+[Report examples](docs/guide/output.md) · [Command reference](docs/guide/reference.md)
+
+## What it reads—and what still needs review
+
+**Supported source:** CSS custom properties, selected ordinary CSS properties, selected Tailwind utilities in JavaScript/TypeScript, DTCG/Style Dictionary token JSON, and bounded SCSS/Sass extraction.
+
+**Coverage limits:** no Vue/Svelte template or CSS-in-JS support, full Sass evaluation, complete composite-token evaluation or browser cascade resolution. Every audit reports its coverage. A clean result covers only the checks and scope that ran.
+
+**Design and behavior:** layout, interaction, accessibility and effective theme values need rendered review. The skill guides that work; a source audit cannot certify it. The skill is a supervised alpha: review implementation changes before shipping.
+
+**Changes and maintenance:** `fix` previews mechanically resolvable `var()` fallback edits until you pass `--write`. The optional Claude Code guard reports after edits and cannot block them. CI policy and background scheduling are separate choices. Your coding agent's costs and data handling depend on its provider and host settings.
+
+## Built for the work after the audit
+
+A list of inconsistencies is only the beginning. The useful outcome is a system someone can use: working components, decisions they can find and a clear way to make the next change.
+
+Design System Loop is open source under MIT. Use it with your existing library, or explore foundation options in [ds-kit](https://github.com/owaizin/ds-kit). Storybook is optional; the skill can guide a small setup and refer deeper work to the separately installed Storybook Architect skill.
 
 ## Contribute
 
-From a source checkout, run `npm ci`, then `npm test`, `npm run check`, `npm run type-check` and `npm run smoke`.
+Bug reports are most useful with a small reproduction, the command you ran and its coverage output. Please remove private source and customer data before opening an [issue](https://github.com/owaizin/ds-loop/issues).
 
-[Contribution notes](https://github.com/owaizin/ds-loop/blob/main/CLAUDE.md) · [Methodology](https://github.com/owaizin/ds-loop/blob/main/docs/METHODOLOGY.md) · [MIT licence](LICENSE)
-
-
-### See whether your system is changing
+From a checkout:
 
 ```sh
-npx ds-loop scorecard .
-# Save another run after a source change, then:
-npx ds-loop dashboard .
+npm ci
+npm run check
+npm run type-check
+npm test
+npm run smoke
 ```
 
-Open `ds-loop-dashboard.html` for today's verdict, tokenization and shared-component
-trends, findings by theme and coverage. One HTML file, fully offline. With fewer
-than two saved runs it shows today alone; it never invents a baseline. Instrument
-changes break the chart and are labelled. The guard refreshes existing dashboards
-after edits. [Dashboard reference and CI setup](docs/guide/reference.md#dashboard-today-and-saved-trends).
-
-Captured with `npm run ds-loop -- dashboard fixtures/css-audit-example --out scratch/phase-2/dashboard-empty.html`:
-
-<!-- verified: dashboard-css-example -->
-```text
-  ds-loop dashboard — ds-loop
-  wrote scratch/phase-2/dashboard-empty.html
-```
-
-## Website and documentation updates
-
-The website is maintained in [ds-loop-site](https://github.com/owaizin/ds-loop-site). Update `docs/guide/` here alongside behavior changes; those files ship in the npm package. After publication, the website checks for the release hourly, verifies examples against the package, and opens a documentation update PR. Merging that PR deploys the website. See [the release handoff](docs/WEBSITE-SYNC.md).
+[Contributor instructions](CLAUDE.md) · [Methodology](docs/METHODOLOGY.md) · [Website documentation sync](docs/WEBSITE-SYNC.md) · [MIT license](LICENSE)

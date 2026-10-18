@@ -170,3 +170,35 @@ audit or a CI pass. Run `audit --require-coverage` for that policy. Dashboard
 samples above were captured in an empty temporary working directory with the
 fixture passed by absolute path, so no saved history affected the result. The
 report sample used the same setup. Dates and ratios belong to the generated HTML.
+
+
+## Save a report
+
+From a source checkout: `npm run ds-loop -- report fixtures/css-audit-example --out scratch/phase-1/css-report.html`.
+
+<!-- verified: report-css-example -->
+```text
+  ds-loop report — ds-loop
+  wrote scratch/phase-1/css-report.html
+```
+
+
+## Measure shared-component usage
+
+From a source checkout: `npm run ds-loop -- consumers fixtures/example-workspace --scope @example/ui`. This invented workspace is not an adoption benchmark.
+
+<!-- verified: consumers-example -->
+```text
+  @example/dashboard: shared-component share 75.0% · shared 3 · local 1 · external 0 · unresolved 0 · stories/tests 1 JSX elements
+```
+
+
+## Open a dashboard
+
+From a source checkout: `npm run ds-loop -- dashboard fixtures/css-audit-example --out scratch/phase-2/dashboard-empty.html`.
+
+<!-- verified: dashboard-css-example -->
+```text
+  ds-loop dashboard — ds-loop
+  wrote scratch/phase-2/dashboard-empty.html
+```

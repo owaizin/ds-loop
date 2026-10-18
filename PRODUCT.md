@@ -1,4 +1,3 @@
-<!-- impeccable:product-schema 1 -->
 # Design System Loop
 
 Design System Loop helps teams establish a usable design system, improve inconsistent implementations, and maintain shared foundations as their product grows. The customer should receive working source, adoption in real workflows, guidance for using and changing it, and evidence of what was verified.

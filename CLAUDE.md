@@ -316,7 +316,7 @@ truncation — but reordering or splicing is not, because that is how a wrapped 
 
 ## Writing standard for reader-facing docs
 
-**The bar is [mattpocock/skills](https://github.com/mattpocock/skills).** Applies to `README.md`, landing
+**Write for a developer arriving for the first time.** Applies to `README.md`, landing
 pages, skill docs — anything a stranger reads. Not to rule output (see the constraint above) and not to
 internal notes.
 
